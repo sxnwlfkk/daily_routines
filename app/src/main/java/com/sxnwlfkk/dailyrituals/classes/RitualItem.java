@@ -1,4 +1,4 @@
-package com.sxnwlfkk.dailyrituals.data;
+package com.sxnwlfkk.dailyrituals.classes;
 
 /**
  * Created by cs on 2017.01.17..

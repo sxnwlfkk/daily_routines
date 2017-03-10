@@ -9,7 +9,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.sxnwlfkk.dailyrituals.R;
-import com.sxnwlfkk.dailyrituals.data.Ritual;
+import com.sxnwlfkk.dailyrituals.classes.Ritual;
 
 import java.util.List;
 

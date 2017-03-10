@@ -1,4 +1,4 @@
-package com.sxnwlfkk.dailyrituals.data;
+package com.sxnwlfkk.dailyrituals.classes;
 
 import java.util.ArrayList;
 
@@ -8,6 +8,8 @@ import java.util.ArrayList;
 
 public class Ritual {
 
+
+    private int mId;
     private int mCarryTime;
     private String mRitualName;
     private int mRitualItemNum;
@@ -21,12 +23,12 @@ public class Ritual {
     /**
      * Constructor to use when wakeup is not set.
      * @param ritual_name The name of the ritual.
-     * @param ritual_item_num The item count of the ritual.
      * @param ritual_items An ArrayList of RitualItems.
      */
-    public Ritual (String ritual_name, int ritual_item_num, ArrayList<RitualItem> ritual_items) {
+    public Ritual (int id, String ritual_name, ArrayList<RitualItem> ritual_items) {
+        mId = id;
         mRitualName = ritual_name;
-        mRitualItemNum = ritual_item_num;
+        mRitualItemNum = ritual_items.size();
         mCurrentItem = 0;
         mRitualItemList = ritual_items;
         mRequireWakeup = false;
@@ -68,10 +70,14 @@ public class Ritual {
     }
 
     /* GETTERS */
+
+    public int getId() {
+        return mId;
+    }
+
     public int getmCarryTime() {
         return mCarryTime;
     }
-
 
     public int getmRitualItemNum() {
         return mRitualItemNum;
