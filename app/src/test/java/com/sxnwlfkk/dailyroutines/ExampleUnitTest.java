@@ -1,4 +1,4 @@
-package com.sxnwlfkk.dailyrituals;
+package com.sxnwlfkk.dailyroutines;
 
 import org.junit.Test;
 

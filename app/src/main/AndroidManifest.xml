@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.sxnwlfkk.dailyrituals">
+    package="com.sxnwlfkk.dailyroutines">
 
     <application
         android:allowBackup="true"
@@ -8,14 +8,27 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".views.main.MainActivity">
+        <activity
+            android:name="com.sxnwlfkk.dailyroutines.views.mainActivity.MainActivity"
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".views.ritualProfile.ProfileActivity"></activity>
+        <activity
+            android:name="com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity"
+            android:theme="@style/AppTheme"
+            android:parentActivityName="com.sxnwlfkk.dailyroutines.views.mainActivity.MainActivity" >
+        </activity>
+        <activity
+            android:name="com.sxnwlfkk.dailyroutines.views.routineActivity.RoutineActivity"
+            android:theme="@style/AppTheme"
+            android:parentActivityName="com.sxnwlfkk.dailyroutines.views.mainActivity.MainActivity" >
+        </activity>
+        <provider
+            android:name="com.sxnwlfkk.dailyroutines.data.RoutineProvider"
+            android:authorities="com.sxnwlfkk.dailyroutines"
+            android:exported="false" />
     </application>
-
 </manifest>

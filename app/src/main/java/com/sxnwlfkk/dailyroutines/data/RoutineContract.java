@@ -1,4 +1,4 @@
-package com.sxnwlfkk.dailyrituals.data;
+package com.sxnwlfkk.dailyroutines.data;
 
 import android.provider.BaseColumns;
 
@@ -6,9 +6,9 @@ import android.provider.BaseColumns;
  * Created by cs on 2017.02.17..
  */
 
-public class RitualContract {
+public class RoutineContract {
 
-    public RitualContract() {}
+    public RoutineContract() {}
 
     public static abstract class RitualEntry implements BaseColumns {
 

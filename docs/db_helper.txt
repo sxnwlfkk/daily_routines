@@ -1,0 +1,15 @@
+This'll be the generation of creating main db.
+
+@startuml
+
+Title DB betöltés
+
+:Load DB;
+if (Empty?) then (yes)
+    :Make DB from Contract;
+else (no)
+    :Load items from DB;
+endif
+:Return DB object;
+
+@enduml

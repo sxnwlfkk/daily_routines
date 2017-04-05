@@ -1,4 +1,4 @@
-package com.sxnwlfkk.dailyrituals.views.settings;
+package com.sxnwlfkk.dailyroutines.views.settings;
 
 import android.app.Activity;
 

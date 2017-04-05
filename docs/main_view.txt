@@ -1,0 +1,33 @@
+@startuml
+
+partition "Main View " {
+
+:OnCreate();
+
+fork
+    :Loading Circle;
+fork again
+    :DB hívás párhuzamos szálon;
+end fork
+-> Visszatér a DB objektummal;
+
+if (Üres a DB?) then (igen)
+    :Üres lista üzenet megjelenítése;
+else (nem)
+    :Lista dinamikus feltöltése;
+    :On Item Click listener;
+endif
+
+:Settings Button;
+:FAB;
+note right
+    Valamilyen jelző argumentumot
+    átadunk, hogy a metódus lássa, hogy
+    új adatot akarunk felvinni.
+endnote
+
+:OnDestroy();
+
+}
+
+@enduml
