@@ -11,17 +11,15 @@ import com.sxnwlfkk.dailyroutines.R;
 
 public class MainActivity extends Activity {
 
-    ListView mRitualListView;
-
-    int testCounter = 0;
+    ListView mRoutineListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mRitualListView = (ListView) findViewById(R.id.main_list);
+        mRoutineListView = (ListView) findViewById(R.id.main_list);
         TextView mEmptyStateTextView = (TextView) findViewById(R.id.empty_view);
-        mRitualListView.setEmptyView(mEmptyStateTextView);
+        mRoutineListView.setEmptyView(mEmptyStateTextView);
 
 
         /* Set up FAB */

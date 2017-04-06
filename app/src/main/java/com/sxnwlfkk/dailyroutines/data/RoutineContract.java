@@ -16,7 +16,7 @@ public class RoutineContract {
 
     public RoutineContract() {}
 
-    public static abstract class RitualEntry implements BaseColumns {
+    public static abstract class RoutineEntry implements BaseColumns {
 
         public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_ROUTINES);
 
