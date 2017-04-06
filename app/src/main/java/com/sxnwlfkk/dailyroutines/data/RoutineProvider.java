@@ -2,6 +2,7 @@ package com.sxnwlfkk.dailyroutines.data;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
+import android.content.UriMatcher;
 import android.database.Cursor;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -12,9 +13,33 @@ import android.support.annotation.Nullable;
  */
 
 public class RoutineProvider extends ContentProvider {
+
+    // VARS
+    public static final String LOG_TAG = RoutineProvider.class.getSimpleName();
+
+    // URI matcher setup
+
+    private static final int ROUTINES = 100;
+    private static final int ROUTINE_ID = 101;
+    private static final int ITEMS_ID = 201;
+
+    private static final UriMatcher sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+
+    static {
+        sUriMatcher.addURI(RoutineContract.CONTENT_AUTHORITY, RoutineContract.PATH_ROUTINES, ROUTINES);
+        sUriMatcher.addURI(RoutineContract.CONTENT_AUTHORITY, RoutineContract.PATH_ROUTINES + "/#", ROUTINE_ID);
+        sUriMatcher.addURI(RoutineContract.CONTENT_AUTHORITY, RoutineContract.PATH_ITEMS + "/#", ITEMS_ID);
+    }
+
+    // DB helper
+    private RoutineDbHelper mDbHelper;
+
+
     @Override
     public boolean onCreate() {
-        return false;
+        mDbHelper = new RoutineDbHelper(getContext());
+
+        return true;
     }
 
     @Nullable

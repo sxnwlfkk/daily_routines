@@ -1,0 +1,48 @@
+@startuml
+' uncomment the line below if you're using computer with a retina display
+' skinparam dpi 300
+!define Table(name,desc) class name as "desc" << (T,#FFAAAA) >>
+' we use bold for primary key
+' green color for unique
+' and underscore for not_null
+!define primary_key(x) <b>x</b>
+!define unique(x) <color:green>x</color>
+!define not_null(x) <u>x</u>
+' other tags available:
+' <i></i>
+' <back:COLOR></color>, where color is a color name or html color code
+' (#FFAACC)
+' see: http://plantuml.com/classes.html#More
+hide methods
+hide stereotypes
+
+' entities
+Table(routines, "routines\n(Routines and major details)") {
+    primary_key(_ID) INTEGER
+    not_null(name) TEXT
+    not_null(length) INTEGER default 0
+    not_null(curr_item) INTEGER default -1
+    not_null(carry_time) INTEGER default 0
+    not_null(items_num) INTEGER
+    not_null(times_used) INTEGER default 0
+}
+
+Table(items, "items\n(Items of a routine)") {
+    primary_key(_ID) INTEGER
+    not_null(routine_id) INTEGER
+    not_null(item_no) INTEGER
+    not_null(name) TEXT
+    not_null(length) INTEGER default 0
+    not_null(remaining_time) INTEGER
+
+    not_null(average_time) INTEGER default 0
+}
+
+' relationships
+routines --> items :Each routine has items in this table
+note right
+    The table's name, same as the routine's items_name
+     column is made of routine name + "_item_table".
+end note
+
+@enduml
