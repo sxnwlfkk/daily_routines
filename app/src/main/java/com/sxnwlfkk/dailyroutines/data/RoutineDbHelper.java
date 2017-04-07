@@ -25,13 +25,13 @@ public class RoutineDbHelper extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(RoutineContract.RoutineEntry.CREATE_RITUAL_TABLE);
-        db.execSQL(RoutineContract.ItemTable.CREATE_ITEM_TABLE);
+        db.execSQL(RoutineContract.ItemEntry.CREATE_ITEM_TABLE);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL(RoutineContract.RoutineEntry.DELETE_RITUAL_TABLE);
-        db.execSQL(RoutineContract.ItemTable.DELETE_ITEM_TABLE);
+        db.execSQL(RoutineContract.ItemEntry.DELETE_ITEM_TABLE);
 
         onCreate(db);
     }

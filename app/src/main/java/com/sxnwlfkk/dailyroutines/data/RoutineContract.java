@@ -33,8 +33,6 @@ public class RoutineContract {
         public static final String COLUMN_ROUTINE_ITEMS_NUMBER = "items_num";
         // Index of current item, if any
         public static final String COLUMN_CURRENT_ITEM = "curr_item";
-        // Name of the DB table, containing the items
-        public static final String COLUMN_ROUTINE_ITEMS_TABLE = "items_table_name";
         // Number of times used
         public static final String COLUMN_ROUTINE_TIMES_USED = "times_used";
 
@@ -53,7 +51,7 @@ public class RoutineContract {
         public static final String DELETE_RITUAL_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME;
     }
 
-    public static abstract class ItemTable implements BaseColumns {
+    public static abstract class ItemEntry implements BaseColumns {
 
         public static final Uri CONTENT_URI = Uri.withAppendedPath(BASE_CONTENT_URI, PATH_ITEMS);
 
