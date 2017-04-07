@@ -1,48 +1,108 @@
 package com.sxnwlfkk.dailyroutines.views.mainActivity;
 
 import android.app.Activity;
+import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
+import android.content.CursorLoader;
+import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
+import com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     // VARS
+    // Log tag
     public static final String LOG_TAG = MainActivity.class.getSimpleName();
+
+    // ID of background loader
+    private static final int ROUTINE_LOADER = 20;
+    // Cursor adapter
+    MainRoutineCursorAdapter mainRoutineCursorAdapter;
 
     ListView mRoutineListView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Mandatory
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mRoutineListView = (ListView) findViewById(R.id.main_list);
-        TextView mEmptyStateTextView = (TextView) findViewById(R.id.empty_view);
-        mRoutineListView.setEmptyView(mEmptyStateTextView);
 
-
-        /* Set up FAB */
+        // Setting up FAB
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_add_ritual);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // Delete this line, when tests here are obsolete
                 TestDBProvider test = new TestDBProvider();
             }
         });
 
+        // Setting up main list view
+        mRoutineListView = (ListView) findViewById(R.id.main_list);
+        TextView mEmptyStateTextView = (TextView) findViewById(R.id.empty_view);
+        mRoutineListView.setEmptyView(mEmptyStateTextView);
 
+        // Initialize cursor adapter
+        mainRoutineCursorAdapter = new MainRoutineCursorAdapter(this, null);
+        mRoutineListView.setAdapter(mainRoutineCursorAdapter);
+
+        // List item click listener
+        mRoutineListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(MainActivity.this, EditActivity.class);
+
+                Uri currentUri = ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, id);
+                intent.setData(currentUri);
+
+                startActivity(intent);
+            }
+        });
+
+        getLoaderManager().initLoader(ROUTINE_LOADER, null, this);
     }
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        String[] projection = {
+                RoutineContract.RoutineEntry._ID,
+                RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME,
+                RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH,
+        };
+
+        return new CursorLoader(this,
+                RoutineContract.RoutineEntry.CONTENT_URI,
+                projection,
+                null,
+                null,
+                null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        mainRoutineCursorAdapter.swapCursor(cursor);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        mainRoutineCursorAdapter.swapCursor(null);
+    }
+
+    // Test class for interactions with DB provider
+    // Also it's setting up items in DB to work with
     private class TestDBProvider {
 
         Uri mRoutinetUri;
@@ -158,8 +218,8 @@ public class MainActivity extends Activity {
             String selection = RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE + "=?";
             String[] selectionArgs = new String[] { String.valueOf(routId) };
 
-            rowsAffected = getContentResolver().delete(RoutineContract.ItemEntry.CONTENT_URI, selection, selectionArgs);
-            Log.d(LOG_TAG, "Returned rows from deleting all items of a routine (should be 5): " + rowsAffected);
+//            rowsAffected = getContentResolver().delete(RoutineContract.ItemEntry.CONTENT_URI, selection, selectionArgs);
+//            Log.d(LOG_TAG, "Returned rows from deleting all items of a routine (should be 5): " + rowsAffected);
         }
 
 

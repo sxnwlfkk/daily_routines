@@ -8,14 +8,14 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/name_field"
+        android:id="@+id/main_name_field"
         tools:text="Routine No.1"
         android:layout_width="0dp"
         android:layout_weight="1"
         android:layout_height="match_parent" />
 
     <TextView
-        android:id="@+id/length_field"
+        android:id="@+id/main_length_field"
         tools:text="1600 sec"
         android:layout_width="0dp"
         android:layout_weight="1"
