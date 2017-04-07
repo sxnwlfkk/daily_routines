@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity;
+import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;
 
 public class MainActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -63,7 +64,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         mRoutineListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(MainActivity.this, EditActivity.class);
+                Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
 
                 Uri currentUri = ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, id);
                 intent.setData(currentUri);

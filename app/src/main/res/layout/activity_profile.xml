@@ -8,6 +8,47 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.sxnwlfkk.dailyroutines.views.routineActivity.RoutineActivity">
+    tools:context="com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity">
+
+    <TextView
+        android:id="@+id/profile_routine_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:text="Name" />
+
+    <TextView
+        android:id="@+id/profile_routine_length"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/profile_routine_name"
+        android:text="Length" />
+
+    <TextView
+        android:id="@+id/profile_item_number"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/profile_routine_length"
+        android:text="Item number" />
+
+    <Button
+        android:id="@+id/profile_start_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:text="Start routine"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentStart="true" />
+
+    <ListView
+        android:id="@+id/profile_list_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@+id/profile_start_button"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/profile_item_number" />
 
 </RelativeLayout>

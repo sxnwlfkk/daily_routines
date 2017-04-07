@@ -70,7 +70,7 @@ public class RoutineContract {
         // Remaining time in item
         public static final String COLUMN_REMAINING_TIME = "remaining_time";
         // Average time this item takes
-        public static final String COLUMN_ITEM_AVG_TIME = "items_num";
+        public static final String COLUMN_ITEM_AVG_TIME = "item_avg";
 
         // Creating this table
         public static final String CREATE_ITEM_TABLE = "CREATE TABLE "

@@ -22,7 +22,7 @@
             android:parentActivityName="com.sxnwlfkk.dailyroutines.views.mainActivity.MainActivity" >
         </activity>
         <activity
-            android:name=".views.routineActivity.RoutineActivity"
+            android:name=".views.profileActivity.ProfileActivity"
             android:theme="@style/AppTheme"
             android:parentActivityName="com.sxnwlfkk.dailyroutines.views.mainActivity.MainActivity" >
         </activity>
