@@ -25,6 +25,8 @@ public class RoutineContract {
         public static final String _ID = BaseColumns._ID;
         // Name of the routine
         public static final String COLUMN_ROUTINE_NAME = "name";
+        // Preferred end time of routine if and (0 if not needed)
+        public static final String COLUMN_ROUTINE_END_TIME = "end_time";
         // Length of the routine in seconds
         public static final String COLUMN_ROUTINE_LENGTH = "length";
         // Carry time in seconds
@@ -41,7 +43,8 @@ public class RoutineContract {
                 TABLE_NAME + " ("
                 + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COLUMN_ROUTINE_NAME + " TEXT NOT NULL, "
-                + COLUMN_ROUTINE_LENGTH + " INTEGER NOT NULL DEFAULT 0, "
+                + COLUMN_ROUTINE_END_TIME + " INTEGER NOT NULL DEFAULT 0,"
+                + COLUMN_ROUTINE_LENGTH + " INTEGER NOT NULL, "
                 + COLUMN_ROUTINE_CARRY + " INTEGER NOT NULL DEFAULT 0, "
                 + COLUMN_CURRENT_ITEM + " INTEGER NOT NULL DEFAULT -1, "
                 + COLUMN_ROUTINE_ITEMS_NUMBER + " INTEGER NOT NULL, "

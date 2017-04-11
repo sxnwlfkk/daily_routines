@@ -8,7 +8,7 @@
     android:orientation="vertical">
 
     <EditText
-        android:id="@+id/edit_name_textbox"
+        android:id="@+id/edit_textbox_routine_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
@@ -23,55 +23,84 @@
         tools:text="Needs ending time" />
 
     <EditText
-        android:id="@+id/edit_textbox_end_time"
+        android:id="@+id/edit_textbox_routine_end_time"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:ems="10"
         android:hint="End time of routine"
         android:inputType="time" />
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="117dp"
-        android:orientation="horizontal"
-        android:layout_weight="0.07">
+        android:layout_height="wrap_content">
 
-        <LinearLayout
-            android:layout_width="291dp"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_weight="1"
+            android:text="New routine item" />
 
-            <TextView
-                android:id="@+id/textView3"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="New routine item" />
+        <EditText
+            android:id="@+id/edit_textbox_item_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/textView3"
+            android:layout_centerHorizontal="true"
+            android:layout_weight="0.04"
+            android:ems="10"
+            android:hint="Item name"
+            android:inputType="textPersonName" />
 
-            <EditText
-                android:id="@+id/edit_textbox_item_name"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.37"
-                android:ems="10"
-                android:hint="Item name"
-                android:inputType="textPersonName" />
+        <EditText
+            android:id="@+id/edit_textbox_item_length"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/edit_textbox_item_name"
+            android:layout_centerHorizontal="true"
+            android:ems="10"
+            android:hint="Item length in seconds"
+            android:inputType="numberDecimal" />
 
-            <EditText
-                android:id="@+id/edit_textbox_item_length"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:hint="Item length in seconds"
-                android:inputType="numberDecimal" />
+        <Button
+            android:id="@+id/edit_button_delete_item"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_below="@+id/edit_textbox_item_length"
+            android:layout_weight="1"
+            android:text="Delete item" />
 
-        </LinearLayout>
+        <Button
+            android:id="@+id/edit_button_up"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/edit_button_delete_item"
+            android:layout_alignBottom="@+id/edit_button_delete_item"
+            android:layout_toEndOf="@+id/edit_button_delete_item"
+            android:layout_weight="1"
+            android:text="Up" />
+
+        <Button
+            android:id="@+id/edit_button_down"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@+id/edit_button_up"
+            android:layout_alignBottom="@+id/edit_button_up"
+            android:layout_toEndOf="@+id/edit_button_up"
+            android:layout_weight="1"
+            android:text="Down" />
 
         <Button
             android:id="@+id/edit_button_item_save"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/edit_textbox_item_length"
+            android:layout_toEndOf="@+id/edit_button_down"
             android:text="Save item" />
-    </LinearLayout>
+    </RelativeLayout>
 
     <ListView
         android:id="@+id/edit_list"

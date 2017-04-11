@@ -47,7 +47,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
             @Override
             public void onClick(View view) {
                 // Delete this line, when tests here are obsolete
-                TestDBProvider test = new TestDBProvider();
+//                TestDBProvider test = new TestDBProvider();
 
                 Intent intent = new Intent(MainActivity.this, EditActivity.class);
                 startActivity(intent);
