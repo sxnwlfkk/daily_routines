@@ -13,6 +13,10 @@ public class RoutineItem {
     private int mCurrentTime;
 
     private double mAverageTime;
+
+
+    private long mId;
+
     /**
      * New object with no prior average data.
      * @param item_name
@@ -62,6 +66,10 @@ public class RoutineItem {
         return mAverageTime;
     }
 
+    public long getmId() {
+        return mId;
+    }
+
     /* SETTERS */
     public void setmCurrentTime(int mCurrentTime) {
         this.mCurrentTime = mCurrentTime;
@@ -77,5 +85,9 @@ public class RoutineItem {
 
     public void setmAverageTime(double mAverageTime) {
         this.mAverageTime = mAverageTime;
+    }
+
+    public void setmId(long mId) {
+        this.mId = mId;
     }
 }

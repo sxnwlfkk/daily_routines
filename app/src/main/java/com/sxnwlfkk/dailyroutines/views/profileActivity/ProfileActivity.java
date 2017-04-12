@@ -1,21 +1,31 @@
 package com.sxnwlfkk.dailyroutines.views.profileActivity;
 
+import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.support.v4.app.NavUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
+import com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity;
 
 public class ProfileActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -35,14 +45,18 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
 
     private ProfileCursorAdapter mCursorAdapter;
 
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_profile);
 
+        // Getting intent
         Intent intent = getIntent();
         mCurrentUri = intent.getData();
 
+        // Finding the Routine Text fields
         mRoutineName = (TextView) findViewById(R.id.profile_routine_name);
         mRoutineLength = (TextView) findViewById(R.id.profile_routine_length);
         mRoutineItemNum = (TextView) findViewById(R.id.profile_item_number);
@@ -56,6 +70,110 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
         getLoaderManager().initLoader(PROFILE_ITEMS_LOADER, null, this);
     }
 
+    // Dialog
+    private void showDeleteRoutineDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.delete_this_routine);
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+            }
+        });
+        builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Sure, I want to delete" button, so delete the item and
+                // dismiss the dialog
+                if (dialog != null) {
+                    deleteRoutine();
+                    dialog.dismiss();
+                }
+
+            }
+        });
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    private void showResetStatisticsDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.reset_statistics_dialog);
+        builder.setPositiveButton(R.string.yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                if (dialog != null) {
+                    resetStatistics();
+                    dialog.dismiss();
+                }
+            }
+        });
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+
+            }
+        });
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    // Options
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.profile_activity, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_profile_edit_routine:
+                Intent intent = new Intent(ProfileActivity.this, EditActivity.class);
+                intent.setData(mCurrentUri);
+                startActivity(intent);
+                break;
+            case R.id.menu_profile_delete_routine:
+                showDeleteRoutineDialog();
+                break;
+            case R.id.menu_profile_reset_statistics:
+                showResetStatisticsDialog();
+                break;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void resetStatistics() {
+        ContentValues values = new ContentValues();
+        values.put(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME, 0);
+
+        String projection = RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME + "=?";
+        String[] projArgs = new String[] { String.valueOf(ContentUris.parseId(mCurrentUri)) };
+
+        getContentResolver().update(
+                RoutineContract.ItemEntry.CONTENT_URI,
+                values,
+                projection,
+                projArgs
+        );
+    }
+
+    private void deleteRoutine() {
+        // Delete routine
+        getContentResolver().delete(mCurrentUri, null, null);
+        // Delete all items with the parent routines number
+        String selection = RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE + "=?";
+        String[] selectionArgs = new String[] { String.valueOf(ContentUris.parseId(mCurrentUri)) };
+        getContentResolver().delete(RoutineContract.ItemEntry.CONTENT_URI, selection, selectionArgs);
+        NavUtils.navigateUpFromSameTask(ProfileActivity.this);
+    }
+
+    // Loader
     @Override
     public Loader<Cursor> onCreateLoader(int loaderId, Bundle args) {
         Log.d(LOG_TAG, "In onCreateLoader");
@@ -100,7 +218,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                     projection,
                     selection,
                     selectionArgs,
-                    null);
+                    RoutineContract.ItemEntry.COLUMN_ITEM_NO + " ASC");
 
         }
 
@@ -110,6 +228,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         int loaderId = loader.getId();
+        if (cursor.getCount() < 1) return;
         cursor.moveToFirst();
 
         switch (loaderId) {
@@ -122,6 +241,9 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                 mRoutineName.setText(name);
                 mRoutineItemNum.setText(String.valueOf(length));
                 mRoutineLength.setText(String.valueOf(itemNum));
+
+                ActionBar aBar = getActionBar();
+                aBar.setTitle(name);
 
                 break;
             case PROFILE_ITEMS_LOADER:

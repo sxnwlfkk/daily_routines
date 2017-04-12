@@ -1,5 +1,6 @@
 package com.sxnwlfkk.dailyroutines.views.mainActivity;
 
+import android.app.ActionBar;
 import android.app.Activity;
 import android.app.LoaderManager;
 import android.content.ContentUris;
@@ -12,6 +13,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -27,6 +30,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
     // VARS
     // Log tag
     public static final String LOG_TAG = MainActivity.class.getSimpleName();
+    private ActionBar mActionBar;
 
     // ID of background loader
     private static final int ROUTINE_LOADER = 20;
@@ -40,6 +44,10 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         // Mandatory
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Setting up the toolbar
+        mActionBar = getActionBar();
+        mActionBar.setTitle(R.string.main_title);
 
         // Setting up FAB
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_add_ritual);
@@ -57,6 +65,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         // Setting up main list view
         mRoutineListView = (ListView) findViewById(R.id.main_list);
         TextView mEmptyStateTextView = (TextView) findViewById(R.id.empty_view);
+        mEmptyStateTextView.setText(R.string.main_empty_view_text);
         mRoutineListView.setEmptyView(mEmptyStateTextView);
 
         // Initialize cursor adapter
@@ -75,8 +84,43 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                 startActivity(intent);
             }
         });
+        // Quickly get to edit routine
+        mRoutineListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+                Intent intent = new Intent(MainActivity.this, EditActivity.class);
+
+                Uri currentUri = ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, id);
+                intent.setData(currentUri);
+
+                startActivity(intent);
+                return false;
+            }
+        });
 
         getLoaderManager().initLoader(ROUTINE_LOADER, null, this);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main_activity, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.main_menu_delete_all:
+                purgeDatabase();
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void purgeDatabase() {
+        getContentResolver().delete(RoutineContract.RoutineEntry.CONTENT_URI, null, null);
+        getContentResolver().delete(RoutineContract.ItemEntry.CONTENT_URI, null, null);
+
     }
 
     @Override

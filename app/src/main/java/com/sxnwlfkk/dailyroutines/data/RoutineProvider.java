@@ -159,6 +159,10 @@ public class RoutineProvider extends ContentProvider {
             getContext().getContentResolver().notifyChange(uri, null);
         }
 
+        if (rowsAffected != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
         return rowsAffected;
     }
 
@@ -197,6 +201,11 @@ public class RoutineProvider extends ContentProvider {
             default:
                 throw new IllegalArgumentException("Deletion is not supported for " + uri);
         }
+
+        if (rowsDeleted != 0) {
+            getContext().getContentResolver().notifyChange(uri, null);
+        }
+
         return rowsDeleted;
     }
 

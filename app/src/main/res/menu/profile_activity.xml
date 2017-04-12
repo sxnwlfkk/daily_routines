@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menu_profile_edit_routine"
+        android:title="Edit routine" />
+    <item
+        android:id="@+id/menu_profile_delete_routine"
+        android:title="Delete routine" />
+    <item
+        android:id="@+id/menu_profile_reset_statistics"
+        android:title="Reset statistics" />
+</menu>
