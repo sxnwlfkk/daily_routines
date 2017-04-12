@@ -224,6 +224,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
             getLoaderManager().initLoader(EDIT_ITEMS_LOADER, null, this);
             mDeletedItems = new ArrayList<>();
             getActionBar().setTitle(R.string.edit_item);
+            mSaveRoutine.setText(R.string.update_button);
         }
     }
 

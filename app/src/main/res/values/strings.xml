@@ -14,4 +14,5 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="reset_statistics_dialog">Are you sure, you want to reset all statistical data on this routine?</string>
+    <string name="update_button">Update routine</string>
 </resources>
