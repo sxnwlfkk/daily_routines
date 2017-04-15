@@ -3,6 +3,7 @@ package com.sxnwlfkk.dailyroutines.views.editActivity;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.LoaderManager;
+import android.content.ClipData;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
@@ -356,6 +357,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
             itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NAME, mItemsList.get(i).getmItemName());
             itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NO, i);
             itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH, mItemsList.get(i).getmTime());
+            itemValues.put(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME, mItemsList.get(i).getmTime());
             itemValues.put(RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE, newRoutineId);
 
             getContentResolver().insert(RoutineContract.ItemEntry.CONTENT_URI, itemValues);
@@ -381,12 +383,14 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER, routineItemNumber);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH, mRoutineItemCount);
 
+        getContentResolver().update(mCurrentUri, values, null, null);
         long updatedRoutineId = ContentUris.parseId(mCurrentUri);
 
         // Delete removed items from DB
         if (mDeletedItems.size() > 0) {
             for (int i = 0; i < mDeletedItems.size(); i++) {
-                Uri deleteUri = ContentUris.withAppendedId(RoutineContract.ItemEntry.CONTENT_URI,
+                Uri deleteUri = ContentUris.withAppendedId(
+                        RoutineContract.ItemEntry.CONTENT_URI,
                         mDeletedItems.get(i));
                 getContentResolver().delete(deleteUri, null, null);
             }
@@ -454,8 +458,6 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                     RoutineContract.ItemEntry.COLUMN_ITEM_NO + " ASC");
 
         }
-
-
         return null;
     }
 

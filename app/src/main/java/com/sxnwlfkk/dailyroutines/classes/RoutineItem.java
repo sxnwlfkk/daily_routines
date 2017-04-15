@@ -14,6 +14,8 @@ public class RoutineItem {
 
     private double mAverageTime;
 
+    private int mElapsedTime;
+
 
     private long mId;
 
@@ -23,9 +25,10 @@ public class RoutineItem {
      * @param time
      */
     public RoutineItem(String item_name, int time) {
-        this.mItemName = item_name;
-        this.mTime = this.mCurrentTime = time;
-        this.mAverageTime = 0;
+        mItemName = item_name;
+        mTime = this.mCurrentTime = time;
+        mAverageTime = 0;
+        mElapsedTime = 0;
     }
     /**
      * Constructor when editing an existing RoutineItem object. Should provide prior averages data,
@@ -35,18 +38,22 @@ public class RoutineItem {
      * @param average
      */
     public RoutineItem(String item_name, int time, double average) {
-        this.mItemName = item_name;
-        this.mTime = this.mCurrentTime = time;
-        this.mAverageTime = average;
+        mItemName = item_name;
+        mTime = this.mCurrentTime = time;
+        mAverageTime = average;
+        mElapsedTime = 0;
     }
 
     /**
      * Reverts the item to original state and averages the runtime with the previous runs.
      */
     public void resetItem () {
-        // TODO: make a version of this method, that resets the item without the average functionality for cancel
-        this.mAverageTime = (this.mAverageTime + (double) this.mCurrentTime) / 2.0;
-        this.mCurrentTime = this.mTime;
+        mCurrentTime = mTime;
+        mElapsedTime = 0;
+    }
+
+    public void averageItemTime() {
+        mAverageTime = (mAverageTime + (double) mElapsedTime) / 2.0;
     }
 
     /* GETTERS */
@@ -70,9 +77,13 @@ public class RoutineItem {
         return mId;
     }
 
+    public int getmElapsedTime() {
+        return mElapsedTime;
+    }
+
     /* SETTERS */
-    public void setmCurrentTime(int mCurrentTime) {
-        this.mCurrentTime = mCurrentTime;
+    public void setmCurrentTime(int currentTime) {
+        mCurrentTime = currentTime;
     }
 
     public void setmTime(int mTime) {
@@ -89,5 +100,9 @@ public class RoutineItem {
 
     public void setmId(long mId) {
         this.mId = mId;
+    }
+
+    public void setmElapsedTime(int mElapsedTime) {
+        this.mElapsedTime = mElapsedTime;
     }
 }

@@ -13,22 +13,34 @@
             android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity
             android:name=".views.editActivity.EditActivity"
-            android:theme="@style/AppTheme"
-            android:parentActivityName="com.sxnwlfkk.dailyroutines.views.mainActivity.MainActivity" >
-        </activity>
+            android:parentActivityName=".views.mainActivity.MainActivity"
+            android:theme="@style/AppTheme"></activity>
         <activity
             android:name=".views.profileActivity.ProfileActivity"
-            android:theme="@style/AppTheme"
-            android:parentActivityName="com.sxnwlfkk.dailyroutines.views.mainActivity.MainActivity" >
-        </activity>
+            android:parentActivityName=".views.mainActivity.MainActivity"
+            android:theme="@style/AppTheme"></activity>
+
         <provider
             android:name=".data.RoutineProvider"
             android:authorities="com.sxnwlfkk.dailyroutines"
             android:exported="false" />
+
+        <activity
+            android:name=".views.clock.ClockActivity"
+            android:label="@string/title_activity_clock"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:parentActivityName=".views.profileActivity.ProfileActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity" />
+        </activity>
     </application>
+
 </manifest>

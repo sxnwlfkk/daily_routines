@@ -1,6 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.sxnwlfkk.dailyroutines.views.clock.ClockActivity"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/clock_routine_item_counter_text"
+        android:layout_width="match_parent"
+        android:layout_height="32dp"
+        android:layout_marginTop="12dp"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:text="[0/0]"
+        android:textAlignment="center"
+        android:textSize="24sp"/>
+
+    <TextView
+        android:id="@+id/clock_item_name_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/clock_routine_item_counter_text"
+        android:text="Item name"
+        android:textAlignment="center"
+        android:textSize="36sp" />
+
+    <TextView
+        android:id="@+id/clock_item_time_label_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/clock_item_name_text"
+        android:text="Time left in this item"
+        android:textAlignment="center" />
+
+    <TextView
+        android:id="@+id/clock_main_clock"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="3"
+        android:gravity="center_vertical"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/clock_item_time_label_text"
+        android:fontFamily="monospace"
+        android:text="00:00"
+        android:textAlignment="center"
+        android:textSize="72sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/clock_carry_time_label_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/clock_main_clock"
+        android:text="Leftover time"
+        android:textAlignment="center" />
+
+    <TextView
+        android:id="@+id/clock_carry_clock"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="2"
+        android:gravity="center_vertical"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/clock_carry_time_label_text"
+        android:fontFamily="monospace"
+        android:text="00:00"
+        android:textAlignment="center"
+        android:textSize="36sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignParentBottom="true"
+        android:id="@+id/linearLayout">
+
+        <Button
+            android:id="@+id/clock_previous_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Previous" />
+
+        <Button
+            android:id="@+id/clock_next_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:text="Next" />
+    </LinearLayout>
 
 </LinearLayout>

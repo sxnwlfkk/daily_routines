@@ -46,7 +46,7 @@ public class RoutineContract {
                 + COLUMN_ROUTINE_END_TIME + " INTEGER NOT NULL DEFAULT 0,"
                 + COLUMN_ROUTINE_LENGTH + " INTEGER NOT NULL, "
                 + COLUMN_ROUTINE_CARRY + " INTEGER NOT NULL DEFAULT 0, "
-                + COLUMN_CURRENT_ITEM + " INTEGER NOT NULL DEFAULT -1, "
+                + COLUMN_CURRENT_ITEM + " INTEGER NOT NULL DEFAULT 0, "
                 + COLUMN_ROUTINE_ITEMS_NUMBER + " INTEGER NOT NULL, "
                 + COLUMN_ROUTINE_TIMES_USED + " INTEGER NOT NULL DEFAULT 0);";
 
@@ -72,6 +72,9 @@ public class RoutineContract {
         public static final String COLUMN_ITEM_LENGTH = "length";
         // Remaining time in item
         public static final String COLUMN_REMAINING_TIME = "remaining_time";
+        // Elapsed time (it's needed, because the user can linger more on one
+        // item, than the allotted time
+        public static final String COLUMN_ELAPSED_TIME = "elapsed_time";
         // Average time this item takes
         public static final String COLUMN_ITEM_AVG_TIME = "item_avg";
 
@@ -84,6 +87,7 @@ public class RoutineContract {
                 + COLUMN_ITEM_NAME + " TEXT NOT NULL, "
                 + COLUMN_ITEM_LENGTH + " INTEGER NOT NULL DEFAULT 0, "
                 + COLUMN_REMAINING_TIME + " INTEGER NOT NULL DEFAULT 0, "
+                + COLUMN_ELAPSED_TIME + " INTEGER NOT NULL DEFAULT 0, "
                 + COLUMN_ITEM_AVG_TIME + " INTEGER NOT NULL DEFAULT 0);";
 
         // Deleting table

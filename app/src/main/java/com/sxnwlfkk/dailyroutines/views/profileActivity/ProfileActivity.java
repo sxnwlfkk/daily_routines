@@ -20,11 +20,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
+import com.sxnwlfkk.dailyroutines.views.clock.ClockActivity;
 import com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity;
 
 public class ProfileActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -45,6 +47,15 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
 
     private ProfileCursorAdapter mCursorAdapter;
 
+    // Button click listener
+    private View.OnClickListener mStartButtonClickListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            Intent intent = new Intent(ProfileActivity.this, ClockActivity.class);
+            intent.setData(mCurrentUri);
+            startActivity(intent);
+        }
+    };
 
 
     @Override
@@ -55,6 +66,10 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
         // Getting intent
         Intent intent = getIntent();
         mCurrentUri = intent.getData();
+
+        // Hook up start button
+        Button startButton = (Button) findViewById(R.id.profile_start_button);
+        startButton.setOnClickListener(mStartButtonClickListener);
 
         // Finding the Routine Text fields
         mRoutineName = (TextView) findViewById(R.id.profile_routine_name);
