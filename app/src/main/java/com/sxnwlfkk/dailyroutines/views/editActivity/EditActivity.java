@@ -3,7 +3,6 @@ package com.sxnwlfkk.dailyroutines.views.editActivity;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.LoaderManager;
-import android.content.ClipData;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
@@ -50,7 +49,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
     private ArrayList<Long> mDeletedItems;
     private Uri mCurrentUri;
     private int mCurrentItemIndex = -1;
-    private int mRoutineItemCount = 0;
+    private int mRoutineItemSumLength = 0;
 
     // Views
     private ListView mListView;
@@ -90,7 +89,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         }
         private boolean checkInputFields() {
             String itemName = mNewItemName.getText().toString().trim();
-            if (itemName == "" || TextUtils.isEmpty(mNewItemName.getText())) {
+            if (itemName == "" || TextUtils.isEmpty(mNewItemName.getText().toString().trim())) {
                 Toast.makeText(getApplicationContext(), "Please enter a name for this item.", Toast.LENGTH_LONG).show();
                 return false;
             }
@@ -331,22 +330,26 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
     private void saveRoutine() {
         // Input checking
         // TODO: check end time and relevant fields
-        if (TextUtils.isEmpty(mRoutineName.getText())) {
-            Toast.makeText(this, "You have to write in the routine's name.", Toast.LENGTH_LONG).show();
+        if (TextUtils.isEmpty(mRoutineName.getText().toString().trim())) {
+            Toast.makeText(this, R.string.save_routine_have_no_name_message, Toast.LENGTH_LONG).show();
             return;
         }
 
+        int routineItemNumber = mItemsList.size();
+        if (routineItemNumber == 0) {
+            Toast.makeText(this, R.string.save_without_item_message, Toast.LENGTH_LONG).show();
+            return;
+        }
 
         // Get info for routine
         String routineName = String.valueOf(mRoutineName.getText());
-        int routineItemNumber = mItemsList.size();
-        for (int j = 0; j < mItemsList.size(); j++) mRoutineItemCount += mItemsList.get(j).getmTime();
+        for (int j = 0; j < mItemsList.size(); j++) mRoutineItemSumLength += mItemsList.get(j).getmTime();
 
         // Make CV
         ContentValues values = new ContentValues();
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME, routineName);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER, routineItemNumber);
-        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH, mRoutineItemCount);
+        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH, mRoutineItemSumLength);
         // Insert new routine
         mCurrentUri = getContentResolver().insert(RoutineContract.RoutineEntry.CONTENT_URI, values);
         // Get info for items
@@ -372,16 +375,26 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
      * is new. If that is the case, the method inserts it to the table.
      */
     private void updateRoutine() {
-        String routineName = String.valueOf(mRoutineName.getText());
-        int routineItemNumber = mItemsList.size();
 
-        mRoutineItemCount = 0;
-        for (int j = 0; j < mItemsList.size(); j++) mRoutineItemCount += mItemsList.get(j).getmTime();
+        if (TextUtils.isEmpty(mRoutineName.getText().toString().trim())) {
+            Toast.makeText(this, R.string.save_routine_have_no_name_message, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        int routineItemNumber = mItemsList.size();
+        if (routineItemNumber == 0) {
+            Toast.makeText(this, R.string.save_without_item_message, Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        String routineName = String.valueOf(mRoutineName.getText());
+        mRoutineItemSumLength = 0;
+        for (int j = 0; j < mItemsList.size(); j++) mRoutineItemSumLength += mItemsList.get(j).getmTime();
         // Update routine
         ContentValues values = new ContentValues();
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME, routineName);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER, routineItemNumber);
-        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH, mRoutineItemCount);
+        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH, mRoutineItemSumLength);
 
         getContentResolver().update(mCurrentUri, values, null, null);
         long updatedRoutineId = ContentUris.parseId(mCurrentUri);
@@ -408,9 +421,8 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
             if (rowsAffected == 0) {
                 getContentResolver().insert(RoutineContract.ItemEntry.CONTENT_URI, itemValues);
             }
-            Toast.makeText(this, "Your routine is updated", Toast.LENGTH_LONG).show();
-
         }
+        Toast.makeText(this, "Your routine is updated", Toast.LENGTH_LONG).show();
     }
 
     @Override
