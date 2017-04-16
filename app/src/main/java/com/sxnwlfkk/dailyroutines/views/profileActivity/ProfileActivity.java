@@ -147,6 +147,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
     public void onBackPressed() {
         Intent intent = new Intent(this, MainActivity.class);
         startActivity(intent);
+        finish();
     }
 
     // Options
@@ -173,6 +174,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
             case R.id.home:
                 Intent homeIntent = new Intent(this, MainActivity.class);
                 startActivity(homeIntent);
+                finish();
         }
         return super.onOptionsItemSelected(item);
     }

@@ -235,6 +235,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         if (!mRoutineHasChanged) {
             NavUtils.navigateUpFromSameTask(EditActivity.this);
 //            super.onBackPressed();
+            finish();
             return;
         }
 
@@ -289,7 +290,8 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                 if (!mRoutineHasChanged) {
                     NavUtils.navigateUpFromSameTask(EditActivity.this);
 //            super.onBackPressed();
-                     return true;
+                    finish();
+                    return true;
                 }
                 DialogInterface.OnClickListener discardButtonClickListener =
                 new DialogInterface.OnClickListener() {
@@ -297,6 +299,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                     public void onClick(DialogInterface dialogInterface, int i) {
                         // User clicked "Discard" button, close the current activity.
                         NavUtils.navigateUpFromSameTask(EditActivity.this);
+                        finish();
                     }
                 };
                 showUnsavedChangesDialog(discardButtonClickListener);

@@ -177,6 +177,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
                 intent = new Intent(ClockActivity.this, ProfileActivity.class);
                 intent.setData(mCurrentUri);
                 startActivity(intent);
+                finish();
                 return true;
             case R.id.clock_menu_finish:
                 // TODO Make popup window
@@ -185,6 +186,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
                 intent = new Intent(ClockActivity.this, ProfileActivity.class);
                 intent.setData(mCurrentUri);
                 startActivity(intent);
+                finish();
                 return true;
         }
         return super.onOptionsItemSelected(item);
