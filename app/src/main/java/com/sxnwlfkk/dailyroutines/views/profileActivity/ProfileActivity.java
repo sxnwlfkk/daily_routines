@@ -28,6 +28,7 @@ import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.views.clock.ClockActivity;
 import com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity;
+import com.sxnwlfkk.dailyroutines.views.mainActivity.MainActivity;
 
 public class ProfileActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -66,6 +67,9 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
         // Getting intent
         Intent intent = getIntent();
         mCurrentUri = intent.getData();
+
+        // Action Bar
+        getActionBar().setHomeButtonEnabled(true);
 
         // Hook up start button
         Button startButton = (Button) findViewById(R.id.profile_start_button);
@@ -138,6 +142,13 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
         alertDialog.show();
     }
 
+    // Back Button
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent(this, MainActivity.class);
+        startActivity(intent);
+    }
+
     // Options
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -159,6 +170,9 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
             case R.id.menu_profile_reset_statistics:
                 showResetStatisticsDialog();
                 break;
+            case R.id.home:
+                Intent homeIntent = new Intent(this, MainActivity.class);
+                startActivity(homeIntent);
         }
         return super.onOptionsItemSelected(item);
     }
