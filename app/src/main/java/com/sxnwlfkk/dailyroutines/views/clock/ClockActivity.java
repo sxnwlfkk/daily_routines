@@ -37,8 +37,15 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
 
     // Clock
     private RoutineClock mRoutineClock;
+
     // Current item
     private  RoutineItem mCurrentItem = null;
+
+    // Clock sentinel
+    private boolean usingCarryTimer = false;
+
+    // Text color
+    private int textColor;
 
     // Views
     private TextView mMainClockText;
@@ -104,6 +111,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
         // Load views
         mMainClockText = (TextView) findViewById(R.id.clock_main_clock);
         mCarryClockText = (TextView) findViewById(R.id.clock_carry_clock);
+        textColor = mCarryClockText.getCurrentTextColor();
         mItemNameText = (TextView) findViewById(R.id.clock_item_name_text);
         mItemCounterText = (TextView) findViewById(R.id.clock_routine_item_counter_text);
 
@@ -128,16 +136,20 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
     }
 
     private void updateClocks() {
-        Log.e(LOG_TAG, "In updateClocks.");
         int currTime = mCurrentItem.getmCurrentTime();
         boolean canBeNegative = false;
         String clockText;
         if (currTime > 0) {
+            mCarryClockText.setTextColor(textColor);
             clockText = renderTime(currTime, canBeNegative);
-            Log.e(LOG_TAG, "The clock text is: " + clockText);
             mMainClockText.setText(clockText);
         } else {
             canBeNegative = true;
+            if (mRoutineClock.getmCarryTime() < 0) {
+                mCarryClockText.setTextColor(getResources().getColor(R.color.red));
+            } else {
+                mCarryClockText.setTextColor(textColor);
+            }
             clockText = renderTime(mRoutineClock.getmCarryTime(), canBeNegative);
             mCarryClockText.setText(clockText);
             mMainClockText.setText("00:00");
@@ -147,7 +159,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
     private String renderTime(int timeInSeconds, boolean canBeNegative) {
         String prefix = "";
         if (canBeNegative && timeInSeconds < 0) {
-            prefix = "- ";
+            prefix = "-";
             timeInSeconds *= -1;
         }
         int minutes = timeInSeconds / 60;
@@ -167,6 +179,14 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
         return super.onCreateOptionsMenu(menu);
     }
 
+
+    @Override
+    protected void onStop() {
+        Log.e(LOG_TAG, "In OnStop.");
+        writeRoutineToDB();
+        super.onStop();
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         Intent intent;
@@ -174,6 +194,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
             case android.R.id.home:
                 // TODO make popup window
                 mCountdownTimer.cancel();
+                mRoutineClock.resetRoutine();
                 intent = new Intent(ClockActivity.this, ProfileActivity.class);
                 intent.setData(mCurrentUri);
                 startActivity(intent);
@@ -181,8 +202,8 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
                 return true;
             case R.id.clock_menu_finish:
                 // TODO Make popup window
-                finishRoutine();
                 mCountdownTimer.cancel();
+                mRoutineClock.finishRoutine();
                 intent = new Intent(ClockActivity.this, ProfileActivity.class);
                 intent.setData(mCurrentUri);
                 startActivity(intent);
@@ -192,15 +213,10 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
         return super.onOptionsItemSelected(item);
     }
 
-    private void finishRoutine() {
-        mRoutineClock.finishRoutine();
-        writeRoutineToDB();
-        return;
-    }
-
     private void writeRoutineToDB() {
         // Update routine
         ContentValues values = new ContentValues();
+        Log.e(LOG_TAG, "Clock activity writing to DB. Current item's index is: " + mRoutineClock.getmCurrentItemIndex());
         values.put(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM, mRoutineClock.getmCurrentItemIndex());
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_CARRY, mRoutineClock.getmCarryTime());
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED, mRoutineClock.getmTimesUsed());
@@ -213,7 +229,8 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
             RoutineItem item = itemsList.get(i);
             Uri updateUri = ContentUris.withAppendedId(RoutineContract.ItemEntry.CONTENT_URI, item.getmId());
             ContentValues itemValues = new ContentValues();
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME, item.getmAverageTime());
+            itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME, (int) item.getmAverageTime());
+            Log.e(LOG_TAG, "Item average in double " + item.getmAverageTime() + " and in int: " + (int) item.getmAverageTime());
             itemValues.put(RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME, item.getmElapsedTime());
             itemValues.put(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME, item.getmCurrentTime());
 
@@ -307,8 +324,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
                 mItemCounterText.setText("[" + (mRoutineClock.getmCurrentItemIndex() + 1) + "/" + mRoutineClock.getmRoutineItemsNum() + "]");
 
                 if (otherLoaderFinished) {
-                    mCountdownTimer = new ClockCountdownTimer(mRoutineClock.getmLength() * 1000, 1000);
-                    mCountdownTimer.start();
+                    bothLoaderFinished();
                 }
                 else otherLoaderFinished = true;
                 break;
@@ -329,19 +345,20 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
                 }
                 mRoutineClock.setmItemsList(itemsList);
 
-                mCurrentItem = mRoutineClock.getCurrentItem();
-                mItemNameText.setText(mCurrentItem.getmItemName());
-
-                Log.e(LOG_TAG, "Before calling updateClocks.");
-                updateClocks();
-
                 if (otherLoaderFinished) {
-                    mCountdownTimer = new ClockCountdownTimer(mRoutineClock.getmLength() * 1000, 1000);
-                    mCountdownTimer.start();
+                    bothLoaderFinished();
                 }
                 else otherLoaderFinished = true;
                 break;
         }
+    }
+
+    private void bothLoaderFinished() {
+        mCurrentItem = mRoutineClock.getCurrentItem();
+        mItemNameText.setText(mCurrentItem.getmItemName());
+        refreshScreen();
+        mCountdownTimer = new ClockCountdownTimer(mRoutineClock.getmLength() * 1000, 1000);
+        mCountdownTimer.start();
     }
 
     @Override
@@ -368,6 +385,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
 
         @Override
         public void onTick(long millisUntilFinished) {
+            mRoutineClock.getCurrentItem().incrementElapsedTime();
             int currentItemTime = mCurrentItem.getmCurrentTime();
             if (currentItemTime > 0) {
                 mCurrentItem.setmCurrentTime(currentItemTime - 1);
@@ -381,7 +399,34 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
         @Override
         public void onFinish() {
             // TODO
-            finishRoutine();
+            // Do nothing for now
+            mCountdownTimer.cancel();
+            setContentView(R.layout.activity_clock_ending);
+            Button discardButton = (Button) findViewById(R.id.clock_finished_discard_button);
+            Button saveButton = (Button) findViewById(R.id.clock_finished_save_button);
+
+            discardButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mRoutineClock.resetRoutine();
+                    Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
+                    intent.setData(mCurrentUri);
+                    startActivity(intent);
+                    finish();
+                }
+            });
+
+            saveButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mRoutineClock.finishRoutine();
+                    Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
+                    intent.setData(mCurrentUri);
+                    startActivity(intent);
+                    finish();
+
+                }
+            });
         }
     }
 }

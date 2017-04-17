@@ -25,6 +25,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.sxnwlfkk.dailyroutines.R;
+import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.views.clock.ClockActivity;
 import com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity;
@@ -76,7 +77,6 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
         startButton.setOnClickListener(mStartButtonClickListener);
 
         // Finding the Routine Text fields
-        mRoutineName = (TextView) findViewById(R.id.profile_routine_name);
         mRoutineLength = (TextView) findViewById(R.id.profile_routine_length);
         mRoutineItemNum = (TextView) findViewById(R.id.profile_item_number);
 
@@ -84,7 +84,6 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
         mCursorAdapter = new ProfileCursorAdapter(this, null);
         listView.setAdapter(mCursorAdapter);
 
-        Log.d(LOG_TAG, "In onCreate before");
         getLoaderManager().initLoader(PROFILE_ROUTINE_LOADER, null, this);
         getLoaderManager().initLoader(PROFILE_ITEMS_LOADER, null, this);
     }
@@ -238,7 +237,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                     RoutineContract.ItemEntry._ID,
                     RoutineContract.ItemEntry.COLUMN_ITEM_NAME,
                     RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH,
-//                    RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME,
+                    RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME,
             };
 
             String selection = RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE + "=?";
@@ -269,9 +268,9 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                 int length = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH));
                 int itemNum = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER));
 
-                mRoutineName.setText(name);
-                mRoutineItemNum.setText(String.valueOf(length));
-                mRoutineLength.setText(String.valueOf(itemNum));
+                mRoutineLength.setText(RoutineUtils.formatTimeString(length));
+                mRoutineItemNum.setText(String.valueOf(itemNum));
+
 
                 ActionBar aBar = getActionBar();
                 aBar.setTitle(name);
@@ -290,7 +289,6 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
 
         switch (loaderId) {
             case PROFILE_ROUTINE_LOADER:
-                mRoutineName.setText("");
                 mRoutineItemNum.setText("");
                 mRoutineLength.setText("");
                 break;

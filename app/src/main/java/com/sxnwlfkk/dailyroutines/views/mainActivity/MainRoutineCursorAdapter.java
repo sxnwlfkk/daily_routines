@@ -9,6 +9,7 @@ import android.widget.CursorAdapter;
 import android.widget.TextView;
 
 import com.sxnwlfkk.dailyroutines.R;
+import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 
 /**
@@ -37,6 +38,6 @@ public class MainRoutineCursorAdapter extends CursorAdapter {
         int length = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH));
 
         tvName.setText(name);
-        tvLength.setText(String.valueOf(length));
+        tvLength.setText(RoutineUtils.formatTimeString(length));
     }
 }

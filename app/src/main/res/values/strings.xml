@@ -18,4 +18,5 @@
     <string name="title_activity_clock">ClockActivity</string>
     <string name="save_without_item_message">Can\'t save routine without at least one item. Try adding one.</string>
     <string name="save_routine_have_no_name_message">Please write in the routine\'s name.</string>
+    <string name="routine_finish_message">Your routine has finished, it\'s time to go.\n\nDo you want to save the statistical data, or discard it?</string>
 </resources>

@@ -1,5 +1,7 @@
 package com.sxnwlfkk.dailyroutines.classes;
 
+import android.util.Log;
+
 import java.util.ArrayList;
 
 /**
@@ -28,9 +30,9 @@ public class RoutineClock {
         }
         for (int i = mCurrentItemIndex+1; i < mItemsList.size(); i++) {
             RoutineItem item = mItemsList.get(i);
-            float ratio = (float) remainingTime / item.getmCurrentTime();
-            int sub = (int) ratio * mCarryTime;
-            item.setmCurrentTime(item.getmCurrentTime() - sub);
+            float ratio = (float) item.getmCurrentTime() / remainingTime;
+            float sub = ratio * mCarryTime;
+            item.setmCurrentTime((int) (item.getmCurrentTime() + sub));
             mItemsList.set(i, item);
         }
         mCarryTime = 0;
@@ -48,6 +50,7 @@ public class RoutineClock {
             mCarryTime += currentItem.getmCurrentTime();
             currentItem.setmCurrentTime(0);
         }
+
         mItemsList.set(mCurrentItemIndex, currentItem);
         mCurrentItemIndex++;
         return mItemsList.get(mCurrentItemIndex);
@@ -67,11 +70,13 @@ public class RoutineClock {
     // Reset routine
     public void resetRoutine() {
         mCarryTime = 0;
-        mCurrentItemIndex = 0;
+        mCurrentItemIndex = -1;
 
         // Clear items
         for (int i = 0; i < mItemsList.size(); i++) {
-            mItemsList.get(i).resetItem();
+            RoutineItem item = mItemsList.get(i);
+            item.resetItem();
+            mItemsList.set(i, item);
         }
 
     }
@@ -79,12 +84,14 @@ public class RoutineClock {
     // Finish routine
     public void finishRoutine() {
         mCarryTime = 0;
-        mCurrentItemIndex = 0;
+        mCurrentItemIndex = -1;
         mTimesUsed++;
 
         for (int i = 0; i < mItemsList.size(); i++) {
-            mItemsList.get(i).averageItemTime();
-            mItemsList.get(i).resetItem();
+            RoutineItem item = mItemsList.get(i);
+            item.averageItemTime();
+            item.resetItem();
+            mItemsList.set(i, item);
         }
     }
 
@@ -93,6 +100,7 @@ public class RoutineClock {
     // Getters and Setters
 
     public RoutineItem getCurrentItem() {
+        if (mCurrentItemIndex == -1) mCurrentItemIndex = 0;
         return mItemsList.get(mCurrentItemIndex);
     }
 
@@ -115,11 +123,12 @@ public class RoutineClock {
 
     public void setmItemsList(ArrayList<RoutineItem> itemsList) {
         int routineLen = 0;
+        int remTime = 0;
         for (int i = 0; i < itemsList.size(); i++) {
-            routineLen += itemsList.get(i).getmTime();
+            remTime += itemsList.get(i).getmCurrentTime();
         }
 
-        mLength = routineLen;
+        mLength = remTime;
         mItemsList = itemsList;
     }
 
@@ -135,8 +144,14 @@ public class RoutineClock {
         return mCurrentItemIndex;
     }
 
-    public void setmCurrentItemIndex(int mCurrentItemIndex) {
-        this.mCurrentItemIndex = mCurrentItemIndex;
+    public void setmCurrentItemIndex(int currentItemIndex) {
+        if (currentItemIndex == -1) {
+            Log.e("RoutineClock", "setmCurrentItemIndex");
+            mCurrentItemIndex = 0;
+        }
+        else {
+            mCurrentItemIndex = currentItemIndex;
+        }
     }
 
     public int getmCarryTime() {

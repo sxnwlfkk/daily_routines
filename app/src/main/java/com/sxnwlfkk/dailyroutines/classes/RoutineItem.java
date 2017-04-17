@@ -105,4 +105,6 @@ public class RoutineItem {
     public void setmElapsedTime(int mElapsedTime) {
         this.mElapsedTime = mElapsedTime;
     }
+
+    public void incrementElapsedTime() { mElapsedTime++; }
 }

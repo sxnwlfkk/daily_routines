@@ -19,6 +19,8 @@
         </activity>
         <activity
             android:name=".views.editActivity.EditActivity"
+            android:screenOrientation="portrait"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:parentActivityName=".views.mainActivity.MainActivity"
             android:theme="@style/AppTheme"></activity>
         <activity

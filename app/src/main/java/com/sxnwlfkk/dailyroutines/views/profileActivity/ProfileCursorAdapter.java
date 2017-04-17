@@ -9,6 +9,7 @@ import android.widget.CursorAdapter;
 import android.widget.TextView;
 
 import com.sxnwlfkk.dailyroutines.R;
+import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 
 /**
@@ -35,10 +36,10 @@ public class ProfileCursorAdapter extends CursorAdapter {
 
         String name = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_NAME));
         int length = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH));
-//        int avg = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
+        int avg = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
 
         tvName.setText(name);
-        tvLength.setText(String.valueOf(length));
-//        tvAvg.setText(String.valueOf(avg));
+        tvLength.setText(RoutineUtils.formatTimeString(length));
+        tvAvg.setText(RoutineUtils.formatTimeString(avg));
     }
 }

@@ -419,6 +419,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
             itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NO, i);
             itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH, mItemsList.get(i).getmTime());
             itemValues.put(RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE, updatedRoutineId);
+            itemValues.put(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME, mItemsList.get(i).getmTime());
 
             int rowsAffected = getContentResolver().update(updateUri, itemValues, null, null);
             if (rowsAffected == 0) {

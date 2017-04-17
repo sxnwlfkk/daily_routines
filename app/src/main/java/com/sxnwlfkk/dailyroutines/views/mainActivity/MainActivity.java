@@ -23,6 +23,7 @@ import android.widget.TextView;
 import com.google.firebase.crash.FirebaseCrash;
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
+import com.sxnwlfkk.dailyroutines.views.clock.ClockActivity;
 import com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity;
 import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;
 
@@ -130,6 +131,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                 RoutineContract.RoutineEntry._ID,
                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME,
                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH,
+                RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM,
         };
 
         return new CursorLoader(this,
@@ -142,6 +144,19 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
 
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+        if (cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            do {
+                int itemStarted = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM));
+                Log.e(LOG_TAG, "Main onloadFinished. Routine's current item is: " + itemStarted);
+                long id = cursor.getLong(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry._ID));
+                if (itemStarted > -1) {
+                    Intent intent = new Intent(this, ClockActivity.class);
+                    intent.setData(ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, id));
+                    startActivity(intent);
+                }
+            } while (cursor.moveToNext());
+        }
         mainRoutineCursorAdapter.swapCursor(cursor);
     }
 
