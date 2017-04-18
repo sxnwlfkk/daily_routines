@@ -182,7 +182,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
         ContentValues values = new ContentValues();
         values.put(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME, 0);
 
-        String projection = RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME + "=?";
+        String projection = RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE + "=?";
         String[] projArgs = new String[] { String.valueOf(ContentUris.parseId(mCurrentUri)) };
 
         getContentResolver().update(
