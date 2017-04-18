@@ -42,7 +42,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
     private  RoutineItem mCurrentItem = null;
 
     // Clock sentinel
-    private boolean usingCarryTimer = false;
+    private boolean timerIsInitialised;
 
     // Text color
     private int textColor;
@@ -92,6 +92,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.e(LOG_TAG, "In oncreate.");
         // Get android to show this view before the lockscreen
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON|
                 WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD|
@@ -101,6 +102,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
 
         // Initialize clock
         mRoutineClock = new RoutineClock();
+        timerIsInitialised = false;
 
         // Get URI
         mCurrentUri = getIntent().getData();
@@ -124,6 +126,27 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
         // Start up Loaders
         getLoaderManager().initLoader(CLOCK_ROUTINE_LOADER, null, this);
         getLoaderManager().initLoader(CLOCK_ITEM_LOADER, null, this);
+    }
+
+    @Override
+    protected void onStart() {
+        Log.e(LOG_TAG, "in onStart.");
+        super.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        Log.e(LOG_TAG, "In onStop.");
+        writeRoutineToDB();
+        otherLoaderFinished = false;
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        Log.e(LOG_TAG, "In onDestroy.");
+//        writeRoutineToDB();
+        super.onDestroy();
     }
 
     // Time and graphics methods
@@ -179,14 +202,6 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
         return super.onCreateOptionsMenu(menu);
     }
 
-
-    @Override
-    protected void onStop() {
-        Log.e(LOG_TAG, "In OnStop.");
-        writeRoutineToDB();
-        super.onStop();
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         Intent intent;
@@ -220,6 +235,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
         values.put(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM, mRoutineClock.getmCurrentItemIndex());
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_CARRY, mRoutineClock.getmCarryTime());
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED, mRoutineClock.getmTimesUsed());
+        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_INTERRUPT_TIME, System.currentTimeMillis() / 1000);
         getContentResolver().update(mCurrentUri, values, null, null);
 
         long updatedRoutineId = mRoutineClock.getmId();
@@ -261,6 +277,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
                         RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME,
                         RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER,
                         RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED,
+                        RoutineContract.RoutineEntry.COLUMN_ROUTINE_INTERRUPT_TIME,
                 };
 
                 return new CursorLoader(this,
@@ -308,6 +325,13 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
                 int rCurrItem = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM));
                 int rItemsNumber = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER));
                 int rTimesUsed = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED));
+                int rInterruptTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_INTERRUPT_TIME));
+
+                int rDiffTime = 0;
+                if (rCurrItem > -1) {
+                    long currTime = System.currentTimeMillis() / 1000;
+                    rDiffTime = (int) currTime - rInterruptTime;
+                }
 
                 // Set these data to the clock object
                 mRoutineClock.setmId(rId);
@@ -317,6 +341,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
                 mRoutineClock.setmCarryTime(rCarryTime);
                 mRoutineClock.setmRoutineItemsNum(rItemsNumber);
                 mRoutineClock.setmTimesUsed(rTimesUsed);
+                mRoutineClock.setmDiffTime(rDiffTime);
 
                 // Set action bar title
                 getActionBar().setTitle(rName);
@@ -354,11 +379,16 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
     }
 
     private void bothLoaderFinished() {
+        mRoutineClock.sortDiffTime();
         mCurrentItem = mRoutineClock.getCurrentItem();
         mItemNameText.setText(mCurrentItem.getmItemName());
         refreshScreen();
-        mCountdownTimer = new ClockCountdownTimer(mRoutineClock.getmLength() * 1000, 1000);
-        mCountdownTimer.start();
+        Log.e(LOG_TAG, "in bothLoaderFinished, starting to initialize a new timer.");
+        if (!timerIsInitialised) {
+            mCountdownTimer = new ClockCountdownTimer(mRoutineClock.getmLength() * 1000, 1000);
+            mCountdownTimer.start();
+            timerIsInitialised = true;
+        }
     }
 
     @Override

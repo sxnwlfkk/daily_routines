@@ -20,6 +20,7 @@
                 android:id="@+id/profile_list_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="18dp"
                 android:layout_weight="0"
                 android:text="List name"
                 android:textSize="18sp"
@@ -29,6 +30,7 @@
                 android:id="@+id/profile_list_length"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="18dp"
                 android:text="Length"
                 android:textStyle="italic" />
 

@@ -20,7 +20,7 @@ public class RoutineClock {
     private int mEndTime;
     private long mId;
     private int mTimesUsed;
-
+    private int mDiffTime;
 
     // Distribute carry time
     private void distibuteCarryTime() {
@@ -92,6 +92,26 @@ public class RoutineClock {
             item.averageItemTime();
             item.resetItem();
             mItemsList.set(i, item);
+        }
+    }
+
+    // Sort out diff time
+    public void sortDiffTime() {
+        if (mDiffTime != 0) {
+            int currTime = mItemsList.get(mCurrentItemIndex).getmCurrentTime();
+            int itemsElapsedTime = mItemsList.get(mCurrentItemIndex).getmElapsedTime();
+            if (mLength < mDiffTime) {
+                mItemsList.get(mCurrentItemIndex).setmElapsedTime(itemsElapsedTime + mLength);
+                mLength = 0;
+                return;
+            }
+            mItemsList.get(mCurrentItemIndex).setmElapsedTime(itemsElapsedTime + mDiffTime);
+            if (mDiffTime > currTime) {
+                mItemsList.get(mCurrentItemIndex).setmCurrentTime(0);
+                mCarryTime -= (mDiffTime - currTime);
+            } else {
+                mItemsList.get(mCurrentItemIndex).setmCurrentTime(currTime - mDiffTime);
+            }
         }
     }
 
@@ -193,4 +213,13 @@ public class RoutineClock {
     public void setmTimesUsed(int mTimesUsed) {
         this.mTimesUsed = mTimesUsed;
     }
+
+    public int getmDiffTime() {
+        return mDiffTime;
+    }
+
+    public void setmDiffTime(int mDiffTime) {
+        this.mDiffTime = mDiffTime;
+    }
+
 }

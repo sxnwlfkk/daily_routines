@@ -53,7 +53,11 @@ public class RoutineItem {
     }
 
     public void averageItemTime() {
-        mAverageTime = (mAverageTime + (double) mElapsedTime) / 2.0;
+        if (mAverageTime == 0) {
+            mAverageTime = mElapsedTime;
+        } else {
+            mAverageTime = (mAverageTime + (double) mElapsedTime) / 2.0;
+        }
     }
 
     /* GETTERS */

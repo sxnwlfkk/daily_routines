@@ -37,6 +37,8 @@ public class RoutineContract {
         public static final String COLUMN_CURRENT_ITEM = "curr_item";
         // Number of times used
         public static final String COLUMN_ROUTINE_TIMES_USED = "times_used";
+        // Time of writing to DB in UTC seconds, when routine is interrupted
+        public static final String COLUMN_ROUTINE_INTERRUPT_TIME = "interrupt_time";
 
         // Creating this table
         public static final String CREATE_RITUAL_TABLE = "CREATE TABLE " +
@@ -48,6 +50,7 @@ public class RoutineContract {
                 + COLUMN_ROUTINE_CARRY + " INTEGER NOT NULL DEFAULT 0, "
                 + COLUMN_CURRENT_ITEM + " INTEGER NOT NULL DEFAULT -1, "
                 + COLUMN_ROUTINE_ITEMS_NUMBER + " INTEGER NOT NULL, "
+                + COLUMN_ROUTINE_INTERRUPT_TIME + " INTEGER NOT NULL DEFAULT 0, "
                 + COLUMN_ROUTINE_TIMES_USED + " INTEGER NOT NULL DEFAULT 0);";
 
         // Deleting table
