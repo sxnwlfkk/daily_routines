@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:layout_weight="0"
     android:weightSum="1"
     tools:context=".views.editActivity.EditActivity"
     android:orientation="vertical">
@@ -11,6 +12,7 @@
         android:id="@+id/edit_textbox_routine_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_weight="0"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:ems="10"
@@ -21,6 +23,7 @@
         android:id="@+id/switch1"
         android:layout_width="238dp"
         android:layout_height="wrap_content"
+        android:layout_weight="0"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:text="End time"
@@ -58,6 +61,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
+        android:layout_weight="0"
         android:orientation="vertical">
 
         <TextView
@@ -93,7 +97,7 @@
                 android:layout_weight="1"
                 android:ems="10"
                 android:hint="Item length minutes"
-                android:inputType="numberSigned" />
+                android:inputType="number" />
 
             <EditText
                 android:id="@+id/edit_item_length_seconds"
@@ -102,7 +106,7 @@
                 android:layout_weight="1"
                 android:ems="10"
                 android:hint="Item length seconds"
-                android:inputType="numberSigned" />
+                android:inputType="number" />
         </LinearLayout>
 
         <LinearLayout
@@ -113,31 +117,31 @@
 
             <Button
                 android:id="@+id/edit_button_delete_item"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentStart="true"
                 android:layout_below="@+id/edit_textbox_item_length"
-                android:layout_weight="0"
+                android:layout_weight="1"
                 android:text="Delete item" />
 
             <Button
                 android:id="@+id/edit_button_up"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignBaseline="@+id/edit_button_delete_item"
                 android:layout_alignBottom="@+id/edit_button_delete_item"
                 android:layout_toEndOf="@+id/edit_button_delete_item"
-                android:layout_weight="0"
+                android:layout_weight="1"
                 android:text="Up" />
 
             <Button
                 android:id="@+id/edit_button_down"
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignBaseline="@+id/edit_button_up"
                 android:layout_alignBottom="@+id/edit_button_up"
                 android:layout_toEndOf="@+id/edit_button_up"
-                android:layout_weight="0"
+                android:layout_weight="1"
                 android:text="Down" />
 
             <Button
@@ -146,7 +150,7 @@
                 android:layout_height="match_parent"
                 android:layout_below="@+id/edit_textbox_item_length"
                 android:layout_toEndOf="@+id/edit_button_down"
-                android:layout_weight="0"
+                android:layout_weight="1"
                 android:text="Save item" />
 
         </LinearLayout>

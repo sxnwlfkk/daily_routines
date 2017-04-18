@@ -169,7 +169,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
     private View.OnClickListener itemDownButtonClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            if (mCurrentItemIndex < mItemsList.size() - 1) {
+            if (mCurrentItemIndex < mItemsList.size() - 1 && mCurrentItemIndex >= 0) {
                 RoutineItem tempRoutine = mItemsList.get(mCurrentItemIndex + 1);
                 mItemsList.set(mCurrentItemIndex + 1, mItemsList.get(mCurrentItemIndex));
                 mItemsList.set(mCurrentItemIndex, tempRoutine);
