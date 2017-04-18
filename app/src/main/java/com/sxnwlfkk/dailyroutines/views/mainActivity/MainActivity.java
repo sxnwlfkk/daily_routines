@@ -21,11 +21,11 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.google.firebase.crash.FirebaseCrash;
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.views.clock.ClockActivity;
 import com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity;
+import com.sxnwlfkk.dailyroutines.views.preference.SettingsActivity;
 import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;
 
 public class MainActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -116,9 +116,13 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         switch (item.getItemId()) {
             case R.id.main_menu_delete_all:
                 purgeDatabase();
+                return true;
+            case R.id.main_preferences_button:
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivity(intent);
+                return true;
         }
-
-        return super.onOptionsItemSelected(item);
+        return false;
     }
 
     private void purgeDatabase() {

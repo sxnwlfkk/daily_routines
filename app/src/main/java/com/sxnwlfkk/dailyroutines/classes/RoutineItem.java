@@ -16,8 +16,9 @@ public class RoutineItem {
 
     private int mElapsedTime;
 
-
     private long mId;
+
+    private int startTime;
 
     /**
      * New object with no prior average data.
@@ -85,6 +86,10 @@ public class RoutineItem {
         return mElapsedTime;
     }
 
+    public int getStartTime() {
+        return startTime;
+    }
+
     /* SETTERS */
     public void setmCurrentTime(int currentTime) {
         mCurrentTime = currentTime;
@@ -111,4 +116,9 @@ public class RoutineItem {
     }
 
     public void incrementElapsedTime() { mElapsedTime++; }
+
+    public void setStartTime(int startTime) {
+        this.startTime = startTime;
+    }
+
 }

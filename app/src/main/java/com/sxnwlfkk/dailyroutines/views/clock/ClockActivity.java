@@ -8,11 +8,14 @@ import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.app.Activity;
 import android.os.CountDownTimer;
+import android.os.Vibrator;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,9 +28,11 @@ import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.classes.RoutineClock;
 import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
+import com.sxnwlfkk.dailyroutines.views.preference.SettingsActivity;
 import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 public class ClockActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -59,6 +64,10 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
     private Button mPreviousButton;
     private Button mNextButton;
 
+    // Settings
+    private boolean sClockBeforeLockscreen;
+    private boolean sVibrateOn;
+
     // On button click listeners
 
     private View.OnClickListener nextButtonClickListener = new View.OnClickListener() {
@@ -67,9 +76,6 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
             // Sanity check
             if (mCurrentItem == null || mRoutineClock.getmCurrentItemIndex() + 1 >= mRoutineClock.getmRoutineItemsNum()) return;
 
-            if (mRoutineClock.getmCurrentItemIndex() + 1 == 1) {
-                mPreviousButton.setVisibility(View.VISIBLE);
-            }
 
             if (mRoutineClock.getmCurrentItemIndex() + 1 == mRoutineClock.getmRoutineItemsNum() - 1) {
                 mNextButton.setText(R.string.routine_finish_button);
@@ -94,6 +100,10 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
 
             mCurrentItem = mRoutineClock.nextItem(mCurrentItem);
             refreshScreen();
+
+            if (mRoutineClock.getmCurrentItemIndex() == 1) {
+                mPreviousButton.setVisibility(View.VISIBLE);
+            }
         }
     };
 
@@ -130,11 +140,19 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Log.e(LOG_TAG, "In oncreate.");
+
+        // Check settings
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        sVibrateOn = prefs.getBoolean(SettingsActivity.VIBRATE_PREF_NAME, true);
+        sClockBeforeLockscreen = prefs.getBoolean(SettingsActivity.CLOCK_BEFORE_LOCKSCREEN, true);
+
         // Get android to show this view before the lockscreen
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON|
-                WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD|
-                WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
-                WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        if (sClockBeforeLockscreen) {
+            getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON|
+                    WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD|
+                    WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED|
+                    WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
+        }
         setContentView(R.layout.activity_clock);
 
         // Initialize clock
@@ -483,6 +501,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
 
     private void bothLoaderFinished() {
         mRoutineClock.sortDiffTime();
+        mRoutineClock.setStartTime();
         mCurrentItem = mRoutineClock.getCurrentItem();
         mItemNameText.setText(mCurrentItem.getmItemName());
         refreshScreen();
@@ -520,10 +539,28 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
         public void onTick(long millisUntilFinished) {
             mRoutineClock.getCurrentItem().incrementElapsedTime();
             int currentItemTime = mCurrentItem.getmCurrentTime();
+            if (currentItemTime == mCurrentItem.getStartTime() / 2 && currentItemTime != 0 && sVibrateOn) {
+                Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+                vibr.vibrate(50);
+            } else if (currentItemTime == mCurrentItem.getStartTime() / 3 && currentItemTime != 0 && sVibrateOn) {
+                Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+                vibr.vibrate(50);
+            }
+
             if (currentItemTime > 0) {
+                if (currentItemTime == 1 && sVibrateOn) {
+                    long[] pattern = {0, 50, 50, 50};
+                    Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+                    vibr.vibrate(pattern, -1);
+            }
                 mCurrentItem.setmCurrentTime(currentItemTime - 1);
             } else {
                 int carry = mRoutineClock.getmCarryTime();
+                if (carry == 1 && sVibrateOn) {
+                    long[] pattern = {0, 50, 50, 50};
+                    Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+                    vibr.vibrate(pattern, -1);
+                }
                 mRoutineClock.setmCarryTime(carry - 1);
             }
             updateClocks();
@@ -531,8 +568,12 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
 
         @Override
         public void onFinish() {
-            // TODO
-            // Do nothing for now
+            if (sVibrateOn) {
+                long[] pattern = {0, 50, 50, 50, 50, 50};
+                Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+                vibr.vibrate(pattern, -1);
+            }
+
             mCountdownTimer.cancel();
             setContentView(R.layout.activity_clock_ending);
             Button discardButton = (Button) findViewById(R.id.clock_finished_discard_button);

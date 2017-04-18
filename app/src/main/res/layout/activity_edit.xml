@@ -120,11 +120,4 @@
         android:layout_height="@android:dimen/app_icon_size"
         android:layout_weight="1" />
 
-    <Button
-        android:id="@+id/edit_button_routine_save"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="0"
-        android:text="Save routine" />
-
 </LinearLayout>

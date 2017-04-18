@@ -43,6 +43,8 @@ public class RoutineClock {
         //Sanity check
         if (mCurrentItemIndex + 1 >= mRoutineItemsNum) return null;
 
+        setStartTime();
+
         // Time check
         if (currentItem.getmCurrentTime() == 0 && mCarryTime < 0) {
             distibuteCarryTime();
@@ -53,6 +55,7 @@ public class RoutineClock {
 
         mItemsList.set(mCurrentItemIndex, currentItem);
         mCurrentItemIndex++;
+        setStartTime();
         return mItemsList.get(mCurrentItemIndex);
     }
 
@@ -64,7 +67,24 @@ public class RoutineClock {
         // Save current item state, and return previous
         mItemsList.set(mCurrentItemIndex, currentItem);
         mCurrentItemIndex--;
+
+        // Try to take back as much carry as was left in item time
+        int lastTime = mItemsList.get(mCurrentItemIndex).getStartTime();
+        if (lastTime < mCarryTime) {
+            mItemsList.get(mCurrentItemIndex).setmCurrentTime(lastTime);
+            mCarryTime -= lastTime;
+        } else if (0 < mCarryTime && mCarryTime <= lastTime) {
+            mItemsList.get(mCurrentItemIndex).setmCurrentTime(mCarryTime);
+            mCarryTime = 0;
+        }
+
+        setStartTime();
         return mItemsList.get(mCurrentItemIndex);
+    }
+
+    // Set the routines start time
+    public void setStartTime() {
+        mItemsList.get(mCurrentItemIndex).setStartTime(mItemsList.get(mCurrentItemIndex).getmCurrentTime());
     }
 
     // Reset routine

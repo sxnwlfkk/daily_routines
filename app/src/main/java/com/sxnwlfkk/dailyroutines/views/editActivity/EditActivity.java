@@ -62,7 +62,6 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
     private Button mDelItem;
     private Button mUpItem;
     private Button mDownItem;
-    private Button mSaveRoutine;
 
     // Click listeners
     private View.OnClickListener itemSaveButtonClickListener = new View.OnClickListener() {
@@ -150,22 +149,6 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
             }
         }
     };
-    private View.OnClickListener mRoutineSaveButtonClickListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            if (mCurrentUri == null) {
-                saveRoutine();
-            } else {
-                updateRoutine();
-            }
-            // This means, that it's an update, or the new routine save was successful
-            if (mCurrentUri != null) {
-                Intent intent = new Intent(EditActivity.this, ProfileActivity.class);
-                intent.setData(mCurrentUri);
-                startActivity(intent);
-            }
-        }
-    };
 
     // Change sentinel
     private boolean mRoutineHasChanged = false;
@@ -202,10 +185,6 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         mDownItem = (Button) findViewById(R.id.edit_button_down);
         mDownItem.setOnClickListener(itemDownButtonClickListener);
 
-        // Setting up Cancel and Save buttons
-        mSaveRoutine = (Button) findViewById(R.id.edit_button_routine_save);
-        mSaveRoutine.setOnClickListener(mRoutineSaveButtonClickListener);
-
         // Setting up Routine main fields
         mRoutineName = (EditText) findViewById(R.id.edit_textbox_routine_name);
         mRoutineName.setOnTouchListener(mOnTouchListener);
@@ -224,7 +203,6 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
             getLoaderManager().initLoader(EDIT_ITEMS_LOADER, null, this);
             mDeletedItems = new ArrayList<>();
             getActionBar().setTitle(R.string.edit_item);
-            mSaveRoutine.setText(R.string.update_button);
         }
     }
 
@@ -303,6 +281,19 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                     }
                 };
                 showUnsavedChangesDialog(discardButtonClickListener);
+                return true;
+            case R.id.menu_edit_save_button:
+                if (mCurrentUri == null) {
+                    saveRoutine();
+                } else {
+                    updateRoutine();
+                }
+                // This means, that it's an update, or the new routine save was successful
+                if (mCurrentUri != null) {
+                    Intent intent = new Intent(EditActivity.this, ProfileActivity.class);
+                    intent.setData(mCurrentUri);
+                    startActivity(intent);
+                }
                 return true;
         }
 

@@ -1,0 +1,21 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="settings_clock_show_before_lockscreen"
+        android:summary="@string/settings_show_clock_before_lockscreen_hint"
+        android:title="@string/settings_clock_before_lockscreen_title" />
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="settings_vibration"
+        android:summary="@string/settings_vibration_hint"
+        android:title="@string/settings_vibration_title" />
+
+    <!-- NOTE: EditTextPreference accepts EditText attributes. -->
+    <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
+
+    <!-- NOTE: Hide buttons to simplify the UI. Users can touch outside the dialog to
+         dismiss it. -->
+    <!-- NOTE: ListPreference's summary should be set to its value by the activity code. -->
+
+</PreferenceScreen>

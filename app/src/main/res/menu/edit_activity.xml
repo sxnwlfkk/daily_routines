@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- This works, even if AndroidStudio redlines it. Sadly with appcompat, I can't get
+     the action with icon to show outside ot the overflow menu.-->
+    <item
+        android:id="@+id/menu_edit_save_button"
+        android:enabled="true"
+        android:icon="@android:drawable/ic_menu_save"
+        android:title="Save routine"
+        android:visible="true"
+        android:showAsAction="ifRoom" />
 </menu>
