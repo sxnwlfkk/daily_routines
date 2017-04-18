@@ -18,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.google.firebase.crash.FirebaseCrash;
@@ -33,6 +34,8 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
     // Log tag
     public static final String LOG_TAG = MainActivity.class.getSimpleName();
     private ActionBar mActionBar;
+    private ProgressBar mProgressBar;
+    TextView mEmptyStateTextView;
 
     // ID of background loader
     private static final int ROUTINE_LOADER = 20;
@@ -66,8 +69,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
 
         // Setting up main list view
         mRoutineListView = (ListView) findViewById(R.id.main_list);
-        TextView mEmptyStateTextView = (TextView) findViewById(R.id.empty_view);
-        mEmptyStateTextView.setText(R.string.main_empty_view_text);
+        mEmptyStateTextView = (TextView) findViewById(R.id.empty_view);
         mRoutineListView.setEmptyView(mEmptyStateTextView);
 
         // Initialize cursor adapter
@@ -156,6 +158,11 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                     startActivity(intent);
                 }
             } while (cursor.moveToNext());
+        }
+        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+        mProgressBar.setVisibility(View.GONE);
+        if (cursor.getCount() == 0) {
+            mEmptyStateTextView.setText(R.string.main_empty_view_text);
         }
         mainRoutineCursorAdapter.swapCursor(cursor);
     }

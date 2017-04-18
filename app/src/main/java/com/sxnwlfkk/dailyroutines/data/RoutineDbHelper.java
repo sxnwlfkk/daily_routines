@@ -16,7 +16,7 @@ public class RoutineDbHelper extends SQLiteOpenHelper {
     private  static final String DATABASE_NAME = "rituals.db";
 
     /* DB version, if you change the schema, you need to increment version number. */
-    private static final int DATABASE_VERSION = 12;
+    private static final int DATABASE_VERSION = 14;
 
     public RoutineDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);

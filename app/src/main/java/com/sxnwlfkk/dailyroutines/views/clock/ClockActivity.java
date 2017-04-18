@@ -1,9 +1,11 @@
 package com.sxnwlfkk.dailyroutines.views.clock;
 
+import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
@@ -64,6 +66,32 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
         public void onClick(View v) {
             // Sanity check
             if (mCurrentItem == null || mRoutineClock.getmCurrentItemIndex() + 1 >= mRoutineClock.getmRoutineItemsNum()) return;
+
+            if (mRoutineClock.getmCurrentItemIndex() + 1 == 1) {
+                mPreviousButton.setVisibility(View.VISIBLE);
+            }
+
+            if (mRoutineClock.getmCurrentItemIndex() + 1 == mRoutineClock.getmRoutineItemsNum() - 1) {
+                mNextButton.setText(R.string.routine_finish_button);
+                mNextButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        DialogInterface.OnClickListener finishListener = new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                mCountdownTimer.cancel();
+                                mRoutineClock.finishRoutine();
+                                Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
+                                intent.setData(mCurrentUri);
+                                startActivity(intent);
+                                finish();
+                            }
+                        };
+                        showFinishWithTimeRemainingDialog(finishListener);
+                    }
+                });
+            }
+
             mCurrentItem = mRoutineClock.nextItem(mCurrentItem);
             refreshScreen();
         }
@@ -74,6 +102,15 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
         @Override public void onClick(View v) {
             // Sanity check
             if (mCurrentItem == null || mRoutineClock.getmCurrentItemIndex() - 1 < 0) return;
+
+            if (mRoutineClock.getmCurrentItemIndex() - 1 == 0) {
+                mPreviousButton.setVisibility(View.GONE);
+            }
+
+            if (mRoutineClock.getmCurrentItemIndex() == mRoutineClock.getmRoutineItemsNum() - 1) {
+                mNextButton.setText(R.string.routine_next_button);
+                mNextButton.setOnClickListener(nextButtonClickListener);
+            }
 
             mCurrentItem = mRoutineClock.prevItem(mCurrentItem);
             refreshScreen();
@@ -196,6 +233,44 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
         return prefix + min + ":" + sec;
     }
 
+    // Dialogs
+    private void showUnsavedChangesDialog(DialogInterface.OnClickListener discardButtonClickListener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.clock_cancel_message);
+        builder.setPositiveButton(R.string.yes, discardButtonClickListener);
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Keep editing" button, so dismiss the dialog
+                // and continue editing the pet.
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+
+            }
+        });
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    private void showFinishWithTimeRemainingDialog(DialogInterface.OnClickListener discardButtonClickListener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.finish_with_time_remaining_msg);
+        builder.setPositiveButton(R.string.yes, discardButtonClickListener);
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Keep editing" button, so dismiss the dialog
+                // and continue editing the pet.
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+
+            }
+        });
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.clock_activity, menu);
@@ -207,25 +282,53 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
         Intent intent;
         switch (item.getItemId()) {
             case android.R.id.home:
-                // TODO make popup window
-                mCountdownTimer.cancel();
-                mRoutineClock.resetRoutine();
-                intent = new Intent(ClockActivity.this, ProfileActivity.class);
-                intent.setData(mCurrentUri);
-                startActivity(intent);
-                finish();
+                DialogInterface.OnClickListener dismissListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mCountdownTimer.cancel();
+                        mRoutineClock.resetRoutine();
+                        Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
+                        intent.setData(mCurrentUri);
+                        startActivity(intent);
+                        finish();
+                    }
+                };
+
+                showUnsavedChangesDialog(dismissListener);
                 return true;
             case R.id.clock_menu_finish:
-                // TODO Make popup window
-                mCountdownTimer.cancel();
-                mRoutineClock.finishRoutine();
-                intent = new Intent(ClockActivity.this, ProfileActivity.class);
-                intent.setData(mCurrentUri);
-                startActivity(intent);
-                finish();
+                DialogInterface.OnClickListener finishListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        mCountdownTimer.cancel();
+                        mRoutineClock.finishRoutine();
+                        Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
+                        intent.setData(mCurrentUri);
+                        startActivity(intent);
+                        finish();
+                    }
+                };
+                showFinishWithTimeRemainingDialog(finishListener);
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        DialogInterface.OnClickListener dismissListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                mCountdownTimer.cancel();
+                mRoutineClock.resetRoutine();
+                Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
+                intent.setData(mCurrentUri);
+                startActivity(intent);
+                finish();
+            }
+        };
+
+        showUnsavedChangesDialog(dismissListener);
     }
 
     private void writeRoutineToDB() {
