@@ -11,6 +11,8 @@
         android:id="@+id/edit_textbox_routine_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
         android:ems="10"
         android:hint="Name of the routine"
         android:inputType="text" />
@@ -19,20 +21,43 @@
         android:id="@+id/switch1"
         android:layout_width="238dp"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
         android:text="End time"
         tools:text="Needs ending time" />
-
-    <EditText
-        android:id="@+id/edit_textbox_routine_end_time"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="End time of routine"
-        android:inputType="time" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_weight="0"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/edit_routine_end_time_textview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="0 h 0 m"
+            android:textSize="18sp"
+            tools:text="0 h 0 m" />
+
+        <Button
+            android:id="@+id/edit_routine_end_time_change_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="showTimePickerDialog"
+            android:text="Change" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
         android:orientation="vertical">
 
         <TextView
@@ -55,16 +80,30 @@
             android:hint="Item name"
             android:inputType="textPersonName" />
 
-        <EditText
-            android:id="@+id/edit_textbox_item_length"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/edit_textbox_item_name"
-            android:layout_centerHorizontal="true"
             android:layout_weight="0"
-            android:ems="10"
-            android:hint="Item length in seconds"
-            android:inputType="numberDecimal" />
+            android:orientation="horizontal">
+
+            <EditText
+                android:id="@+id/edit_item_length_minutes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:hint="Item length minutes"
+                android:inputType="numberSigned" />
+
+            <EditText
+                android:id="@+id/edit_item_length_seconds"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ems="10"
+                android:hint="Item length seconds"
+                android:inputType="numberSigned" />
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

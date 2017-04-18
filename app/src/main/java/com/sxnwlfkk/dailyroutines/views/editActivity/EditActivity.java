@@ -2,7 +2,10 @@ package com.sxnwlfkk.dailyroutines.views.editActivity;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.LoaderManager;
+import android.app.TimePickerDialog;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.CursorLoader;
@@ -14,6 +17,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.text.TextUtils;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,14 +27,18 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
+import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 /**
  * Created by cs on 2017.04.05..
@@ -50,18 +58,22 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
     private Uri mCurrentUri;
     private int mCurrentItemIndex = -1;
     private int mRoutineItemSumLength = 0;
+    private int mRoutineEndTime = 0;
 
     // Views
     private ListView mListView;
     private EditListAdapter mAdapter;
     private EditText mNewItemName;
-    private EditText mNewItemLength;
+    private EditText mNewItemLengthMinutes;
+    private EditText mNewItemLengthSeconds;
     private EditText mRoutineName;
-    private EditText mRoutineEndTime;
+    private TextView mRoutineEndTimeText;
     private Button mSaveNewItem;
     private Button mDelItem;
     private Button mUpItem;
     private Button mDownItem;
+
+    private TextView mItemNameTextView;
 
     // Click listeners
     private View.OnClickListener itemSaveButtonClickListener = new View.OnClickListener() {
@@ -71,14 +83,26 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                 addNewItemToList();
                 updateListView();
                 mNewItemName.setText("");
-                mNewItemLength.setText("");
+                mNewItemLengthMinutes.setText("");
+                mNewItemLengthSeconds.setText("");
                 mCurrentItemIndex = -1;
                 mRoutineHasChanged = true;
             }
         }
         private void addNewItemToList() {
             String itemName = mNewItemName.getText().toString().trim();
-            int itemLength = Integer.parseInt(mNewItemLength.getText().toString().trim());
+            String lengthValMin = mNewItemLengthMinutes.getText().toString().trim();
+            String lengthValSec = mNewItemLengthSeconds.getText().toString().trim();
+
+            int itemLength = 0;
+            if (TextUtils.isEmpty(lengthValMin)) {
+                itemLength = Integer.parseInt(lengthValSec);
+            } else if (TextUtils.isEmpty(lengthValSec)) {
+                itemLength = 60 * Integer.parseInt(lengthValMin);
+            } else {
+                itemLength = 60 * Integer.parseInt(lengthValMin) + Integer.parseInt(lengthValSec);
+            }
+
             if (mCurrentItemIndex == -1) {
                 mItemsList.add(new RoutineItem(itemName, itemLength));
             } else {
@@ -92,13 +116,19 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                 Toast.makeText(getApplicationContext(), "Please enter a name for this item.", Toast.LENGTH_LONG).show();
                 return false;
             }
-            String lengthVal = mNewItemLength.getText().toString().trim();
-            if (lengthVal == "" || TextUtils.isEmpty(mNewItemLength.getText())) {
+            String lengthValMin = mNewItemLengthMinutes.getText().toString().trim();
+            String lengthValSec = mNewItemLengthSeconds.getText().toString().trim();
+            if (TextUtils.isEmpty(lengthValMin) && TextUtils.isEmpty(lengthValSec)) {
                 Toast.makeText(getApplicationContext(), "Please enter a length for this item.", Toast.LENGTH_LONG).show();
                 return false;
             }
             try {
-                int itemLen = Integer.parseInt(lengthVal);
+
+                if (TextUtils.isEmpty(lengthValMin)) {
+                    Integer.parseInt(lengthValSec);
+                } else if (TextUtils.isEmpty(lengthValSec)) {
+                    Integer.parseInt(lengthValMin);
+                }
             } catch (NumberFormatException e) {
                 Toast.makeText(getApplicationContext(), "You can only use numbers in the length field", Toast.LENGTH_LONG).show();
                 return false;
@@ -120,7 +150,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                 mRoutineHasChanged = true;
             }
             mNewItemName.setText("");
-            mNewItemLength.setText("");
+            mNewItemLengthMinutes.setText("");
         }
     };
     private View.OnClickListener itemUpButtonClickListener = new View.OnClickListener() {
@@ -175,7 +205,8 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
 
         // Setting up Item editor
         mNewItemName = (EditText) findViewById(R.id.edit_textbox_item_name);
-        mNewItemLength = (EditText) findViewById(R.id.edit_textbox_item_length);
+        mNewItemLengthMinutes = (EditText) findViewById(R.id.edit_item_length_minutes);
+        mNewItemLengthSeconds = (EditText) findViewById(R.id.edit_item_length_seconds);
         mSaveNewItem = (Button) findViewById(R.id.edit_button_item_save);
         mSaveNewItem.setOnClickListener(itemSaveButtonClickListener);
         mDelItem = (Button) findViewById(R.id.edit_button_delete_item);
@@ -188,8 +219,8 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         // Setting up Routine main fields
         mRoutineName = (EditText) findViewById(R.id.edit_textbox_routine_name);
         mRoutineName.setOnTouchListener(mOnTouchListener);
-        mRoutineEndTime = (EditText) findViewById(R.id.edit_textbox_routine_end_time);
-        mRoutineEndTime.setOnTouchListener(mOnTouchListener);
+        mRoutineEndTimeText = (TextView) findViewById(R.id.edit_routine_end_time_textview);
+        mRoutineEndTimeText.setOnTouchListener(mOnTouchListener);
 
         // Check intent
         Intent intent = getIntent();
@@ -252,8 +283,6 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
     }
 
     // Options
-
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.edit_activity, menu);
@@ -311,9 +340,13 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 mCurrentItemIndex = (int) id;
                 String name = mItemsList.get(mCurrentItemIndex).getmItemName();
-                String length = String.valueOf(mItemsList.get(mCurrentItemIndex).getmTime());
+                String lengthMin = String.valueOf(mItemsList.get(mCurrentItemIndex).getmTime() / 60);
+                lengthMin = (lengthMin.equals("0")) ? "" : lengthMin;
+                String lengthSec = String.valueOf(mItemsList.get(mCurrentItemIndex).getmTime() % 60);
+                lengthSec = (lengthSec.equals("0")) ? "" : lengthSec;
                 mNewItemName.setText(name);
-                mNewItemLength.setText(length);
+                mNewItemLengthMinutes.setText(lengthMin);
+                mNewItemLengthSeconds.setText(lengthSec);
             }
         });
     }
@@ -344,6 +377,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME, routineName);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER, routineItemNumber);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH, mRoutineItemSumLength);
+        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME, mRoutineEndTime);
         // Insert new routine
         mCurrentUri = getContentResolver().insert(RoutineContract.RoutineEntry.CONTENT_URI, values);
         // Get info for items
@@ -389,6 +423,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME, routineName);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER, routineItemNumber);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH, mRoutineItemSumLength);
+        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME, mRoutineEndTime);
 
         getContentResolver().update(mCurrentUri, values, null, null);
         long updatedRoutineId = ContentUris.parseId(mCurrentUri);
@@ -479,7 +514,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                 int rEndTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
 
                 mRoutineName.setText(rName);
-                mRoutineEndTime.setText(String.valueOf(rEndTime));
+                mRoutineEndTimeText.setText(RoutineUtils.formatTimeString(rEndTime));
 
                 break;
             case EDIT_ITEMS_LOADER:
@@ -507,7 +542,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         switch (loaderId) {
             case EDIT_ROUTINE_LOADER:
                 mRoutineName.setText("");
-                mRoutineEndTime.setText("");
+                mRoutineEndTimeText.setText("");
                 break;
             case EDIT_ITEMS_LOADER:
                 mListView.setAdapter(null);
@@ -516,4 +551,43 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                 break;
         }
     }
+
+    // Time pickers
+    public void showTimePickerDialog(View v) {
+        DialogFragment newFragment = new TimePickerFragment();
+        newFragment.show(getFragmentManager(), "timePicker");
+    }
+
+    public static class TimePickerFragment extends DialogFragment
+        implements TimePickerDialog.OnTimeSetListener {
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // Use the current time as the default values for the picker
+            final java.util.Calendar c = java.util.Calendar.getInstance();
+            EditActivity parent = (EditActivity) getActivity();
+            int timeInSeconds = parent.mRoutineEndTime;
+            int hour;
+            int minute;
+            if (timeInSeconds == 0) {
+                hour = c.get(Calendar.HOUR_OF_DAY);
+                minute = c.get(Calendar.MINUTE);
+            } else {
+                hour = timeInSeconds / 3600;
+                minute = (timeInSeconds % 3600) / 60;
+            }
+
+            // Create a new instance of TimePickerDialog and return it
+            return new TimePickerDialog(getActivity(), this, hour, minute,
+                    DateFormat.is24HourFormat(getActivity()));
+        }
+
+        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+            int seconds = hourOfDay * 3600 + minute * 60;
+            EditActivity parent = (EditActivity) getActivity();
+            parent.mRoutineEndTime = seconds;
+            parent.mRoutineEndTimeText.setText(RoutineUtils.formatTimeString(seconds));
+
+        }
+}
 }
