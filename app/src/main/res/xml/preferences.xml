@@ -1,5 +1,8 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <PreferenceCategory android:title="Behaviour">
+
+    </PreferenceCategory>
     <SwitchPreference
         android:defaultValue="true"
         android:key="settings_clock_show_before_lockscreen"
@@ -10,6 +13,11 @@
         android:key="settings_vibration"
         android:summary="@string/settings_vibration_hint"
         android:title="@string/settings_vibration_title" />
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="settings_notifications"
+        android:summary="@string/settings_notification_hint"
+        android:title="@string/settings_notification_title" />
 
     <!-- NOTE: EditTextPreference accepts EditText attributes. -->
     <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->

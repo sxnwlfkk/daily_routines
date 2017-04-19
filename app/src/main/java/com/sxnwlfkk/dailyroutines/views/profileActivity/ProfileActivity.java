@@ -223,6 +223,8 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                     RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME,
                     RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH,
                     RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER,
+                    RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME,
+                    RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END,
             };
 
             return new CursorLoader(this,
@@ -267,10 +269,17 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                 String name = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME));
                 int length = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH));
                 int itemNum = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER));
+                int endTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
+                boolean requireEnd = (cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END)) == 1);
 
                 mRoutineLength.setText(RoutineUtils.formatTimeString(length));
                 mRoutineItemNum.setText(String.valueOf(itemNum));
 
+                if (requireEnd) {
+                    TextView numOfItems = (TextView) findViewById(R.id.profile_num_of_items_text);
+                    numOfItems.setText(R.string.optimal_start_text);
+                    mRoutineItemNum.setText(RoutineUtils.formatTimeString(RoutineUtils.calculateIdealStartTime(endTime, length)));
+                }
 
                 ActionBar aBar = getActionBar();
                 aBar.setTitle(name);

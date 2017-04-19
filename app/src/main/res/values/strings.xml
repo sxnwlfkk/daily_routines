@@ -100,4 +100,7 @@
     <string name="settings_show_clock_before_lockscreen_hint">If set to on, the routine clock will be shown before the lockscreen, and will be able to interact.</string>
     <string name="settings_vibration_title">Vibration</string>
     <string name="settings_vibration_hint">Turn the vibration on or off.</string>
+    <string name="settings_notification_title">Notifications</string>
+    <string name="settings_notification_hint">Enable or disable notifications for routine start and end times.</string>
+    <string name="optimal_start_text">Optimal start:</string>
 </resources>

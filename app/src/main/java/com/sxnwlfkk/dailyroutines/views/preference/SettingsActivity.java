@@ -10,7 +10,8 @@ public class SettingsActivity extends Activity {
 
     // Keys
     public static final String VIBRATE_PREF_NAME = "settings_vibration";
-    public static final String CLOCK_BEFORE_LOCKSCREEN = "settings_clock_show_before_lockscreen";
+    public static final String CLOCK_BEFORE_LOCKSCREEN_PREF_NAME = "settings_clock_show_before_lockscreen";
+    public static final String NOTIFICATION_PREF_NAME = "settings_notifications";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

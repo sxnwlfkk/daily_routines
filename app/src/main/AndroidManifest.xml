@@ -3,6 +3,7 @@
     package="com.sxnwlfkk.dailyroutines">
 
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:allowBackup="true"
@@ -46,6 +47,13 @@
                 android:value="com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity" />
         </activity>
         <activity android:name=".views.preference.SettingsActivity"></activity>
+
+        <receiver android:name=".backend.BReceiver">
+            <intent-filter>
+                <action
+                    android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

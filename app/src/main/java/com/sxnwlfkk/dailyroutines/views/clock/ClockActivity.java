@@ -27,12 +27,13 @@ import android.widget.TextView;
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.classes.RoutineClock;
 import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
+import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.views.preference.SettingsActivity;
 import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;
 
 import java.util.ArrayList;
-import java.util.Set;
+import java.util.Calendar;
 
 public class ClockActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -144,7 +145,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
         // Check settings
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
         sVibrateOn = prefs.getBoolean(SettingsActivity.VIBRATE_PREF_NAME, true);
-        sClockBeforeLockscreen = prefs.getBoolean(SettingsActivity.CLOCK_BEFORE_LOCKSCREEN, true);
+        sClockBeforeLockscreen = prefs.getBoolean(SettingsActivity.CLOCK_BEFORE_LOCKSCREEN_PREF_NAME, true);
 
         // Get android to show this view before the lockscreen
         if (sClockBeforeLockscreen) {
@@ -397,6 +398,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
                         RoutineContract.RoutineEntry.COLUMN_ROUTINE_CARRY,
                         RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM,
                         RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME,
+                        RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END,
                         RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER,
                         RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED,
                         RoutineContract.RoutineEntry.COLUMN_ROUTINE_INTERRUPT_TIME,
@@ -445,6 +447,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
                 long rId = cursor.getLong(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry._ID));
                 String rName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME));
                 int rEndTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
+                boolean rEndTimeReq = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END)) == 1;
                 int rCarryTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_CARRY));
                 int rCurrItem = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM));
                 int rItemsNumber = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER));
@@ -461,6 +464,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
                 mRoutineClock.setmId(rId);
                 mRoutineClock.setmName(rName);
                 mRoutineClock.setmEndTime(rEndTime);
+                mRoutineClock.setmEndTimeRequired(rEndTimeReq);
                 mRoutineClock.setmCurrentItemIndex(rCurrItem);
                 mRoutineClock.setmCarryTime(rCarryTime);
                 mRoutineClock.setmRoutineItemsNum(rItemsNumber);
@@ -510,6 +514,22 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
         mRoutineClock.sortDiffTime();
         if (mRoutineClock.getmCurrentItemIndex() == 0
                 && mRoutineClock.getCurrentItem().getmElapsedTime() == 0) {
+            // Distribute carry time if needed
+            if (mRoutineClock.ismEndTimeRequired()) {
+                Calendar cal = Calendar.getInstance();
+                int hours = cal.get(Calendar.HOUR_OF_DAY);
+                int minutes = cal.get(Calendar.MINUTE);
+                int seconds = cal.get(Calendar.SECOND);
+                int currTime = (hours * 3600) + (minutes * 60) + seconds;
+                int optimalTime = RoutineUtils.calculateIdealStartTime(mRoutineClock.getmEndTime(), mRoutineClock.getmLength());
+                int carry = optimalTime - currTime;
+                if (carry < 0) {
+                    mRoutineClock.distributeCarryOnStart(carry);
+                } else if (carry > 0) {
+                    mRoutineClock.setmCarryTime(carry);
+                }
+            }
+            // Set first start time
             mRoutineClock.setStartTime();
         }
         mCurrentItem = mRoutineClock.getCurrentItem();

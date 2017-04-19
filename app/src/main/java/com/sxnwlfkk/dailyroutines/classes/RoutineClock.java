@@ -18,17 +18,20 @@ public class RoutineClock {
     private int mRoutineItemsNum;
     private int mLength;
     private int mEndTime;
+
+
+    private boolean mEndTimeRequired;
     private long mId;
     private int mTimesUsed;
     private int mDiffTime;
 
     // Distribute carry time
-    private void distibuteCarryTime() {
+    private void distibuteCarryTime(int offset) {
         int remainingTime = 0;
-        for (int i = mCurrentItemIndex+1; i < mItemsList.size(); i++) {
+        for (int i = mCurrentItemIndex+offset; i < mItemsList.size(); i++) {
             remainingTime += mItemsList.get(i).getmCurrentTime();
         }
-        for (int i = mCurrentItemIndex+1; i < mItemsList.size(); i++) {
+        for (int i = mCurrentItemIndex+offset; i < mItemsList.size(); i++) {
             RoutineItem item = mItemsList.get(i);
             float ratio = (float) item.getmCurrentTime() / remainingTime;
             float sub = ratio * mCarryTime;
@@ -36,6 +39,12 @@ public class RoutineClock {
             mItemsList.set(i, item);
         }
         mCarryTime = 0;
+    }
+
+    // Distribute carry on start
+    public void distributeCarryOnStart(int carry) {
+        mCarryTime = carry;
+        distibuteCarryTime(0);
     }
 
     // Next item
@@ -47,7 +56,7 @@ public class RoutineClock {
 
         // Time check
         if (currentItem.getmCurrentTime() == 0 && mCarryTime < 0) {
-            distibuteCarryTime();
+            distibuteCarryTime(1);
         } else if (currentItem.getmCurrentTime() > 0) {
             mCarryTime += currentItem.getmCurrentTime();
             currentItem.setmCurrentTime(0);
@@ -240,6 +249,14 @@ public class RoutineClock {
 
     public void setmDiffTime(int mDiffTime) {
         this.mDiffTime = mDiffTime;
+    }
+
+    public boolean ismEndTimeRequired() {
+        return mEndTimeRequired;
+    }
+
+    public void setmEndTimeRequired(boolean mEndTimeRequired) {
+        this.mEndTimeRequired = mEndTimeRequired;
     }
 
 }
