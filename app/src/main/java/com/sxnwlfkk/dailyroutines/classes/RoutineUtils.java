@@ -29,8 +29,19 @@ public class RoutineUtils {
     public static String formatClockTimeString(int timeInSeconds) {
         if (timeInSeconds == 0) return "00:00";
         int hours = timeInSeconds / 3600;
+        String rString = "";
+
+        if (hours < 10)
+            rString += "0" + hours;
+        else
+            rString += hours;
+        rString += ":";
         int minutes = (timeInSeconds % 3600) / 60;
-        return hours +":"+ minutes;
+        if (minutes < 10)
+            rString += "0" + minutes;
+        else
+            rString += minutes;
+        return rString;
     }
 
     // Calculates ideal starting time for routine. With the 60 division, we take off the
