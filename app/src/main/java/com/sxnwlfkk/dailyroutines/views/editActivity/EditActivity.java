@@ -27,6 +27,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -68,6 +69,8 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
     private EditText mNewItemLengthSeconds;
     private EditText mRoutineName;
     private TextView mRoutineEndTimeText;
+    private Switch mEndTimeSwitch;
+    private Button mEndTimeButton;
     private Button mSaveNewItem;
     private Button mDelItem;
     private Button mUpItem;
@@ -221,6 +224,10 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         mRoutineName.setOnTouchListener(mOnTouchListener);
         mRoutineEndTimeText = (TextView) findViewById(R.id.edit_routine_end_time_textview);
         mRoutineEndTimeText.setOnTouchListener(mOnTouchListener);
+        mEndTimeButton = (Button) findViewById(R.id.edit_routine_end_time_change_button);
+        mEndTimeButton.setOnTouchListener(mOnTouchListener);
+        mEndTimeSwitch = (Switch) findViewById(R.id.edit_end_time_switch);
+        mEndTimeSwitch.setOnTouchListener(mOnTouchListener);
 
         // Check intent
         Intent intent = getIntent();
@@ -378,6 +385,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER, routineItemNumber);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH, mRoutineItemSumLength);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME, mRoutineEndTime);
+        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END, (mEndTimeSwitch.isChecked()) ? 1 : 0);
         // Insert new routine
         mCurrentUri = getContentResolver().insert(RoutineContract.RoutineEntry.CONTENT_URI, values);
         // Get info for items
@@ -424,6 +432,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER, routineItemNumber);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH, mRoutineItemSumLength);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME, mRoutineEndTime);
+        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END, (mEndTimeSwitch.isChecked()) ? 1 : 0);
 
         getContentResolver().update(mCurrentUri, values, null, null);
         long updatedRoutineId = ContentUris.parseId(mCurrentUri);
@@ -471,6 +480,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                     RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME,
                     RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER,
                     RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME,
+                    RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END,
             };
 
             return new CursorLoader(this,
@@ -512,9 +522,15 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
             case EDIT_ROUTINE_LOADER:
                 String rName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME));
                 int rEndTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
+                int rRequireEnd = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END));
 
                 mRoutineName.setText(rName);
                 mRoutineEndTimeText.setText(RoutineUtils.formatTimeString(rEndTime));
+                if (rRequireEnd == 1) {
+                    mEndTimeSwitch.setChecked(true);
+                } else {
+                    mEndTimeSwitch.setChecked(false);
+                }
 
                 break;
             case EDIT_ITEMS_LOADER:

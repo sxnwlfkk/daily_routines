@@ -25,8 +25,10 @@ public class RoutineContract {
         public static final String _ID = BaseColumns._ID;
         // Name of the routine
         public static final String COLUMN_ROUTINE_NAME = "name";
-        // Preferred end time of routine if and (0 if not needed)
+        // Preferred end time of routine
         public static final String COLUMN_ROUTINE_END_TIME = "end_time";
+        // Requires wake up
+        public static final String COLUMN_ROUTINE_REQUIRE_END = "require_end";
         // Length of the routine in seconds
         public static final String COLUMN_ROUTINE_LENGTH = "length";
         // Carry time in seconds
@@ -46,6 +48,7 @@ public class RoutineContract {
                 + _ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
                 + COLUMN_ROUTINE_NAME + " TEXT NOT NULL, "
                 + COLUMN_ROUTINE_END_TIME + " INTEGER NOT NULL DEFAULT 0,"
+                + COLUMN_ROUTINE_REQUIRE_END + " INTEGER NOT NULL DEFAULT 0, "
                 + COLUMN_ROUTINE_LENGTH + " INTEGER NOT NULL, "
                 + COLUMN_ROUTINE_CARRY + " INTEGER NOT NULL DEFAULT 0, "
                 + COLUMN_CURRENT_ITEM + " INTEGER NOT NULL DEFAULT -1, "
@@ -78,6 +81,8 @@ public class RoutineContract {
         // Elapsed time (it's needed, because the user can linger more on one
         // item, than the allotted time
         public static final String COLUMN_ELAPSED_TIME = "elapsed_time";
+        // Start time to calculate vibration times
+        public static final String COLUMN_START_TIME = "start_time";
         // Average time this item takes
         public static final String COLUMN_ITEM_AVG_TIME = "item_avg";
 
@@ -91,6 +96,7 @@ public class RoutineContract {
                 + COLUMN_ITEM_LENGTH + " INTEGER NOT NULL DEFAULT 0, "
                 + COLUMN_REMAINING_TIME + " INTEGER NOT NULL DEFAULT 0, "
                 + COLUMN_ELAPSED_TIME + " INTEGER NOT NULL DEFAULT 0, "
+                + COLUMN_START_TIME + " INTEGER NOT NULL DEFAULT 0, "
                 + COLUMN_ITEM_AVG_TIME + " INTEGER NOT NULL DEFAULT 0);";
 
         // Deleting table

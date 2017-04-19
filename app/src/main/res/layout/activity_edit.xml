@@ -20,12 +20,12 @@
         android:inputType="text" />
 
     <Switch
-        android:id="@+id/switch1"
+        android:id="@+id/edit_end_time_switch"
         android:layout_width="238dp"
         android:layout_height="wrap_content"
-        android:layout_weight="0"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
+        android:layout_weight="0"
         android:text="End time"
         tools:text="Needs ending time" />
 

@@ -370,6 +370,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
             Log.e(LOG_TAG, "Item average in double " + item.getmAverageTime() + " and in int: " + (int) item.getmAverageTime());
             itemValues.put(RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME, item.getmElapsedTime());
             itemValues.put(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME, item.getmCurrentTime());
+            itemValues.put(RoutineContract.ItemEntry.COLUMN_START_TIME, item.getStartTime());
 
             int rowsAffected = getContentResolver().update(updateUri, itemValues, null, null);
         }
@@ -417,6 +418,8 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
                         RoutineContract.ItemEntry.COLUMN_ITEM_NO,
                         RoutineContract.ItemEntry.COLUMN_REMAINING_TIME,
                         RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME,
+                        RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME,
+                        RoutineContract.ItemEntry.COLUMN_START_TIME,
                 };
 
                 String selection = RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE + "=?";
@@ -482,10 +485,14 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
                     int itemTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH));
                     int itemAvgTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
                     int itemRemTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME));
+                    int itemElapsedTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME));
+                    int itemStartTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_START_TIME));
 
                     RoutineItem newItem = new RoutineItem(itemName, itemTime, itemAvgTime);
                     newItem.setmId(id);
                     newItem.setmCurrentTime(itemRemTime);
+                    newItem.setmElapsedTime(itemElapsedTime);
+                    newItem.setStartTime(itemStartTime);
                     itemsList.add(newItem);
                     if (!cursor.moveToNext()) break;
                 }
@@ -501,7 +508,10 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
 
     private void bothLoaderFinished() {
         mRoutineClock.sortDiffTime();
-        mRoutineClock.setStartTime();
+        if (mRoutineClock.getmCurrentItemIndex() == 0
+                && mRoutineClock.getCurrentItem().getmElapsedTime() == 0) {
+            mRoutineClock.setStartTime();
+        }
         mCurrentItem = mRoutineClock.getCurrentItem();
         mItemNameText.setText(mCurrentItem.getmItemName());
         refreshScreen();
@@ -538,6 +548,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
         @Override
         public void onTick(long millisUntilFinished) {
             mRoutineClock.getCurrentItem().incrementElapsedTime();
+
             int currentItemTime = mCurrentItem.getmCurrentTime();
             if (currentItemTime == mCurrentItem.getStartTime() / 2 && currentItemTime != 0 && sVibrateOn) {
                 Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);

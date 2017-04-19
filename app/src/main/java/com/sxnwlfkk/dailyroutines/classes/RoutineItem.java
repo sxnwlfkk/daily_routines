@@ -51,6 +51,7 @@ public class RoutineItem {
     public void resetItem () {
         mCurrentTime = mTime;
         mElapsedTime = 0;
+        startTime = 0;
     }
 
     public void averageItemTime() {
@@ -59,6 +60,8 @@ public class RoutineItem {
         } else {
             mAverageTime = (mAverageTime + (double) mElapsedTime) / 2.0;
         }
+        startTime = 0;
+        mElapsedTime = 0;
     }
 
     /* GETTERS */
