@@ -8,9 +8,11 @@ import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
 import android.view.Menu;
@@ -22,6 +24,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.sxnwlfkk.dailyroutines.R;
+import com.sxnwlfkk.dailyroutines.backend.BReceiver;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.views.clock.ClockActivity;
 import com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity;
@@ -102,6 +105,11 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
             }
         });
 
+        // Check if alarms were set up, then
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean alarmsWereSetUp = preferences.getBoolean(BReceiver.ALARM_SETUP_WAS_DONE, false);
+        if (!alarmsWereSetUp) BReceiver.scheduleAlarms(this);
+
         getLoaderManager().initLoader(ROUTINE_LOADER, null, this);
     }
 
@@ -138,6 +146,8 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME,
                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH,
                 RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM,
+                RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END,
+                RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME
         };
 
         return new CursorLoader(this,

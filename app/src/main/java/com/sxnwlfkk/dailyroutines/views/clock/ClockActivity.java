@@ -525,6 +525,10 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
                 int carry = optimalTime - currTime;
                 if (carry < 0) {
                     mRoutineClock.distributeCarryOnStart(carry);
+                    int s;
+                    mRoutineClock.setmLength(
+                            ((s = mRoutineClock.getmLength() + carry) >= 0) ? s : 0
+                    );
                 } else if (carry > 0) {
                     mRoutineClock.setmCarryTime(carry);
                 }

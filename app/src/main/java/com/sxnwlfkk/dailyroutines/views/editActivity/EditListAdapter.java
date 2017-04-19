@@ -41,10 +41,10 @@ public class EditListAdapter extends ArrayAdapter<RoutineItem> {
         nameView.setText(rItem.getmItemName());
 
         TextView lengthView = (TextView) listItemView.findViewById(R.id.profile_list_length);
-        lengthView.setText(RoutineUtils.formatTimeString(rItem.getmTime()));
+        lengthView.setText(RoutineUtils.formatLengthString(rItem.getmTime()));
 
         TextView avgView = (TextView) listItemView.findViewById(R.id.profile_list_item_avg);
-        avgView.setText(RoutineUtils.formatTimeString((int) rItem.getmAverageTime()));
+        avgView.setText(RoutineUtils.formatLengthString((int) rItem.getmAverageTime()));
 
         return listItemView;
     }

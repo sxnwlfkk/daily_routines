@@ -6,7 +6,7 @@ package com.sxnwlfkk.dailyroutines.classes;
 
 public class RoutineUtils {
 
-    public static String formatTimeString(int timeInSeconds) {
+    public static String formatLengthString(int timeInSeconds) {
         if (timeInSeconds == 0) return "0 s";
         int hours = timeInSeconds / 3600;
         int minutes = (timeInSeconds % 3600) / 60;
@@ -24,6 +24,13 @@ public class RoutineUtils {
             returnString += seconds + " s";
         }
         return returnString.trim();
+    }
+
+    public static String formatClockTimeString(int timeInSeconds) {
+        if (timeInSeconds == 0) return "00:00";
+        int hours = timeInSeconds / 3600;
+        int minutes = (timeInSeconds % 3600) / 60;
+        return hours +":"+ minutes;
     }
 
     // Calculates ideal starting time for routine. With the 60 division, we take off the

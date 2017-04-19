@@ -39,7 +39,7 @@ public class ProfileCursorAdapter extends CursorAdapter {
         int avg = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
 
         tvName.setText(name);
-        tvLength.setText(RoutineUtils.formatTimeString(length));
-        tvAvg.setText(RoutineUtils.formatTimeString(avg));
+        tvLength.setText(RoutineUtils.formatLengthString(length));
+        tvAvg.setText(RoutineUtils.formatLengthString(avg));
     }
 }

@@ -7,18 +7,39 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/main_name_field"
-        tools:text="Routine No.1"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_weight="1"
-        android:layout_height="match_parent" />
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/main_name_field"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:textStyle="bold"
+            tools:text="Routine No.1" />
+
+        <TextView
+            android:id="@+id/main_length_field"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center_vertical"
+            android:textStyle="italic"
+            tools:text="1600 sec" />
+
+    </LinearLayout>
 
     <TextView
-        android:id="@+id/main_length_field"
-        tools:text="1600 sec"
-        android:layout_width="0dp"
+        android:id="@+id/main_start_time_text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_weight="1"
-        android:layout_height="match_parent" />
+        android:gravity="center_vertical"
+        android:text="17:11"
+        android:textAlignment="center" />
 
 </LinearLayout>

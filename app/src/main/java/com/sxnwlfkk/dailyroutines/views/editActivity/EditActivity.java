@@ -33,6 +33,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.sxnwlfkk.dailyroutines.R;
+import com.sxnwlfkk.dailyroutines.backend.BReceiver;
 import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
 import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
@@ -401,7 +402,10 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
 
             getContentResolver().insert(RoutineContract.ItemEntry.CONTENT_URI, itemValues);
         }
-
+        // Schedule alarm is it's set
+        if (mEndTimeSwitch.isChecked()) {
+            BReceiver.registerNextAlarm(this, mCurrentUri, RoutineUtils.calculateIdealStartTime(mRoutineEndTime, mRoutineItemSumLength), routineName);
+        }
         Toast.makeText(this, "Your routine is saved", Toast.LENGTH_LONG).show();
     }
 
@@ -460,6 +464,12 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
             if (rowsAffected == 0) {
                 getContentResolver().insert(RoutineContract.ItemEntry.CONTENT_URI, itemValues);
             }
+        }
+        // Schedule alarm is it's set
+        if (mEndTimeSwitch.isChecked()) {
+            BReceiver.registerNextAlarm(this, mCurrentUri, RoutineUtils.calculateIdealStartTime(mRoutineEndTime, mRoutineItemSumLength), routineName);
+        } else {
+            BReceiver.cancelAlarm(this, mCurrentUri);
         }
         Toast.makeText(this, "Your routine is updated", Toast.LENGTH_LONG).show();
     }
@@ -525,13 +535,13 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                 int rRequireEnd = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END));
 
                 mRoutineName.setText(rName);
-                mRoutineEndTimeText.setText(RoutineUtils.formatTimeString(rEndTime));
+                mRoutineEndTime = rEndTime;
+                mRoutineEndTimeText.setText(RoutineUtils.formatLengthString(rEndTime));
                 if (rRequireEnd == 1) {
                     mEndTimeSwitch.setChecked(true);
                 } else {
                     mEndTimeSwitch.setChecked(false);
                 }
-
                 break;
             case EDIT_ITEMS_LOADER:
                 for (int i = 0; i < cursor.getCount(); i++) {
@@ -602,7 +612,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
             int seconds = hourOfDay * 3600 + minute * 60;
             EditActivity parent = (EditActivity) getActivity();
             parent.mRoutineEndTime = seconds;
-            parent.mRoutineEndTimeText.setText(RoutineUtils.formatTimeString(seconds));
+            parent.mRoutineEndTimeText.setText(RoutineUtils.formatLengthString(seconds));
 
         }
 }
