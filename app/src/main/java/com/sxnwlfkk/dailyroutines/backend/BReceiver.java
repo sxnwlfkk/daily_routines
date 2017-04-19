@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
@@ -57,7 +58,8 @@ public class BReceiver extends BroadcastReceiver {
             // Make the notification
             NotificationCompat.Builder mBuilder =
                     new NotificationCompat.Builder(ctx.getApplicationContext())
-                            .setSmallIcon(R.drawable.ic_info_black_24dp)
+                            .setSmallIcon(R.drawable.ic_stat_watch)
+                            .setLargeIcon(BitmapFactory.decodeResource(ctx.getResources(), R.drawable.ic_stat_watch))
                             .setContentTitle(routineName)
                             .setAutoCancel(true)
                             .setContentText("If you start your routine, you will surely finish on time!");
