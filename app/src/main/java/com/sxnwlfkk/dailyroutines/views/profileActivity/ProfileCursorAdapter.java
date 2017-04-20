@@ -38,6 +38,18 @@ public class ProfileCursorAdapter extends CursorAdapter {
         int length = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH));
         int avg = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
 
+        // Setting average cell bacground for visual information conveying
+        int relation = RoutineUtils.decideAvgColor(length, avg);
+        switch (relation) {
+            case RoutineUtils.AVERAGE_NIL_OR_EQ:
+                break;
+            case RoutineUtils.AVERAGE_BIGGER:
+                tvAvg.setBackgroundColor(context.getResources().getColor(R.color.material_red_lighten1));
+                break;
+            case RoutineUtils.AVERAGE_SMALLER:
+                tvAvg.setBackgroundColor(context.getResources().getColor(R.color.material_teal_lighten3));
+        }
+
         tvName.setText(name);
         tvLength.setText(RoutineUtils.formatLengthString(length));
         tvAvg.setText(RoutineUtils.formatLengthString(avg));

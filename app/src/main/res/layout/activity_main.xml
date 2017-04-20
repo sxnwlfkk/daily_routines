@@ -18,6 +18,8 @@
         android:id="@+id/main_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:divider="@color/material_indigo_accent1"
+        android:drawSelectorOnTop="true"
         android:visibility="visible"></ListView>
 
     <TextView
@@ -32,8 +34,8 @@
         android:id="@+id/fab_add_ritual"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:backgroundTint="@color/darkgreen"
-        app:rippleColor="@color/colorAccent"
+        app:backgroundTint="@color/material_indigo_lighten1"
+        app:rippleColor="@color/material_indigo_accent1"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_margin="16dp"

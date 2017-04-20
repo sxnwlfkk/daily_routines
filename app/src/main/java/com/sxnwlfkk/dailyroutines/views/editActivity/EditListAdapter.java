@@ -46,6 +46,18 @@ public class EditListAdapter extends ArrayAdapter<RoutineItem> {
         TextView avgView = (TextView) listItemView.findViewById(R.id.profile_list_item_avg);
         avgView.setText(RoutineUtils.formatLengthString((int) rItem.getmAverageTime()));
 
+        // Setting average cell bacground for visual information conveying
+        int relation = RoutineUtils.decideAvgColor(rItem.getmTime(), (int) rItem.getmAverageTime());
+        switch (relation) {
+            case RoutineUtils.AVERAGE_NIL_OR_EQ:
+                break;
+            case RoutineUtils.AVERAGE_BIGGER:
+                avgView.setBackgroundColor(getContext().getResources().getColor(R.color.material_red_lighten1));
+                break;
+            case RoutineUtils.AVERAGE_SMALLER:
+                avgView.setBackgroundColor(getContext().getResources().getColor(R.color.material_teal_lighten3));
+        }
+
         return listItemView;
     }
 }

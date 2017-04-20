@@ -225,7 +225,7 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
         } else {
             canBeNegative = true;
             if (mRoutineClock.getmCarryTime() < 0) {
-                mCarryClockText.setTextColor(getResources().getColor(R.color.red));
+                mCarryClockText.setTextColor(getResources().getColor(R.color.material_red));
             } else {
                 mCarryClockText.setTextColor(textColor);
             }
@@ -523,14 +523,15 @@ public class ClockActivity extends Activity implements LoaderManager.LoaderCallb
                 int currTime = (hours * 3600) + (minutes * 60) + seconds;
                 int optimalTime = RoutineUtils.calculateIdealStartTime(mRoutineClock.getmEndTime(), mRoutineClock.getmLength());
                 int carry = optimalTime - currTime;
+                int s;
                 if (carry < 0) {
                     mRoutineClock.distributeCarryOnStart(carry);
-                    int s;
                     mRoutineClock.setmLength(
                             ((s = mRoutineClock.getmLength() + carry) >= 0) ? s : 0
                     );
                 } else if (carry > 0) {
                     mRoutineClock.setmCarryTime(carry);
+                    mRoutineClock.setmLength(mRoutineClock.getmLength() + carry);
                 }
             }
             // Set first start time

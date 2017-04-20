@@ -223,6 +223,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                     RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER,
                     RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME,
                     RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END,
+                    RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM,
             };
 
             return new CursorLoader(this,
@@ -269,6 +270,15 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                 int itemNum = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER));
                 int endTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
                 boolean requireEnd = (cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END)) == 1);
+
+                // Check if routine started when coming form notification
+                int itemStarted = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM));
+                long id = cursor.getLong(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry._ID));
+                if (itemStarted > -1) {
+                    Intent intent = new Intent(this, ClockActivity.class);
+                    intent.setData(ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, id));
+                    startActivity(intent);
+                }
 
                 mRoutineLength.setText(RoutineUtils.formatLengthString(length));
                 mRoutineItemNum.setText(String.valueOf(itemNum));

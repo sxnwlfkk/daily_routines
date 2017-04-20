@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimary">#3f51b5</color>
     <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorAccent">#ff4081</color>
     <color name="black" type="color">#000000</color>
+    <color name="material_red" type="color">#f44336</color>
+    <color name="material_red_lighten1" type="color">#e57373</color>
+    <color name="material_teal_lighten3" type="color">#80cbc4</color>
+    <color name="material_indigo" type="color">#3f51b5</color>
+    <color name="material_indigo_lighten1" type="color">#5c6bc0</color>
+    <color name="material_indigo_lighten4" type="color">#c5cae9</color>
+    <color name="material_indigo_lighten5" type="color">#e8eaf6</color>
+    <color name="material_indigo_accent1" type="color">#8c9eff</color>
 
 <item name="blue" type="color">#FF33B5E5</item>
 <item name="purple" type="color">#FFAA66CC</item>

@@ -534,6 +534,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                 int rEndTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
                 int rRequireEnd = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END));
 
+
                 mRoutineName.setText(rName);
                 mRoutineEndTime = rEndTime;
                 mRoutineEndTimeText.setText(RoutineUtils.formatLengthString(rEndTime));
