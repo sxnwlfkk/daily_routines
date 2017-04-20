@@ -219,6 +219,13 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         mUpItem.setOnClickListener(itemUpButtonClickListener);
         mDownItem = (Button) findViewById(R.id.edit_button_down);
         mDownItem.setOnClickListener(itemDownButtonClickListener);
+        mEndTimeButton = (Button) findViewById(R.id.edit_routine_end_time_change_button);
+        mEndTimeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showTimePickerDialog(v);
+            }
+        });
 
         // Setting up Routine main fields
         mRoutineName = (EditText) findViewById(R.id.edit_textbox_routine_name);
@@ -582,7 +589,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
     // Time pickers
     public void showTimePickerDialog(View v) {
         DialogFragment newFragment = new TimePickerFragment();
-        newFragment.show(getFragmentManager(), "timePicker");
+        newFragment.show(this.getFragmentManager(), "timePicker");
     }
 
     public static class TimePickerFragment extends DialogFragment
@@ -614,7 +621,6 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
             EditActivity parent = (EditActivity) getActivity();
             parent.mRoutineEndTime = seconds;
             parent.mRoutineEndTimeText.setText(RoutineUtils.formatLengthString(seconds));
-
         }
 }
 }
