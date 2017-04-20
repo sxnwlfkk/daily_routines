@@ -6,6 +6,17 @@
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:actionBarStyle">@style/AppActionBarTheme</item>
+    </style>
+
+    <style name="AppActionBarTheme" parent="android:Theme.Material.Light.DarkActionBar">
+        <item name="android:background">@color/material_indigo_darken3</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:displayOptions">showTitle</item>
+    </style>
+
+    <style name="AppButtonTheme" parent="ThemeOverlay.AppCompat.Light">
+        <item name="colorAccent">@color/material_indigo_lighten4</item>
     </style>
 
 </resources>

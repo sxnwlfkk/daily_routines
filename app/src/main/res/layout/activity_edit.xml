@@ -47,6 +47,9 @@
             tools:text="0 h 0 m" />
 
         <Button
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:theme="@style/AppButtonTheme"
+            android:textColor="@color/material_grey_darken4"
             android:id="@+id/edit_routine_end_time_change_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -116,6 +119,9 @@
             android:orientation="horizontal">
 
             <Button
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:theme="@style/AppButtonTheme"
+                android:textColor="@color/material_grey_darken4"
                 android:id="@+id/edit_button_delete_item"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -125,6 +131,9 @@
                 android:text="Delete item" />
 
             <Button
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:theme="@style/AppButtonTheme"
+                android:textColor="@color/material_grey_darken4"
                 android:id="@+id/edit_button_up"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -135,6 +144,9 @@
                 android:text="Up" />
 
             <Button
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:theme="@style/AppButtonTheme"
+                android:textColor="@color/material_grey_darken4"
                 android:id="@+id/edit_button_down"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -145,6 +157,9 @@
                 android:text="Down" />
 
             <Button
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:theme="@style/AppButtonTheme"
+                android:textColor="@color/material_grey_darken4"
                 android:id="@+id/edit_button_item_save"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"

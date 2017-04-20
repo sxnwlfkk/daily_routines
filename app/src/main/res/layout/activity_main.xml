@@ -39,7 +39,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true"
         android:layout_margin="16dp"
-        android:src="@drawable/ic_watch_black_24dp"
+        android:src="@drawable/ic_stat_watch"
         app:fabSize="normal" />
 
 </RelativeLayout>

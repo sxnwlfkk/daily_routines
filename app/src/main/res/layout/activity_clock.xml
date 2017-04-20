@@ -83,6 +83,9 @@
         android:id="@+id/linearLayout">
 
         <Button
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:theme="@style/AppButtonTheme"
+            android:textColor="@color/material_grey_darken4"
             android:id="@+id/clock_previous_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -91,6 +94,9 @@
             android:visibility="gone" />
 
         <Button
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:theme="@style/AppButtonTheme"
+            android:textColor="@color/material_grey_darken4"
             android:id="@+id/clock_next_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
