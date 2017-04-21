@@ -14,6 +14,8 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -257,6 +259,7 @@ public class ClockActivityNew extends Activity {
         mItemCounterText.setText("[" + (mCurrentItem + 1) + "/"
                 + mSumOfItems + "]");
         mCarryClockText.setText(renderTime(mCarryTime, true));
+        getActionBar().setTitle(mRoutineName);
 
         if (mCurrentItem == 1) {
             mPreviousButton.setVisibility(View.VISIBLE);
@@ -298,6 +301,64 @@ public class ClockActivityNew extends Activity {
         if (seconds < 10) sec = "0";
         sec += seconds;
         return prefix + min + ":" + sec;
+    }
+
+    // Options menu
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.clock_activity, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent;
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                DialogInterface.OnClickListener dismissListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        sendCancelRoutineMessage();
+                        Intent intent = new Intent(ClockActivityNew.this, ProfileActivity.class);
+                        intent.setData(mCurrentUri);
+                        startActivity(intent);
+                        finish();
+                    }
+                };
+
+                showUnsavedChangesDialog(dismissListener);
+                return true;
+            case R.id.clock_menu_finish:
+                DialogInterface.OnClickListener finishListener = new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        sendFinishRoutineMessage();
+                        Intent intent = new Intent(ClockActivityNew.this, ProfileActivity.class);
+                        intent.setData(mCurrentUri);
+                        startActivity(intent);
+                        finish();
+                    }
+                };
+                showFinishWithTimeRemainingDialog(finishListener);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onBackPressed() {
+        DialogInterface.OnClickListener dismissListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                sendCancelRoutineMessage();
+                Intent intent = new Intent(ClockActivityNew.this, ProfileActivity.class);
+                intent.setData(mCurrentUri);
+                startActivity(intent);
+                finish();
+            }
+        };
+
+        showUnsavedChangesDialog(dismissListener);
     }
 
     // Service communication
