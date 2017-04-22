@@ -24,7 +24,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.sxnwlfkk.dailyroutines.R;
-import com.sxnwlfkk.dailyroutines.backend.BReceiver;
+import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.views.clock.ClockActivity;
 import com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity;
@@ -107,8 +107,8 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
 
         // Check if alarms were set up, then
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean alarmsWereSetUp = preferences.getBoolean(BReceiver.ALARM_SETUP_WAS_DONE, false);
-        if (!alarmsWereSetUp) BReceiver.scheduleAlarms(this);
+        boolean alarmsWereSetUp = preferences.getBoolean(AlarmNotificationReceiver.ALARM_SETUP_WAS_DONE, false);
+        if (!alarmsWereSetUp) AlarmNotificationReceiver.scheduleAlarms(this);
 
         getLoaderManager().initLoader(ROUTINE_LOADER, null, this);
     }

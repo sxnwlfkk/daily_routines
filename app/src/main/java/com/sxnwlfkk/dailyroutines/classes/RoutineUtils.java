@@ -11,12 +11,16 @@ public class RoutineUtils {
 
     // Return a "HH h MM m SS s" formatted timestring. Used for durations
     public static String formatLengthString(int timeInSeconds) {
+        boolean isNegative = timeInSeconds < 0;
+        if (isNegative) timeInSeconds *= -1;
+
         if (timeInSeconds == 0) return "0 s";
         int hours = timeInSeconds / 3600;
         int minutes = (timeInSeconds % 3600) / 60;
         int seconds = timeInSeconds % 60;
 
         String returnString = "";
+        if (isNegative) returnString = "-";
 
         if (hours > 0) {
             returnString += hours + " h ";

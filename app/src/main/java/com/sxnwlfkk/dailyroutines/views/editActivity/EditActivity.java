@@ -33,7 +33,7 @@ import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.sxnwlfkk.dailyroutines.R;
-import com.sxnwlfkk.dailyroutines.backend.BReceiver;
+import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
 import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
 import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
@@ -411,7 +411,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         }
         // Schedule alarm is it's set
         if (mEndTimeSwitch.isChecked()) {
-            BReceiver.registerNextAlarm(this, mCurrentUri, RoutineUtils.calculateIdealStartTime(mRoutineEndTime, mRoutineItemSumLength), routineName);
+            AlarmNotificationReceiver.registerNextAlarm(this, mCurrentUri, RoutineUtils.calculateIdealStartTime(mRoutineEndTime, mRoutineItemSumLength), routineName);
         }
         Toast.makeText(this, "Your routine is saved", Toast.LENGTH_LONG).show();
     }
@@ -474,9 +474,9 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         }
         // Schedule alarm is it's set
         if (mEndTimeSwitch.isChecked()) {
-            BReceiver.registerNextAlarm(this, mCurrentUri, RoutineUtils.calculateIdealStartTime(mRoutineEndTime, mRoutineItemSumLength), routineName);
+            AlarmNotificationReceiver.registerNextAlarm(this, mCurrentUri, RoutineUtils.calculateIdealStartTime(mRoutineEndTime, mRoutineItemSumLength), routineName);
         } else {
-            BReceiver.cancelAlarm(this, mCurrentUri);
+            AlarmNotificationReceiver.cancelAlarm(this, mCurrentUri);
         }
         Toast.makeText(this, "Your routine is updated", Toast.LENGTH_LONG).show();
     }

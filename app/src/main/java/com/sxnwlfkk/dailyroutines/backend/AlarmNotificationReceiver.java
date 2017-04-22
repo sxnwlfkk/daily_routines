@@ -29,7 +29,7 @@ import java.util.Calendar;
  * Created by cs on 2017.04.19..
  */
 
-public class BReceiver extends BroadcastReceiver {
+public class AlarmNotificationReceiver extends BroadcastReceiver {
 
     // Constant
     public static String ALARM_INTENT_LENGTH = "alarm_intent_length";
@@ -97,9 +97,9 @@ public class BReceiver extends BroadcastReceiver {
 
     public static void registerNextAlarm(Context ctx, Uri uri, int optimalTime, String name) {
         AlarmManager mgr = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
-        Log.e("BReceiver", "Na, idaig is eljutottunk. Registering or updating alarm.");
+        Log.e("AlarmNotificationReceiver", "Na, idaig is eljutottunk. Registering or updating alarm.");
 
-        Intent i = new Intent(ctx, BReceiver.class);
+        Intent i = new Intent(ctx, AlarmNotificationReceiver.class);
         i.setData(uri);
         i.putExtra(ALARM_INTENT_LENGTH, optimalTime);
         i.putExtra(ALARM_INTENT_NAME, name);
@@ -124,10 +124,10 @@ public class BReceiver extends BroadcastReceiver {
     }
 
     public static void cancelAlarm(Context ctx, Uri uri) {
-        Log.e("BReceiver", "Na, idaig is eljutottunk.");
+        Log.e("AlarmNotificationReceiver", "Na, idaig is eljutottunk.");
         AlarmManager mgr = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
 
-        Intent i = new Intent(ctx, BReceiver.class);
+        Intent i = new Intent(ctx, AlarmNotificationReceiver.class);
         i.setData(uri);
         int id = (int) ContentUris.parseId(uri);
         PendingIntent pi = PendingIntent.getBroadcast(ctx, id, i, PendingIntent.FLAG_CANCEL_CURRENT);
