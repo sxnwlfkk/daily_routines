@@ -77,15 +77,17 @@ public class ClockService extends Service {
         super.onCreate();
         // Initialise variables
         mRoutineClock = new RoutineClock();
-        timerIsInitialised = true;
+        timerIsInitialised = false;
     }
 
     // TODO
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         // Parse intent for command
+        Log.e(LOG_TAG, "In service on start command.");
 
-        int command = 0;
+        int command = intent.getIntExtra(SERVICE_COMMAND_FIELD, 0);
+        mCurrentUri = intent.getData();
 
         switch (command) {
             case CLOCK_SERVICE_ROUTINE_START:
@@ -118,6 +120,7 @@ public class ClockService extends Service {
 
     // Load from DB and return first intent
     private void startRoutine() {
+        Log.e(LOG_TAG, "Starting up routine service.");
         long id = 0;
         try {
             id = ContentUris.parseId(mCurrentUri);
@@ -140,6 +143,7 @@ public class ClockService extends Service {
         };
 
         Cursor cursor = getContentResolver().query(mCurrentUri, projection, null, null, null);
+        cursor.moveToFirst();
 
         long rId = cursor.getLong(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry._ID));
         String rName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME));
@@ -185,6 +189,8 @@ public class ClockService extends Service {
         cursor = getContentResolver().query(RoutineContract.ItemEntry.CONTENT_URI,
                 projectionItems, selection, selectionArgs,
                 RoutineContract.ItemEntry.COLUMN_ITEM_NO + " ASC");
+
+        cursor.moveToFirst();
 
         ArrayList<RoutineItem> itemsList = new ArrayList<>();
         for (int i = 0; i < cursor.getCount(); i++) {
@@ -328,8 +334,10 @@ public class ClockService extends Service {
         @Override
         public void onTick(long millisUntilFinished) {
             // Update clocks
+            mCurrentItem.incrementElapsedTime();
 
             // Send broadcast intent to Acitvity
+            sendMessage();
         }
 
         @Override
