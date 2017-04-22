@@ -86,17 +86,20 @@ public class ClockActivity extends Activity {
             int c = 0;
             mCarryTime = intent.getIntExtra(SERVICE_CARRY_FIELD, 0);
             mCurrentTime = ((c = intent.getIntExtra(SERVICE_CURR_TIME_FIELD, -1)) != -1) ? c : mCurrentTime;
-            mCurrentItem = ((c = intent.getIntExtra(SERVICE_CURR_ITEM_FIELD, -1)) != -1) ? c : mCurrentItem;
+            mCurrentItem = c = intent.getIntExtra(SERVICE_CURR_ITEM_FIELD, -1);
             mSumOfItems = ((c = intent.getIntExtra(SERVICE_SUM_ITEMS_FIELD, -1)) != -1) ? c : mSumOfItems;
 
-            Log.e(LOG_TAG, "Recieved: carry =" + mCarryTime + ", current time = " + mCarryTime);
-
-            if (waitingForScreenRefresh) {
+            if (mCurrentItem == -1) {
+                Log.e(LOG_TAG, "Starting onFinish method.");
+                sendStopTalkingMessage();
+                onFinish();
+            } else if (waitingForScreenRefresh) {
                 refreshScreen();
                 waitingForScreenRefresh = false;
             } else {
                 updateClocks();
             }
+
         }
     };
 
@@ -105,17 +108,6 @@ public class ClockActivity extends Activity {
         @Override
         public void onClick(View v) {
             if (mCurrentItem + 1 >= mSumOfItems) return;
-
-            if (mCurrentItem + 1 == mSumOfItems - 1) {
-                mNextButton.setText(R.string.routine_finish_button);
-                mNextButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        DialogInterface.OnClickListener fListener = finishListener;
-                        showFinishWithTimeRemainingDialog(fListener);
-                    }
-                });
-            }
             sendNextItemMessage();
             waitingForScreenRefresh = true;
         }
@@ -256,6 +248,17 @@ public class ClockActivity extends Activity {
     private void refreshScreen() {
         updateClocks();
 
+        if (mCurrentItem == mSumOfItems - 1) {
+                mNextButton.setText(R.string.routine_finish_button);
+                mNextButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        DialogInterface.OnClickListener fListener = finishListener;
+                        showFinishWithTimeRemainingDialog(fListener);
+                    }
+                });
+            }
+
         mItemNameText.setText(mItemName);
         mItemCounterText.setText("[" + (mCurrentItem + 1) + "/"
                 + mSumOfItems + "]");
@@ -302,6 +305,36 @@ public class ClockActivity extends Activity {
         if (seconds < 10) sec = "0";
         sec += seconds;
         return prefix + min + ":" + sec;
+    }
+
+    // On finishing routine
+    private void onFinish() {
+        setContentView(R.layout.activity_clock_ending);
+
+        Button discardButton = (Button) findViewById(R.id.clock_finished_discard_button);
+        Button saveButton = (Button) findViewById(R.id.clock_finished_save_button);
+
+        discardButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendCancelRoutineMessage();
+                Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
+                intent.setData(mCurrentUri);
+                startActivity(intent);
+                finish();
+            }
+        });
+
+        saveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendFinishRoutineMessage();
+                Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
+                intent.setData(mCurrentUri);
+                startActivity(intent);
+                finish();
+            }
+        });
     }
 
     // Options menu

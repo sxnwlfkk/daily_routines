@@ -23,12 +23,14 @@
         <activity
             android:name=".views.editActivity.EditActivity"
             android:windowSoftInputMode="stateHidden"
+            android:launchMode="singleTask"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:parentActivityName=".views.mainActivity.MainActivity"
             android:screenOrientation="portrait"
             android:theme="@style/AppTheme" />
         <activity
             android:name=".views.profileActivity.ProfileActivity"
+            android:launchMode="singleTask"
             android:parentActivityName=".views.mainActivity.MainActivity"
             android:theme="@style/AppTheme" />
 
@@ -40,6 +42,7 @@
         <activity
             android:name=".views.clock.ClockActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
+            android:launchMode="singleTask"
             android:label="@string/title_activity_clock"
             android:parentActivityName=".views.profileActivity.ProfileActivity"
             android:screenOrientation="portrait">
@@ -49,7 +52,7 @@
         </activity>
         <activity android:name=".views.preference.SettingsActivity"></activity>
 
-        <receiver android:name=".backend.BReceiver">
+        <receiver android:name=".backend.AlarmNotificationReceiver">
             <intent-filter>
                 <action
                     android:name="android.intent.action.BOOT_COMPLETED" />
