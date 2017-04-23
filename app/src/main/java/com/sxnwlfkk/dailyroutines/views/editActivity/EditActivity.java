@@ -56,6 +56,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
 
     private static final int EDIT_ROUTINE_LOADER = 31;
     private static final int EDIT_ITEMS_LOADER = 32;
+    public static final int DAY_IN_SECONDS = 24 * 60 * 60;
 
     private ArrayList<RoutineItem> mItemsList;
     private ArrayList<Long> mDeletedItems;
@@ -399,6 +400,10 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         // Get info for routine
         String routineName = String.valueOf(mRoutineName.getText());
         for (int j = 0; j < mItemsList.size(); j++) mRoutineItemSumLength += mItemsList.get(j).getmTime();
+        if (mRoutineItemSumLength >= DAY_IN_SECONDS) {
+            Toast.makeText(this, "Sorry, you can't have a routine longer than a day.", Toast.LENGTH_LONG).show();
+            return;
+        }
 
         // Make CV
         ContentValues values = new ContentValues();
@@ -436,6 +441,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
      */
     private void updateRoutine() {
 
+
         if (TextUtils.isEmpty(mRoutineName.getText().toString().trim())) {
             Toast.makeText(this, R.string.save_routine_have_no_name_message, Toast.LENGTH_LONG).show();
             return;
@@ -450,6 +456,10 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         String routineName = String.valueOf(mRoutineName.getText());
         mRoutineItemSumLength = 0;
         for (int j = 0; j < mItemsList.size(); j++) mRoutineItemSumLength += mItemsList.get(j).getmTime();
+        if (mRoutineItemSumLength >= DAY_IN_SECONDS) {
+            Toast.makeText(this, "Sorry, you can't have a routine longer than a day.", Toast.LENGTH_LONG).show();
+            return;
+        }
         // Update routine
         ContentValues values = new ContentValues();
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME, routineName);

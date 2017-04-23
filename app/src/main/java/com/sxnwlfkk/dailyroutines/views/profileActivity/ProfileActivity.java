@@ -23,6 +23,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.sxnwlfkk.dailyroutines.R;
+import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
 import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.views.clock.ClockActivity;
@@ -104,6 +105,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                 // dismiss the dialog
                 if (dialog != null) {
                     deleteRoutine();
+                    AlarmNotificationReceiver.cancelAlarm(getApplicationContext(), mCurrentUri);
                     dialog.dismiss();
                 }
 

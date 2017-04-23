@@ -53,6 +53,23 @@ public class RoutineUtils {
         return rString;
     }
 
+    // Only positive numbers
+    public static String formatCountdownTimeString (int timeInSeconds) {
+        int hours = timeInSeconds / 3600;
+        int minutes = (timeInSeconds % 3600) / 60;
+        int seconds = timeInSeconds % 60;
+        String hour = "";
+        String min = "";
+        String sec = "";
+        if (hours >= 1 && hours < 10) hour += ("0" + hours);
+        if (hours >= 1 && hours > 9) hour += String.valueOf(hours);
+        if (minutes < 10) min = "0";
+        min += minutes;
+        if (seconds < 10) sec = "0";
+        sec += seconds;
+        return hour+ ":" + min + ":" + sec;
+    }
+
     // Calculates ideal starting time for routine. With the 60 division, we take off the
     // seconds and guarantees that it will be a little early.
     public static int calculateIdealStartTime(int endTime, int routineLength) {

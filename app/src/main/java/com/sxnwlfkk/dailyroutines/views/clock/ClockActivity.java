@@ -21,6 +21,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.sxnwlfkk.dailyroutines.R;
+import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.views.preference.SettingsActivity;
 import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;
 
@@ -296,15 +297,7 @@ public class ClockActivity extends Activity {
             prefix = "-";
             timeInSeconds *= -1;
         }
-        int minutes = timeInSeconds / 60;
-        int seconds = timeInSeconds % 60;
-        String min = "";
-        String sec = "";
-        if (minutes < 10) min = "0";
-        min += minutes;
-        if (seconds < 10) sec = "0";
-        sec += seconds;
-        return prefix + min + ":" + sec;
+        return prefix + RoutineUtils.formatCountdownTimeString(timeInSeconds);
     }
 
     // On finishing routine
