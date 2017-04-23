@@ -101,7 +101,7 @@ public class ClockService extends Service {
 
         // Get settings
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        sVibrateOn = prefs.getBoolean(SettingsActivity.CLOCK_BEFORE_LOCKSCREEN_PREF_NAME, true);
+        sVibrateOn = prefs.getBoolean(SettingsActivity.VIBRATE_PREF_NAME, true);
 
         // Get notification manager
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -285,10 +285,17 @@ public class ClockService extends Service {
     }
 
     private void cancelRoutine() {
+        Log.e(LOG_TAG, "In cancel routinte service.");
         mCountdownTimer.cancel();
         mRoutineClock.resetRoutine();
         writeRoutineToDB();
         mNotificationManager.cancel((int)mRoutineClock.getmId());
+        mRoutineClock = new RoutineClock();
+        timerIsInitialised = false;
+        shouldSpeak = true;
+        routineStarted = false;
+        routineFinished = false;
+        mBuilder = null;
         stopSelf();
     }
 
@@ -297,6 +304,11 @@ public class ClockService extends Service {
         mRoutineClock.finishRoutine();
         writeRoutineToDB();
         mNotificationManager.cancel((int)mRoutineClock.getmId());
+        timerIsInitialised = false;
+        shouldSpeak = true;
+        routineStarted = false;
+        routineFinished = false;
+        mBuilder = null;
         stopSelf();
     }
 
@@ -316,6 +328,7 @@ public class ClockService extends Service {
 
     private void stopTalking() {
         mCountdownTimer.cancel();
+        shouldSpeak = false;
     }
 
     private void sendMessage() {
@@ -485,15 +498,6 @@ public class ClockService extends Service {
                 }
             };
             finishTimer.schedule(timerTask, 1000, 1000);
-
-            sendMessage(-1);
-        }
-    }
-
-    public void repeatEndMessage() {
-        if (shouldSpeak) {
-            sendMessage();
-            repeatEndMessage();
         }
     }
 

@@ -103,4 +103,5 @@
     <string name="settings_notification_title">Notifications</string>
     <string name="settings_notification_hint">Enable or disable notifications for routine start and end times.</string>
     <string name="optimal_start_text">Optimal start:</string>
+    <string name="end_time_switch_text">Routine has fix end time</string>
 </resources>

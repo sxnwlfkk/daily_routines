@@ -23,6 +23,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import com.sxnwlfkk.dailyroutines.BuildConfig;
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
@@ -36,6 +37,9 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
     // VARS
     // Log tag
     public static final String LOG_TAG = MainActivity.class.getSimpleName();
+
+    private static final String PREFERNCES_APP_VERSION = "app_version";
+
     private ActionBar mActionBar;
     private ProgressBar mProgressBar;
     TextView mEmptyStateTextView;
@@ -52,6 +56,17 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         // Mandatory
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Check for app version, and update
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        int version = preferences.getInt(PREFERNCES_APP_VERSION, -1);
+        if (version < BuildConfig.VERSION_CODE) {
+            preferences.edit()
+                    .putInt(PREFERNCES_APP_VERSION, BuildConfig.VERSION_CODE)
+                    .putBoolean(AlarmNotificationReceiver.ALARM_SETUP_WAS_DONE, false)
+                    .apply();
+        }
+
 
         // Setting up the toolbar
         mActionBar = getActionBar();
@@ -106,8 +121,8 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         });
 
         // Check if alarms were set up, then
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean alarmsWereSetUp = preferences.getBoolean(AlarmNotificationReceiver.ALARM_SETUP_WAS_DONE, false);
+        Log.e(LOG_TAG, "alarmsWereSetUp = " + Boolean.toString(alarmsWereSetUp));
         if (!alarmsWereSetUp) AlarmNotificationReceiver.scheduleAlarms(this);
 
         getLoaderManager().initLoader(ROUTINE_LOADER, null, this);
@@ -122,9 +137,6 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.main_menu_delete_all:
-                purgeDatabase();
-                return true;
             case R.id.main_preferences_button:
                 Intent intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);

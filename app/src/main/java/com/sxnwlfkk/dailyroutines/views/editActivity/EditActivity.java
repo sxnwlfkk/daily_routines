@@ -25,7 +25,9 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -236,6 +238,17 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         mEndTimeButton.setOnTouchListener(mOnTouchListener);
         mEndTimeSwitch = (Switch) findViewById(R.id.edit_end_time_switch);
         mEndTimeSwitch.setOnTouchListener(mOnTouchListener);
+        mEndTimeSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                LinearLayout endTimeBox = (LinearLayout) findViewById(R.id.edit_routine_end_time_box);
+                if (isChecked) {
+                    endTimeBox.setVisibility(View.VISIBLE);
+                } else {
+                    endTimeBox.setVisibility(View.GONE);
+                }
+            }
+        });
 
         // Check intent
         Intent intent = getIntent();
@@ -544,7 +557,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
 
                 mRoutineName.setText(rName);
                 mRoutineEndTime = rEndTime;
-                mRoutineEndTimeText.setText(RoutineUtils.formatLengthString(rEndTime));
+                mRoutineEndTimeText.setText(RoutineUtils.formatClockTimeString(rEndTime));
                 if (rRequireEnd == 1) {
                     mEndTimeSwitch.setChecked(true);
                 } else {
@@ -620,7 +633,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
             int seconds = hourOfDay * 3600 + minute * 60;
             EditActivity parent = (EditActivity) getActivity();
             parent.mRoutineEndTime = seconds;
-            parent.mRoutineEndTimeText.setText(RoutineUtils.formatLengthString(seconds));
+            parent.mRoutineEndTimeText.setText(RoutineUtils.formatClockTimeString(seconds));
         }
 }
 }

@@ -286,7 +286,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                 if (requireEnd) {
                     TextView numOfItems = (TextView) findViewById(R.id.profile_num_of_items_text);
                     numOfItems.setText(R.string.optimal_start_text);
-                    mRoutineItemNum.setText(RoutineUtils.formatLengthString(RoutineUtils.calculateIdealStartTime(endTime, length)));
+                    mRoutineItemNum.setText(RoutineUtils.formatClockTimeString(RoutineUtils.calculateIdealStartTime(endTime, length)));
                 }
 
                 ActionBar aBar = getActionBar();

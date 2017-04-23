@@ -15,6 +15,7 @@
         android:layout_weight="0"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
+        android:paddingTop="16dp"
         android:ems="10"
         android:hint="Name of the routine"
         android:inputType="text" />
@@ -25,16 +26,20 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="8dp"
         android:layout_weight="0"
-        android:text="End time"
+        android:text="@string/end_time_switch_text"
         tools:text="Needs ending time" />
 
     <LinearLayout
+        android:id="@+id/edit_routine_end_time_box"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_weight="0"
+        android:visibility="gone"
         android:orientation="horizontal">
 
         <TextView
@@ -63,6 +68,7 @@
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
+        android:paddingTop="16dp"
         android:layout_weight="0"
         android:orientation="vertical">
 
@@ -73,7 +79,16 @@
             android:layout_alignParentStart="true"
             android:layout_alignParentTop="true"
             android:layout_weight="0"
-            android:text="New routine item" />
+            android:text="New routine item"
+            android:textAlignment="textStart"
+            android:textStyle="bold|italic" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="@color/material_teal_lighten3"
+            android:paddingBottom="24dp"
+            android:orientation="horizontal"></LinearLayout>
 
         <EditText
             android:id="@+id/edit_textbox_item_name"

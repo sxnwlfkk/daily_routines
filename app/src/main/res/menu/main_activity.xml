@@ -7,9 +7,4 @@
         android:icon="@android:drawable/ic_menu_preferences"
         android:title="Preferences"
         android:showAsAction="always" />
-    <item
-        android:id="@+id/main_menu_delete_all"
-        android:enabled="true"
-        android:title="Delete DB"
-        android:visible="true" />
 </menu>

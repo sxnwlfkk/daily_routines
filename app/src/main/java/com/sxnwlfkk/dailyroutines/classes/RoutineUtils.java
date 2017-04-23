@@ -56,7 +56,11 @@ public class RoutineUtils {
     // Calculates ideal starting time for routine. With the 60 division, we take off the
     // seconds and guarantees that it will be a little early.
     public static int calculateIdealStartTime(int endTime, int routineLength) {
-        return ((endTime - routineLength) / 60) * 60;
+        int startTime = (endTime - routineLength);
+        if (startTime < 0) {
+            startTime = (24*60*60) + startTime;
+        }
+        return (startTime / 60) * 60;
     }
 
     // Decides which color should the adapter use for average backgrounds

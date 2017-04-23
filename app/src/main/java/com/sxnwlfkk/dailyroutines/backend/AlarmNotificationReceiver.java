@@ -45,7 +45,7 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
             onAlarm(context, intent);
         } else {
             // The system just booted
-//            scheduleAlarms(context);
+            scheduleAlarms(context);
         }
     }
 
@@ -97,7 +97,6 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
 
     public static void registerNextAlarm(Context ctx, Uri uri, int optimalTime, String name) {
         AlarmManager mgr = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
-        Log.e("AlarmNotificationReceiver", "Na, idaig is eljutottunk. Registering or updating alarm.");
 
         Intent i = new Intent(ctx, AlarmNotificationReceiver.class);
         i.setData(uri);
@@ -124,7 +123,6 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
     }
 
     public static void cancelAlarm(Context ctx, Uri uri) {
-        Log.e("AlarmNotificationReceiver", "Na, idaig is eljutottunk.");
         AlarmManager mgr = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
 
         Intent i = new Intent(ctx, AlarmNotificationReceiver.class);
@@ -135,6 +133,7 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
     }
 
     public static void scheduleAlarms(Context ctx) {
+        Log.e("BReceiver", "Scheduling alarms.");
         String[] projection = {
                 RoutineContract.RoutineEntry._ID,
                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME,
@@ -146,8 +145,10 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
         Cursor cursor = ctx.getContentResolver().query(RoutineContract.RoutineEntry.CONTENT_URI, projection, null, null, null);
         if (cursor.getCount() > 0) {
             cursor.moveToFirst();
-            while (cursor.moveToNext()) {
-                if (cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END)) == 1) {
+            do {
+                int reqEnd = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END));
+                if (reqEnd == 1) {
+                    Log.e("Receiver", "Requires notification.");
                     int id = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry._ID));
                     String routineName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME));
                     int endTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
@@ -155,7 +156,7 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
 
                     registerNextAlarm(ctx, ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, id), RoutineUtils.calculateIdealStartTime(endTime, length), routineName);
                 }
-            }
+            } while (cursor.moveToNext());
         }
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(ctx);
         preferences.edit().putBoolean(ALARM_SETUP_WAS_DONE, true).apply();
