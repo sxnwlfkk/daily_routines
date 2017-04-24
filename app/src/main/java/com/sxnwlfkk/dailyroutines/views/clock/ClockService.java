@@ -16,6 +16,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -76,6 +77,7 @@ public class ClockService extends Service {
     Uri mCurrentUri;
     NotificationManager mNotificationManager;
     NotificationCompat.Builder mBuilder;
+    PowerManager.WakeLock mWakelock;
 
     // Sentinel
     private boolean timerIsInitialised;
@@ -98,6 +100,10 @@ public class ClockService extends Service {
         routineStarted = false;
         routineFinished = false;
         mBuilder = null;
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        mWakelock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                "MyWakelockTag");
+        mWakelock.acquire();
 
         // Get settings
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
@@ -111,6 +117,9 @@ public class ClockService extends Service {
     public void onDestroy() {
         mNotificationManager.cancelAll();
         super.onDestroy();
+        if (mWakelock.isHeld()) {
+            mWakelock.release();
+        }
     }
 
     @Override
@@ -290,6 +299,7 @@ public class ClockService extends Service {
     private void cancelRoutine() {
         Log.e(LOG_TAG, "In cancel routinte service.");
         mCountdownTimer.cancel();
+        mWakelock.release();
         mRoutineClock.resetRoutine();
         writeRoutineToDB();
         stopForeground(true);
@@ -305,6 +315,7 @@ public class ClockService extends Service {
 
     private void finishRoutine() {
         mCountdownTimer.cancel();
+        mWakelock.release();
         mRoutineClock.finishRoutine();
         writeRoutineToDB();
         stopForeground(true);
