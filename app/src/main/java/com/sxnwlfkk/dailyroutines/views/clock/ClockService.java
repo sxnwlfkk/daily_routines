@@ -147,7 +147,7 @@ public class ClockService extends Service {
                 break;
         }
 
-        return START_NOT_STICKY;
+        return START_REDELIVER_INTENT;
     }
 
     // Internal Commands
@@ -265,7 +265,7 @@ public class ClockService extends Service {
                     mRoutineClock.setmLength(
                             ((s = mRoutineClock.getmLength() + carry) >= 0) ? s : 0
                     );
-                } else if (carry > 0) {
+                } else if (carry >= 0) {
                     mRoutineClock.setmCarryTime(carry);
                     mRoutineClock.setmLength(mRoutineClock.getmLength() + carry);
                 }
