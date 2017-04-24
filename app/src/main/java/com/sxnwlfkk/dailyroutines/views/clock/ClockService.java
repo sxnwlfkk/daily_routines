@@ -280,6 +280,9 @@ public class ClockService extends Service {
             timerIsInitialised = true;
         }
 
+        makeNotification();
+        startForeground((int) mRoutineClock.getmId(), mBuilder.build());
+
         // Send back confirmation and basic data message
         sendMessage();
     }
@@ -289,6 +292,7 @@ public class ClockService extends Service {
         mCountdownTimer.cancel();
         mRoutineClock.resetRoutine();
         writeRoutineToDB();
+        stopForeground(true);
         mNotificationManager.cancel((int)mRoutineClock.getmId());
         mRoutineClock = new RoutineClock();
         timerIsInitialised = false;
@@ -303,6 +307,7 @@ public class ClockService extends Service {
         mCountdownTimer.cancel();
         mRoutineClock.finishRoutine();
         writeRoutineToDB();
+        stopForeground(true);
         mNotificationManager.cancel((int)mRoutineClock.getmId());
         timerIsInitialised = false;
         shouldSpeak = true;
@@ -372,7 +377,8 @@ public class ClockService extends Service {
                             .setContentTitle(mCurrentItem.getmItemName())
                             .setContentText(notificationText);
         }
-        mBuilder.setContentText(notificationText);
+        mBuilder.setContentTitle(mCurrentItem.getmItemName())
+                .setContentText(notificationText);
 
         // Creates an explicit intent for an Activity in your app
         Intent resultIntent = new Intent(getApplicationContext(), ClockActivity.class);

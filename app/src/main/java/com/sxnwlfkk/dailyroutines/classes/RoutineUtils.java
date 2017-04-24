@@ -61,13 +61,13 @@ public class RoutineUtils {
         String hour = "";
         String min = "";
         String sec = "";
-        if (hours >= 1 && hours < 10) hour += ("0" + hours);
-        if (hours >= 1 && hours > 9) hour += String.valueOf(hours);
+        if (hours >= 1 && hours < 10) hour += ("0" + hours) + ":";
+        if (hours >= 1 && hours > 9) hour += String.valueOf(hours) + ":";
         if (minutes < 10) min = "0";
         min += minutes;
         if (seconds < 10) sec = "0";
         sec += seconds;
-        return hour+ ":" + min + ":" + sec;
+        return hour + min + ":" + sec;
     }
 
     // Calculates ideal starting time for routine. With the 60 division, we take off the
