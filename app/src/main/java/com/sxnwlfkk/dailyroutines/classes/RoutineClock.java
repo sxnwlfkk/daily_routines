@@ -141,7 +141,17 @@ public class RoutineClock {
             } else {
                 mItemsList.get(mCurrentItemIndex).setmCurrentTime(currTime - mDiffTime);
             }
+            remainingRoutineTime();
         }
+    }
+
+    // Calculate the remaining time
+    void remainingRoutineTime() {
+        int newLength = mCarryTime;
+        for (int i = mCurrentItemIndex; i < mRoutineItemsNum; i++) {
+            newLength = mItemsList.get(i).getmCurrentTime();
+        }
+        mLength = newLength;
     }
 
 

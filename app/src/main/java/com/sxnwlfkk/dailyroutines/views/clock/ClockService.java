@@ -1,6 +1,5 @@
 package com.sxnwlfkk.dailyroutines.views.clock;
 
-import android.app.LoaderManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -8,12 +7,10 @@ import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.os.PowerManager;
@@ -23,15 +20,12 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
-import android.view.View;
-import android.widget.Button;
 
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.classes.RoutineClock;
 import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
 import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
-import com.sxnwlfkk.dailyroutines.views.mainActivity.MainActivity;
 import com.sxnwlfkk.dailyroutines.views.preference.SettingsActivity;
 import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;
 
@@ -82,8 +76,9 @@ public class ClockService extends Service {
     // Sentinel
     private boolean timerIsInitialised;
     private boolean shouldSpeak;
-    private boolean routineStarted;
+    private boolean routineIsSetUp;
     private boolean routineFinished;
+    private boolean routineHasBennStarted;
 
     // Settings
     private boolean sVibrateOn;
@@ -97,7 +92,7 @@ public class ClockService extends Service {
         mRoutineClock = new RoutineClock();
         timerIsInitialised = false;
         shouldSpeak = true;
-        routineStarted = false;
+        routineIsSetUp = false;
         routineFinished = false;
         mBuilder = null;
         PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
@@ -132,7 +127,7 @@ public class ClockService extends Service {
 
         switch (command) {
             case CLOCK_SERVICE_ROUTINE_START:
-                if (!routineStarted) {
+                if (!routineIsSetUp) {
                     startRoutine();
                 } else sendMessage();
                 break;
@@ -161,9 +156,103 @@ public class ClockService extends Service {
 
     // Internal Commands
 
-    // Load from DB and return first intent
-    private void startRoutine() {
-        Log.e(LOG_TAG, "Starting up routine service.");
+     private void getRoutineData() {
+         // Select the appropriate behaviour for the Uri
+         String[] projection = {
+                 RoutineContract.RoutineEntry._ID,
+                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME,
+                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_CARRY,
+                 RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM,
+                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME,
+                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END,
+                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER,
+                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED,
+                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_INTERRUPT_TIME,
+         };
+
+         Cursor cursor = getContentResolver().query(mCurrentUri, projection, null, null, null);
+         cursor.moveToFirst();
+
+         long rId = cursor.getLong(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry._ID));
+         String rName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME));
+         int rEndTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
+         boolean rEndTimeReq = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END)) == 1;
+         int rCarryTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_CARRY));
+         int rCurrItem = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM));
+         int rItemsNumber = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER));
+         int rTimesUsed = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED));
+         int rInterruptTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_INTERRUPT_TIME));
+
+         // Set first start sentry
+         if (rCurrItem == -1) {
+             routineHasBennStarted = false;
+         } else {
+             routineHasBennStarted = true;
+         }
+
+         // Set these data to the clock object
+         mRoutineClock.setmId(rId);
+         mRoutineClock.setmName(rName);
+         mRoutineClock.setmEndTime(rEndTime);
+         mRoutineClock.setmEndTimeRequired(rEndTimeReq);
+         mRoutineClock.setmCurrentItemIndex(rCurrItem);
+         mRoutineClock.setmCarryTime(rCarryTime);
+         mRoutineClock.setmRoutineItemsNum(rItemsNumber);
+         mRoutineClock.setmTimesUsed(rTimesUsed);
+
+         // Check diff time
+         int rDiffTime = 0;
+         if (rCurrItem > -1) {
+             long currTime = System.currentTimeMillis() / 1000;
+             rDiffTime = (int) currTime - rInterruptTime;
+         }
+         mRoutineClock.setmDiffTime(rDiffTime);
+     }
+
+     private void getItemsData(long id) {
+         String[] projectionItems = new String[] {
+                 RoutineContract.ItemEntry._ID,
+                 RoutineContract.ItemEntry.COLUMN_ITEM_NAME,
+                 RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH,
+                 RoutineContract.ItemEntry.COLUMN_ITEM_NO,
+                 RoutineContract.ItemEntry.COLUMN_REMAINING_TIME,
+                 RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME,
+                 RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME,
+                 RoutineContract.ItemEntry.COLUMN_START_TIME,
+         };
+
+         String selection = RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE + "=?";
+         String[] selectionArgs = new String[] { String.valueOf(id) };
+         Cursor cursor = getContentResolver().query(RoutineContract.ItemEntry.CONTENT_URI,
+                 projectionItems, selection, selectionArgs,
+                 RoutineContract.ItemEntry.COLUMN_ITEM_NO + " ASC");
+
+         cursor.moveToFirst();
+
+         ArrayList<RoutineItem> itemsList = new ArrayList<>();
+         for (int i = 0; i < cursor.getCount(); i++) {
+             long itemId = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry._ID));
+             String itemName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_NAME));
+             int itemTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH));
+             int itemAvgTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
+             int itemRemTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME));
+             int itemElapsedTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME));
+             int itemStartTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_START_TIME));
+
+             RoutineItem newItem = new RoutineItem(itemName, itemTime, itemAvgTime);
+             newItem.setmId(itemId);
+             newItem.setmCurrentTime(itemRemTime);
+             newItem.setmElapsedTime(itemElapsedTime);
+             newItem.setStartTime(itemStartTime);
+             itemsList.add(newItem);
+             if (!cursor.moveToNext()) break;
+         }
+         mRoutineClock.setmItemsList(itemsList);
+     }
+
+    // Read from DB
+    private void queryDB() {
+        // Calculate ID from Uri
         long id = 0;
         try {
             id = ContentUris.parseId(mCurrentUri);
@@ -171,95 +260,19 @@ public class ClockService extends Service {
             Log.e(LOG_TAG, "Invalid argument in URI (URI is not ending with .../#): " + mCurrentUri);
             return;
         }
+        // Load data from DB
+        getRoutineData();
+        getItemsData(id);
+    }
 
-        // Select the appropriate behaviour for the Uri
-        String[] projection = {
-                RoutineContract.RoutineEntry._ID,
-                RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME,
-                RoutineContract.RoutineEntry.COLUMN_ROUTINE_CARRY,
-                RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM,
-                RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME,
-                RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END,
-                RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER,
-                RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED,
-                RoutineContract.RoutineEntry.COLUMN_ROUTINE_INTERRUPT_TIME,
-        };
+    // Load from DB and return first intent
+    private void startRoutine() {
+        Log.e(LOG_TAG, "Starting up or resuming routine service.");
+        // Get data from DB
+        queryDB();
 
-        Cursor cursor = getContentResolver().query(mCurrentUri, projection, null, null, null);
-        cursor.moveToFirst();
-
-        long rId = cursor.getLong(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry._ID));
-        String rName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME));
-        int rEndTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
-        boolean rEndTimeReq = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END)) == 1;
-        int rCarryTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_CARRY));
-        int rCurrItem = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM));
-        int rItemsNumber = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER));
-        int rTimesUsed = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED));
-        int rInterruptTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_INTERRUPT_TIME));
-
-        int rDiffTime = 0;
-        if (rCurrItem > -1) {
-            long currTime = System.currentTimeMillis() / 1000;
-            rDiffTime = (int) currTime - rInterruptTime;
-        }
-
-        // Set these data to the clock object
-        mRoutineClock.setmId(rId);
-        mRoutineClock.setmName(rName);
-        mRoutineClock.setmEndTime(rEndTime);
-        mRoutineClock.setmEndTimeRequired(rEndTimeReq);
-        mRoutineClock.setmCurrentItemIndex(rCurrItem);
-        mRoutineClock.setmCarryTime(rCarryTime);
-        mRoutineClock.setmRoutineItemsNum(rItemsNumber);
-        mRoutineClock.setmTimesUsed(rTimesUsed);
-        mRoutineClock.setmDiffTime(rDiffTime);
-
-        // Items
-        String[] projectionItems = new String[] {
-                RoutineContract.ItemEntry._ID,
-                RoutineContract.ItemEntry.COLUMN_ITEM_NAME,
-                RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH,
-                RoutineContract.ItemEntry.COLUMN_ITEM_NO,
-                RoutineContract.ItemEntry.COLUMN_REMAINING_TIME,
-                RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME,
-                RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME,
-                RoutineContract.ItemEntry.COLUMN_START_TIME,
-        };
-
-        String selection = RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE + "=?";
-        String[] selectionArgs = new String[] { String.valueOf(id) };
-        cursor = getContentResolver().query(RoutineContract.ItemEntry.CONTENT_URI,
-                projectionItems, selection, selectionArgs,
-                RoutineContract.ItemEntry.COLUMN_ITEM_NO + " ASC");
-
-        cursor.moveToFirst();
-
-        ArrayList<RoutineItem> itemsList = new ArrayList<>();
-        for (int i = 0; i < cursor.getCount(); i++) {
-            long itemId = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry._ID));
-            String itemName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_NAME));
-            int itemTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH));
-            int itemAvgTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
-            int itemRemTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME));
-            int itemElapsedTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME));
-            int itemStartTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_START_TIME));
-
-            RoutineItem newItem = new RoutineItem(itemName, itemTime, itemAvgTime);
-            newItem.setmId(itemId);
-            newItem.setmCurrentTime(itemRemTime);
-            newItem.setmElapsedTime(itemElapsedTime);
-            newItem.setStartTime(itemStartTime);
-            itemsList.add(newItem);
-            if (!cursor.moveToNext()) break;
-        }
-        mRoutineClock.setmItemsList(itemsList);
-
-
-        mRoutineClock.sortDiffTime();
-        if (mRoutineClock.getmCurrentItemIndex() == 0
-                && mRoutineClock.getCurrentItem().getmElapsedTime() == 0) {
-            // Distribute carry time if needed
+        // First start of the routine
+        if (!routineHasBennStarted) {
             if (mRoutineClock.ismEndTimeRequired()) {
                 Calendar cal = Calendar.getInstance();
                 int hours = cal.get(Calendar.HOUR_OF_DAY);
@@ -268,6 +281,7 @@ public class ClockService extends Service {
                 int currTime = (hours * 3600) + (minutes * 60) + seconds;
                 int optimalTime = RoutineUtils.calculateIdealStartTime(mRoutineClock.getmEndTime(), mRoutineClock.getmLength());
                 int carry = optimalTime - currTime;
+
                 int s;
                 if (carry < 0) {
                     mRoutineClock.distributeCarryOnStart(carry);
@@ -279,9 +293,12 @@ public class ClockService extends Service {
                     mRoutineClock.setmLength(mRoutineClock.getmLength() + carry);
                 }
             }
-            // Set first start time
             mRoutineClock.setStartTime();
+        // Routine was started but the service was killed after
+        } else {
+            mRoutineClock.sortDiffTime();
         }
+
         mCurrentItem = mRoutineClock.getCurrentItem();
         if (!timerIsInitialised) {
             mCountdownTimer = new ClockCountdownTimer(mRoutineClock.getmLength() * 1000, 1000);
@@ -289,6 +306,7 @@ public class ClockService extends Service {
             timerIsInitialised = true;
         }
 
+        // Create routine notification and set service to foreground
         makeNotification();
         startForeground((int) mRoutineClock.getmId(), mBuilder.build());
 
@@ -307,7 +325,7 @@ public class ClockService extends Service {
         mRoutineClock = new RoutineClock();
         timerIsInitialised = false;
         shouldSpeak = true;
-        routineStarted = false;
+        routineIsSetUp = false;
         routineFinished = false;
         mBuilder = null;
         stopSelf();
@@ -322,7 +340,7 @@ public class ClockService extends Service {
         mNotificationManager.cancel((int)mRoutineClock.getmId());
         timerIsInitialised = false;
         shouldSpeak = true;
-        routineStarted = false;
+        routineIsSetUp = false;
         routineFinished = false;
         mBuilder = null;
         stopSelf();

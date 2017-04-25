@@ -191,6 +191,8 @@ public class ClockActivity extends Activity {
         IntentFilter filter = new IntentFilter();
         filter.addAction(ClockService.BROADCAST_ACTION);
         registerReceiver(mReceiver, filter);
+        sendUpdateMessage();
+        waitingForScreenRefresh = true;
         super.onResume();
     }
 
@@ -249,6 +251,10 @@ public class ClockActivity extends Activity {
     private void refreshScreen() {
         updateClocks();
 
+        if (mCurrentItem != 0) {
+            mPreviousButton.setVisibility(View.VISIBLE);
+        }
+
         if (mCurrentItem == mSumOfItems - 1) {
                 mNextButton.setText(R.string.routine_finish_button);
                 mNextButton.setOnClickListener(new View.OnClickListener() {
@@ -258,7 +264,7 @@ public class ClockActivity extends Activity {
                         showFinishWithTimeRemainingDialog(fListener);
                     }
                 });
-            }
+        }
 
         mItemNameText.setText(mItemName);
         mItemCounterText.setText("[" + (mCurrentItem + 1) + "/"
