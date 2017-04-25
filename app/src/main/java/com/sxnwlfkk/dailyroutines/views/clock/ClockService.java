@@ -502,7 +502,14 @@ public class ClockService extends Service {
                 mRoutineClock.setmCarryTime(carry - 1);
             }
 
-            // Send broadcast intent to Acitvity
+            // Check if routine ended. Interrupt if timer would continue with no time left.
+            if (mRoutineClock.getmCurrentItemIndex() + 1 == mRoutineClock.getmRoutineItemsNum()
+                    && mRoutineClock.getmCarryTime() == 0
+                    && mCurrentItem.getmCurrentTime() == 0) {
+                onFinish();
+            }
+
+            // Send broadcast intent to Activity
             sendMessage();
             makeNotification();
             writeRoutineToDB();

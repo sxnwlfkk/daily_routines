@@ -28,17 +28,21 @@ public class RoutineClock {
     // Distribute carry time
     private void distibuteCarryTime(int offset) {
         int remainingTime = 0;
+        double plusTime = 0;
         for (int i = mCurrentItemIndex+offset; i < mItemsList.size(); i++) {
             remainingTime += mItemsList.get(i).getmCurrentTime();
         }
         for (int i = mCurrentItemIndex+offset; i < mItemsList.size(); i++) {
             RoutineItem item = mItemsList.get(i);
-            float ratio = (float) item.getmCurrentTime() / remainingTime;
-            float sub = ratio * mCarryTime;
-            item.setmCurrentTime((int) (item.getmCurrentTime() + sub));
+            double ratio = (double) item.getmCurrentTime() / remainingTime;
+            double sub = ratio * mCarryTime;
+            double oldItemTime = item.getmCurrentTime();
+            double newItemTime = oldItemTime + sub;
+            plusTime += newItemTime - ((int) newItemTime);
+            item.setmCurrentTime((int) newItemTime);
             mItemsList.set(i, item);
         }
-        mCarryTime = 0;
+        mCarryTime = (int) plusTime;
     }
 
     // Distribute carry on start
