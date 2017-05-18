@@ -1,9 +1,5 @@
-Daily Routines fejlesztői dokumentáció
-======================================
-
-Dokumentáció a 2016-2017 II. Alkalmazások fejlesztése kurzushoz beadandó projekthez. Készítette: Keresztes Dániel
-
-_2017.05.15_
+Daily Routines
+==============
 
 A program általános leírása
 ---------------------------
