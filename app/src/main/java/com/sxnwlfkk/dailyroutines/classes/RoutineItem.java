@@ -8,17 +8,17 @@ public class RoutineItem {
 
     private String mItemName;
 
-    private int mTime;
+    private long mTime;
 
-    private int mCurrentTime;
+    private long mCurrentTime;
 
     private double mAverageTime;
 
-    private int mElapsedTime;
+    private long mElapsedTime;
 
     private long mId;
 
-    private int startTime;
+    private long startTime;
 
     /**
      * New object with no prior average data.
@@ -38,7 +38,7 @@ public class RoutineItem {
      * @param time
      * @param average
      */
-    public RoutineItem(String item_name, int time, double average) {
+    public RoutineItem(String item_name, long time, double average) {
         mItemName = item_name;
         mTime = this.mCurrentTime = time;
         mAverageTime = average;
@@ -65,7 +65,7 @@ public class RoutineItem {
     }
 
     /* GETTERS */
-    public int getmCurrentTime() {
+    public long getmCurrentTime() {
         return mCurrentTime;
     }
 
@@ -73,7 +73,7 @@ public class RoutineItem {
         return mItemName;
     }
 
-    public int getmTime() {
+    public long getmTime() {
         return mTime;
     }
 
@@ -85,20 +85,20 @@ public class RoutineItem {
         return mId;
     }
 
-    public int getmElapsedTime() {
+    public long getmElapsedTime() {
         return mElapsedTime;
     }
 
-    public int getStartTime() {
+    public long getStartTime() {
         return startTime;
     }
 
     /* SETTERS */
-    public void setmCurrentTime(int currentTime) {
+    public void setmCurrentTime(long currentTime) {
         mCurrentTime = currentTime;
     }
 
-    public void setmTime(int mTime) {
+    public void setmTime(long mTime) {
         this.mTime = mTime;
     }
 
@@ -114,13 +114,13 @@ public class RoutineItem {
         this.mId = mId;
     }
 
-    public void setmElapsedTime(int mElapsedTime) {
+    public void setmElapsedTime(long mElapsedTime) {
         this.mElapsedTime = mElapsedTime;
     }
 
     public void incrementElapsedTime() { mElapsedTime++; }
 
-    public void setStartTime(int startTime) {
+    public void setStartTime(long startTime) {
         this.startTime = startTime;
     }
 
