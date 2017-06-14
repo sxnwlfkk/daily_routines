@@ -432,7 +432,8 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         // Schedule alarm if it's set
         if (mEndTimeSwitch.isChecked()) {
             AlarmNotificationReceiver.registerNextAlarm(this, mCurrentUri,
-                    RoutineUtils.calculateIdealStartTime(RoutineUtils.msecToSec(mRoutineEndTime), mRoutineItemSumLength),
+                    RoutineUtils.calculateIdealStartTime(RoutineUtils.msecToSec(mRoutineEndTime),
+                            RoutineUtils.msecToSec(mRoutineItemSumLength)),
                     routineName);
         }
         Toast.makeText(this, "Your routine is saved", Toast.LENGTH_LONG).show();
@@ -505,7 +506,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         if (mEndTimeSwitch.isChecked()) {
             AlarmNotificationReceiver.registerNextAlarm(this, mCurrentUri,
                     RoutineUtils.calculateIdealStartTime(RoutineUtils.msecToSec(mRoutineEndTime),
-                            mRoutineItemSumLength), routineName);
+                            RoutineUtils.msecToSec(mRoutineItemSumLength)), routineName);
         } else {
             AlarmNotificationReceiver.cancelAlarm(this, mCurrentUri);
         }

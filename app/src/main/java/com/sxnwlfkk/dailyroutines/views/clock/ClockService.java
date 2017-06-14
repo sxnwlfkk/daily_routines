@@ -411,7 +411,7 @@ public class ClockService extends Service {
             mBuilder =
                     new NotificationCompat.Builder(getApplicationContext())
                             .setSmallIcon(R.drawable.ic_stat_watch)
-                            .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_stat_watch))
+                            .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
                             .setContentTitle(mCurrentItem.getmItemName())
                             .setContentText(notificationText);
         }

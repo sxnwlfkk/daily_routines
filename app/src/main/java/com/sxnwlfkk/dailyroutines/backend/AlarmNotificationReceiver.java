@@ -59,7 +59,7 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
             NotificationCompat.Builder mBuilder =
                     new NotificationCompat.Builder(ctx.getApplicationContext())
                             .setSmallIcon(R.drawable.ic_stat_watch)
-                            .setLargeIcon(BitmapFactory.decodeResource(ctx.getResources(), R.drawable.ic_stat_watch))
+                            .setLargeIcon(BitmapFactory.decodeResource(ctx.getResources(), R.drawable.ic_launcher))
                             .setContentTitle(routineName)
                             .setAutoCancel(true)
                             .setContentText("If you start your routine, you will surely finish on time!");
@@ -92,9 +92,11 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
         int startTime = intent.getIntExtra(ALARM_INTENT_LENGTH, -1);
         if (startTime == -1) return;
 
-        registerNextAlarm(ctx, currentUri, startTime, routineName);
+        registerTomorrowsAlarm(ctx, currentUri, startTime, routineName);
     }
 
+    // Registers an alarm for tomorrow or today. It's to be used on the first run of the alarm
+    // scheduling.
     public static void registerNextAlarm(Context ctx, Uri uri, int optimalTime, String name) {
         AlarmManager mgr = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
 
@@ -120,6 +122,29 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
             mgr.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + (futureTime * 1000), pi);
         }
 
+    }
+
+    // Registers an alarm strictly for tomorrow. It's to be used, when there is an existing
+    // notification to be extended
+    private void registerTomorrowsAlarm(Context ctx, Uri uri, int optimalTime, String name) {
+        AlarmManager mgr = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
+
+        Intent i = new Intent(ctx, AlarmNotificationReceiver.class);
+        i.setData(uri);
+        i.putExtra(ALARM_INTENT_LENGTH, optimalTime);
+        i.putExtra(ALARM_INTENT_NAME, name);
+        int id = (int) ContentUris.parseId(uri);
+        PendingIntent pi = PendingIntent.getBroadcast(ctx, id, i, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Calendar cal = Calendar.getInstance();
+        int hours = cal.get(Calendar.HOUR_OF_DAY);
+        int minutes = cal.get(Calendar.MINUTE);
+        int seconds = cal.get(Calendar.SECOND);
+        int currTime = (hours * 3600) + (minutes * 60) + seconds;
+
+        int timeDifference = currTime - optimalTime;
+        long nextTime = (System.currentTimeMillis() + DAY_IN_SECONDS * 1000) - (timeDifference * 1000);
+        mgr.setExact(AlarmManager.RTC_WAKEUP, nextTime, pi);
     }
 
     public static void cancelAlarm(Context ctx, Uri uri) {
@@ -151,8 +176,8 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
                     Log.e("Receiver", "Requires notification.");
                     int id = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry._ID));
                     String routineName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME));
-                    int endTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
-                    int length = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH));
+                    long endTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
+                    long length = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH));
 
                     registerNextAlarm(ctx, ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, id),
                             RoutineUtils.calculateIdealStartTime(
