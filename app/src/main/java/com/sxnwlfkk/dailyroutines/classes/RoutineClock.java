@@ -37,8 +37,8 @@ public class RoutineClock {
         }
         for (int i = mCurrentItemIndex+offset; i < mItemsList.size(); i++) {
             RoutineItem item = mItemsList.get(i);
-            long ratio = item.getmCurrentTime() / remainingTime;
-            long sub = ratio * mCarryTime;
+            double ratio = item.getmCurrentTime() / remainingTime;
+            long sub = (long) ratio * mCarryTime;
             long oldItemTime = item.getmCurrentTime();
             long newItemTime = oldItemTime + sub;
             item.setmCurrentTime(newItemTime);
@@ -48,7 +48,7 @@ public class RoutineClock {
     }
 
     // Distribute carry on start
-    public void distributeCarryOnStart(int carry) {
+    public void distributeCarryOnStart(long carry) {
         mCarryTime = carry;
         distibuteCarryTime(0);
     }
