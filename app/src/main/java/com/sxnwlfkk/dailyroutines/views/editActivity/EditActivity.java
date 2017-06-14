@@ -149,7 +149,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         public void onClick(View v) {
             if (mCurrentItemIndex != -1) {
                 if (mCurrentUri != null) {
-                    mDeletedItems.add((Long) mItemsList.get(mCurrentItemIndex).getmId());
+                    mDeletedItems.add( mItemsList.get(mCurrentItemIndex).getmId());
                 }
                 mItemsList.remove(mCurrentItemIndex);
                 updateListView();
@@ -427,9 +427,11 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
 
             getContentResolver().insert(RoutineContract.ItemEntry.CONTENT_URI, itemValues);
         }
-        // Schedule alarm is it's set
+        // Schedule alarm if it's set
         if (mEndTimeSwitch.isChecked()) {
-            AlarmNotificationReceiver.registerNextAlarm(this, mCurrentUri, RoutineUtils.calculateIdealStartTime(mRoutineEndTime, mRoutineItemSumLength), routineName);
+            AlarmNotificationReceiver.registerNextAlarm(this, mCurrentUri,
+                    RoutineUtils.calculateIdealStartTime(mRoutineEndTime, mRoutineItemSumLength),
+                    routineName);
         }
         Toast.makeText(this, "Your routine is saved", Toast.LENGTH_LONG).show();
     }
@@ -460,7 +462,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
             Toast.makeText(this, "Sorry, you can't have a routine longer than a day.", Toast.LENGTH_LONG).show();
             return;
         }
-        // Update routine
+        // Update the routine
         ContentValues values = new ContentValues();
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME, routineName);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER, routineItemNumber);
@@ -480,7 +482,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                 getContentResolver().delete(deleteUri, null, null);
             }
         }
-        // Update items
+        // Update changed items
         for (int i = 0; i < mItemsList.size(); i++) {
             Uri updateUri = ContentUris.withAppendedId(RoutineContract.ItemEntry.CONTENT_URI, mItemsList.get(i).getmId());
             ContentValues itemValues = new ContentValues();
