@@ -87,4 +87,14 @@ public class RoutineUtils {
         else if (avg > length) return AVERAGE_BIGGER;
         return AVERAGE_NIL_OR_EQ;
     }
+
+    // Converts seconds to msec-s
+    public static long secToMsec(int sec) {
+        return sec * 1000;
+    }
+
+    // Converts msec-s to seconds with truncation
+    public static int msecToSex(long msec) {
+        return (int) msec / 1000;
+    }
 }
