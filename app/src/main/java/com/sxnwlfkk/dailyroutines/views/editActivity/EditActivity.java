@@ -63,7 +63,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
     private Uri mCurrentUri;
     private int mCurrentItemIndex = -1;
     private int mRoutineItemSumLength = 0;
-    private int mRoutineEndTime = 0;
+    private long mRoutineEndTime = 0;
 
     // Views
     private ListView mListView;
@@ -111,7 +111,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
             }
 
             if (mCurrentItemIndex == -1) {
-                mItemsList.add(new RoutineItem(itemName, itemLength));
+                mItemsList.add(new RoutineItem(itemName, RoutineUtils.secToMsec(itemLength)));
             } else {
                 mItemsList.get(mCurrentItemIndex).setmItemName(itemName);
                 mItemsList.get(mCurrentItemIndex).setmTime(itemLength);
@@ -432,7 +432,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         // Schedule alarm if it's set
         if (mEndTimeSwitch.isChecked()) {
             AlarmNotificationReceiver.registerNextAlarm(this, mCurrentUri,
-                    RoutineUtils.calculateIdealStartTime(mRoutineEndTime, mRoutineItemSumLength),
+                    RoutineUtils.calculateIdealStartTime(RoutineUtils.msecToSec(mRoutineEndTime), mRoutineItemSumLength),
                     routineName);
         }
         Toast.makeText(this, "Your routine is saved", Toast.LENGTH_LONG).show();
@@ -503,7 +503,9 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         }
         // Schedule alarm is it's set
         if (mEndTimeSwitch.isChecked()) {
-            AlarmNotificationReceiver.registerNextAlarm(this, mCurrentUri, RoutineUtils.calculateIdealStartTime(mRoutineEndTime, mRoutineItemSumLength), routineName);
+            AlarmNotificationReceiver.registerNextAlarm(this, mCurrentUri,
+                    RoutineUtils.calculateIdealStartTime(RoutineUtils.msecToSec(mRoutineEndTime),
+                            mRoutineItemSumLength), routineName);
         } else {
             AlarmNotificationReceiver.cancelAlarm(this, mCurrentUri);
         }
@@ -575,7 +577,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
 
                 mRoutineName.setText(rName);
                 mRoutineEndTime = rEndTime;
-                mRoutineEndTimeText.setText(RoutineUtils.formatClockTimeString(rEndTime));
+                mRoutineEndTimeText.setText(RoutineUtils.formatClockTimeString(RoutineUtils.msecToSec(rEndTime)));
                 if (rRequireEnd == 1) {
                     mEndTimeSwitch.setChecked(true);
                 } else {
@@ -631,7 +633,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
             // Use the current time as the default values for the picker
             final java.util.Calendar c = java.util.Calendar.getInstance();
             EditActivity parent = (EditActivity) getActivity();
-            int timeInSeconds = parent.mRoutineEndTime;
+            int timeInSeconds = RoutineUtils.msecToSec(parent.mRoutineEndTime);
             int hour;
             int minute;
             if (timeInSeconds == 0) {
@@ -650,7 +652,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
             int seconds = hourOfDay * 3600 + minute * 60;
             EditActivity parent = (EditActivity) getActivity();
-            parent.mRoutineEndTime = seconds;
+            parent.mRoutineEndTime = RoutineUtils.secToMsec(seconds);
             parent.mRoutineEndTimeText.setText(RoutineUtils.formatClockTimeString(seconds));
         }
 }

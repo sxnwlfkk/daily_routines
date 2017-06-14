@@ -25,7 +25,7 @@ public class RoutineItem {
      * @param item_name
      * @param time
      */
-    public RoutineItem(String item_name, int time) {
+    public RoutineItem(String item_name, long time) {
         mItemName = item_name;
         mTime = this.mCurrentTime = time;
         mAverageTime = 0;

@@ -72,6 +72,7 @@ public class RoutineUtils {
 
     // Calculates ideal starting time for routine. With the 60 division, we take off the
     // seconds and guarantees that it will be a little early.
+    // Arguments in seconds
     public static int calculateIdealStartTime(int endTime, int routineLength) {
         int startTime = (endTime - routineLength);
         if (startTime < 0) {
@@ -81,7 +82,7 @@ public class RoutineUtils {
     }
 
     // Decides which color should the adapter use for average backgrounds
-    public static int decideAvgColor(int length, int avg) {
+    public static int decideAvgColor(long length, double avg) {
         if (avg == 0 && length == avg) return AVERAGE_NIL_OR_EQ;
         else if (avg < length) return AVERAGE_SMALLER;
         else if (avg > length) return AVERAGE_BIGGER;
@@ -90,11 +91,11 @@ public class RoutineUtils {
 
     // Converts seconds to msec-s
     public static long secToMsec(int sec) {
-        return sec * 1000;
+        return (long) sec * 1000;
     }
 
     // Converts msec-s to seconds with truncation
-    public static int msecToSex(long msec) {
+    public static int msecToSec(long msec) {
         return (int) msec / 1000;
     }
 }

@@ -41,12 +41,12 @@ public class EditListAdapter extends ArrayAdapter<RoutineItem> {
         nameView.setText(rItem.getmItemName());
 
         TextView lengthView = (TextView) listItemView.findViewById(R.id.profile_list_length);
-        lengthView.setText(RoutineUtils.formatLengthString(rItem.getmTime()));
+        lengthView.setText(RoutineUtils.formatLengthString(RoutineUtils.msecToSec(rItem.getmTime())));
 
         TextView avgView = (TextView) listItemView.findViewById(R.id.profile_list_item_avg);
-        avgView.setText(RoutineUtils.formatLengthString((int) rItem.getmAverageTime()));
+        avgView.setText(RoutineUtils.formatLengthString(RoutineUtils.msecToSec((long) rItem.getmAverageTime())));
 
-        // Setting average cell bacground for visual information conveying
+        // Setting average cell background for visual information conveying
         int relation = RoutineUtils.decideAvgColor(rItem.getmTime(), (int) rItem.getmAverageTime());
         switch (relation) {
             case RoutineUtils.AVERAGE_NIL_OR_EQ:
