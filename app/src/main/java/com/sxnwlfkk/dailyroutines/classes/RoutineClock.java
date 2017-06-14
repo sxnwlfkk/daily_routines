@@ -23,7 +23,7 @@ public class RoutineClock {
     private boolean mEndTimeRequired;
     private long mId;
     private int mTimesUsed;
-    private int mDiffTime;
+    private long mDiffTime;
 
     // Distribute carry time
     // Offset is the number, which the counter should be modified from the current item
@@ -84,7 +84,7 @@ public class RoutineClock {
         mCurrentItemIndex--;
 
         // Try to take back as much carry as was left in item time
-        int lastTime = mItemsList.get(mCurrentItemIndex).getStartTime();
+        long lastTime = mItemsList.get(mCurrentItemIndex).getStartTime();
         if (lastTime < mCarryTime) {
             mItemsList.get(mCurrentItemIndex).setmCurrentTime(lastTime);
             mCarryTime -= lastTime;
@@ -133,8 +133,8 @@ public class RoutineClock {
     // Sort out diff time
     public void sortDiffTime() {
         if (mDiffTime != 0) {
-            int currTime = mItemsList.get(mCurrentItemIndex).getmCurrentTime();
-            int itemsElapsedTime = mItemsList.get(mCurrentItemIndex).getmElapsedTime();
+            long currTime = mItemsList.get(mCurrentItemIndex).getmCurrentTime();
+            long itemsElapsedTime = mItemsList.get(mCurrentItemIndex).getmElapsedTime();
             if (mLength < mDiffTime) {
                 mItemsList.get(mCurrentItemIndex).setmElapsedTime(itemsElapsedTime + mLength);
                 mLength = 0;
@@ -153,7 +153,7 @@ public class RoutineClock {
 
     // Calculate the remaining time
     void remainingRoutineTime() {
-        int newLength = mCarryTime;
+        long newLength = mCarryTime;
         for (int i = mCurrentItemIndex; i < mRoutineItemsNum; i++) {
             newLength = mItemsList.get(i).getmCurrentTime();
         }
@@ -219,15 +219,15 @@ public class RoutineClock {
         }
     }
 
-    public int getmCarryTime() {
+    public long getmCarryTime() {
         return mCarryTime;
     }
 
-    public void setmCarryTime(int mCarryTime) {
+    public void setmCarryTime(long mCarryTime) {
         this.mCarryTime = mCarryTime;
     }
 
-    public int getmLength() {
+    public long getmLength() {
         return mLength;
     }
 
@@ -243,7 +243,7 @@ public class RoutineClock {
         this.mId = mId;
     }
 
-    public int getmEndTime() {
+    public long getmEndTime() {
         return mEndTime;
     }
 
@@ -259,11 +259,11 @@ public class RoutineClock {
         this.mTimesUsed = mTimesUsed;
     }
 
-    public int getmDiffTime() {
+    public long getmDiffTime() {
         return mDiffTime;
     }
 
-    public void setmDiffTime(int mDiffTime) {
+    public void setmDiffTime(long mDiffTime) {
         this.mDiffTime = mDiffTime;
     }
 
