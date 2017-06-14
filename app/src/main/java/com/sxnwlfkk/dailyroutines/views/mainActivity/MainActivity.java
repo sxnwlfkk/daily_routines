@@ -106,19 +106,6 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                 startActivity(intent);
             }
         });
-        // Quickly get to edit routine
-        mRoutineListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                Intent intent = new Intent(MainActivity.this, EditActivity.class);
-
-                Uri currentUri = ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, id);
-                intent.setData(currentUri);
-
-                startActivity(intent);
-                return false;
-            }
-        });
 
         // Check if alarms were set up, then
         boolean alarmsWereSetUp = preferences.getBoolean(AlarmNotificationReceiver.ALARM_SETUP_WAS_DONE, false);
