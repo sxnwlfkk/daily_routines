@@ -51,7 +51,7 @@ public class ProfileCursorAdapter extends CursorAdapter {
         }
 
         tvName.setText(name);
-        tvLength.setText(RoutineUtils.formatLengthString(length));
-        tvAvg.setText(RoutineUtils.formatLengthString(avg));
+        tvLength.setText(RoutineUtils.formatLengthString(RoutineUtils.msecToSec(length)));
+        tvAvg.setText(RoutineUtils.formatLengthString(RoutineUtils.msecToSec(avg)));
     }
 }

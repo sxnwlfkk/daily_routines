@@ -479,16 +479,22 @@ public class ClockService extends Service {
             mCurrentItem.incrementElapsedTime();
 
             long currentItemTime = mCurrentItem.getmCurrentTime();
-            if (currentItemTime == mCurrentItem.getStartTime() / 2 && currentItemTime != 0 && sVibrateOn) {
+            if (currentItemTime <= (mCurrentItem.getStartTime() / 2) + 500
+                    && currentItemTime > (mCurrentItem.getStartTime() / 2) - 500
+                    && currentItemTime != 0 && sVibrateOn) {
                 Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
                 vibr.vibrate(50);
-            } else if (currentItemTime == mCurrentItem.getStartTime() / 3 && currentItemTime != 0 && sVibrateOn) {
+            } else if (currentItemTime <= (mCurrentItem.getStartTime() / 3) + 500
+                    && currentItemTime > (mCurrentItem.getStartTime() / 3) - 500
+                    && currentItemTime != 0 && sVibrateOn) {
                 Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
                 vibr.vibrate(50);
             }
 
             if (currentItemTime > 0) {
-                if (currentItemTime == 1 && sVibrateOn) {
+                if (currentItemTime <= 1500
+                        && currentItemTime > 500
+                        && sVibrateOn) {
                     long[] pattern = {0, 50, 50, 50};
                     Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
                     vibr.vibrate(pattern, -1);

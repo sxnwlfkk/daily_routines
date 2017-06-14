@@ -37,10 +37,10 @@ public class RoutineClock {
         }
         for (int i = mCurrentItemIndex+offset; i < mItemsList.size(); i++) {
             RoutineItem item = mItemsList.get(i);
-            double ratio = item.getmCurrentTime() / remainingTime;
-            long sub = (long) ratio * mCarryTime;
+            double ratio = (double) item.getmCurrentTime() / remainingTime;
+            double sub = ratio * mCarryTime;
             long oldItemTime = item.getmCurrentTime();
-            long newItemTime = oldItemTime + sub;
+            long newItemTime = (long) (oldItemTime + sub);
             item.setmCurrentTime(newItemTime);
             mItemsList.set(i, item);
         }

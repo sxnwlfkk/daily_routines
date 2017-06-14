@@ -56,7 +56,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
 
     private static final int EDIT_ROUTINE_LOADER = 31;
     private static final int EDIT_ITEMS_LOADER = 32;
-    public static final int DAY_IN_SECONDS = 24 * 60 * 60;
+    public static final int DAY_IN_MILISECONDS = 24 * 60 * 60 * 1000;
 
     private ArrayList<RoutineItem> mItemsList;
     private ArrayList<Long> mDeletedItems;
@@ -114,7 +114,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                 mItemsList.add(new RoutineItem(itemName, RoutineUtils.secToMsec(itemLength)));
             } else {
                 mItemsList.get(mCurrentItemIndex).setmItemName(itemName);
-                mItemsList.get(mCurrentItemIndex).setmTime(itemLength);
+                mItemsList.get(mCurrentItemIndex).setmTime(RoutineUtils.secToMsec(itemLength));
             }
         }
         private boolean checkInputFields() {
@@ -371,9 +371,9 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 mCurrentItemIndex = (int) id;
                 String name = mItemsList.get(mCurrentItemIndex).getmItemName();
-                String lengthMin = String.valueOf(mItemsList.get(mCurrentItemIndex).getmTime() / 60);
+                String lengthMin = String.valueOf(mItemsList.get(mCurrentItemIndex).getmTime() / 60000);
                 lengthMin = (lengthMin.equals("0")) ? "" : lengthMin;
-                String lengthSec = String.valueOf(mItemsList.get(mCurrentItemIndex).getmTime() % 60);
+                String lengthSec = String.valueOf((mItemsList.get(mCurrentItemIndex).getmTime() / 1000) % 60);
                 lengthSec = (lengthSec.equals("0")) ? "" : lengthSec;
                 mNewItemName.setText(name);
                 mNewItemLengthMinutes.setText(lengthMin);
@@ -402,7 +402,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         // Get info for routine
         String routineName = String.valueOf(mRoutineName.getText());
         for (int j = 0; j < mItemsList.size(); j++) mRoutineItemSumLength += mItemsList.get(j).getmTime();
-        if (mRoutineItemSumLength >= DAY_IN_SECONDS) {
+        if (mRoutineItemSumLength >= DAY_IN_MILISECONDS) {
             Toast.makeText(this, "Sorry, you can't have a routine longer than a day.", Toast.LENGTH_LONG).show();
             return true;
         }
@@ -462,7 +462,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         String routineName = String.valueOf(mRoutineName.getText());
         mRoutineItemSumLength = 0;
         for (int j = 0; j < mItemsList.size(); j++) mRoutineItemSumLength += mItemsList.get(j).getmTime();
-        if (mRoutineItemSumLength >= DAY_IN_SECONDS) {
+        if (mRoutineItemSumLength >= DAY_IN_MILISECONDS) {
             Toast.makeText(this, "Sorry, you can't have a routine longer than a day.", Toast.LENGTH_LONG).show();
             return true;
         }

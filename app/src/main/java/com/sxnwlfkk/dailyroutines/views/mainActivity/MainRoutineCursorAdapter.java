@@ -46,6 +46,6 @@ public class MainRoutineCursorAdapter extends CursorAdapter {
         }
 
         tvName.setText(name);
-        tvLength.setText(RoutineUtils.formatLengthString(length));
+        tvLength.setText(RoutineUtils.formatLengthString(RoutineUtils.msecToSec(length)));
     }
 }
