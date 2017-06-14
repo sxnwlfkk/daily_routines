@@ -282,13 +282,15 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                     startActivity(intent);
                 }
 
-                mRoutineLength.setText(RoutineUtils.formatLengthString(length));
+                mRoutineLength.setText(RoutineUtils.formatLengthString(
+                        RoutineUtils.msecToSec(length)));
                 mRoutineItemNum.setText(String.valueOf(itemNum));
 
                 if (requireEnd) {
                     TextView numOfItems = (TextView) findViewById(R.id.profile_num_of_items_text);
                     numOfItems.setText(R.string.optimal_start_text);
-                    mRoutineItemNum.setText(RoutineUtils.formatClockTimeString(RoutineUtils.calculateIdealStartTime(endTime, length)));
+                    mRoutineItemNum.setText(RoutineUtils.formatClockTimeString(
+                            RoutineUtils.calculateIdealStartTime(endTime, length) / 1000));
                 } else {
                     TextView numOfItems = (TextView) findViewById(R.id.profile_num_of_items_text);
                     numOfItems.setText(R.string.number_of_items_text);

@@ -40,7 +40,7 @@ public class MainRoutineCursorAdapter extends CursorAdapter {
         boolean endRequired = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END)) == 1;
         if (endRequired) {
             int endTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
-            tvStartTime.setText(RoutineUtils.formatClockTimeString(RoutineUtils.calculateIdealStartTime(endTime, length)));
+            tvStartTime.setText(RoutineUtils.formatClockTimeString(RoutineUtils.calculateIdealStartTime(endTime, length) / 1000));
         } else {
             tvStartTime.setVisibility(View.INVISIBLE);
         }

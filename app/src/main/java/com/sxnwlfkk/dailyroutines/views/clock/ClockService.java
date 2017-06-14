@@ -349,11 +349,18 @@ public class ClockService extends Service {
     }
 
     private void nextItem() {
+        long currTime = mCurrentItem.getmCurrentTime();
+        if (currTime > 500) {
+            mCurrentItem.setmCurrentTime(currTime - 500);
+        } else {
+            mRoutineClock.setmCarryTime(mRoutineClock.getmCarryTime() - 500);
+        }
         mCurrentItem = mRoutineClock.nextItem(mCurrentItem);
         sendMessage();
     }
 
     private void prevItem() {
+        mRoutineClock.setmCarryTime(mRoutineClock.getmCarryTime() - 500);
         mCurrentItem = mRoutineClock.prevItem(mCurrentItem);
         sendMessage();
     }
@@ -459,6 +466,8 @@ public class ClockService extends Service {
             int rowsAffected = getContentResolver().update(updateUri, itemValues, null, null);
         }
     }
+
+
 
     private class ClockCountdownTimer extends CountDownTimer {
 

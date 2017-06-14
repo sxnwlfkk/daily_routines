@@ -113,11 +113,11 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
 
         if (currTime + 5 > optimalTime) {
             int timeDifference = currTime - optimalTime;
-            long nextTime = (System.currentTimeMillis() + DAY_IN_SECONDS * 1000) - timeDifference * 1000;
+            long nextTime = (System.currentTimeMillis() + DAY_IN_SECONDS * 1000) - (timeDifference * 1000);
             mgr.setExact(AlarmManager.RTC_WAKEUP, nextTime, pi);
         } else {
             int futureTime = optimalTime - currTime;
-            mgr.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + futureTime * 1000, pi);
+            mgr.setExact(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + (futureTime * 1000), pi);
         }
 
     }
@@ -154,7 +154,11 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
                     int endTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
                     int length = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH));
 
-                    registerNextAlarm(ctx, ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, id), RoutineUtils.calculateIdealStartTime(endTime, length), routineName);
+                    registerNextAlarm(ctx, ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, id),
+                            RoutineUtils.calculateIdealStartTime(
+                                    RoutineUtils.msecToSec(endTime),
+                                    RoutineUtils.msecToSec(length)),
+                            routineName);
                 }
             } while (cursor.moveToNext());
         }
