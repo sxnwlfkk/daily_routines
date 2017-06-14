@@ -29,7 +29,7 @@ local.properties
 ehthumbs.db
 Thumbs.db
 .idea/
-build.gradle
+#build.gradle
 build/
 gradle.properties
 gradle/
