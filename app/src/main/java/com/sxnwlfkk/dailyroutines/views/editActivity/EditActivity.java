@@ -341,16 +341,18 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                 showUnsavedChangesDialog(discardButtonClickListener);
                 return true;
             case R.id.menu_edit_save_button:
+                boolean error = false;
                 if (mCurrentUri == null) {
-                    saveRoutine();
+                    error = saveRoutine();
                 } else {
-                    updateRoutine();
+                    error = updateRoutine();
                 }
                 // This means, that it's an update, or the new routine save was successful
-                if (mCurrentUri != null) {
+                if (mCurrentUri != null && !error) {
                     Intent intent = new Intent(EditActivity.this, ProfileActivity.class);
                     intent.setData(mCurrentUri);
                     startActivity(intent);
+                    finish();
                 }
                 return true;
         }
@@ -383,18 +385,18 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
     /**
      * Saves a new routine, after checking the routine input fields.
      */
-    private void saveRoutine() {
+    private boolean saveRoutine() {
         // Input checking
         // TODO: check end time and relevant fields
         if (TextUtils.isEmpty(mRoutineName.getText().toString().trim())) {
             Toast.makeText(this, R.string.save_routine_have_no_name_message, Toast.LENGTH_LONG).show();
-            return;
+            return true;
         }
 
         int routineItemNumber = mItemsList.size();
         if (routineItemNumber == 0) {
             Toast.makeText(this, R.string.save_without_item_message, Toast.LENGTH_LONG).show();
-            return;
+            return true;
         }
 
         // Get info for routine
@@ -402,7 +404,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         for (int j = 0; j < mItemsList.size(); j++) mRoutineItemSumLength += mItemsList.get(j).getmTime();
         if (mRoutineItemSumLength >= DAY_IN_SECONDS) {
             Toast.makeText(this, "Sorry, you can't have a routine longer than a day.", Toast.LENGTH_LONG).show();
-            return;
+            return true;
         }
 
         // Make CV
@@ -434,6 +436,8 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                     routineName);
         }
         Toast.makeText(this, "Your routine is saved", Toast.LENGTH_LONG).show();
+
+        return false;
     }
 
     /**
@@ -441,18 +445,18 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
      * in the editor. Then it tries to update the remaining. If it fails, it means that the item
      * is new. If that is the case, the method inserts it to the table.
      */
-    private void updateRoutine() {
+    private boolean updateRoutine() {
 
 
         if (TextUtils.isEmpty(mRoutineName.getText().toString().trim())) {
             Toast.makeText(this, R.string.save_routine_have_no_name_message, Toast.LENGTH_LONG).show();
-            return;
+            return true;
         }
 
         int routineItemNumber = mItemsList.size();
         if (routineItemNumber == 0) {
             Toast.makeText(this, R.string.save_without_item_message, Toast.LENGTH_LONG).show();
-            return;
+            return true;
         }
 
         String routineName = String.valueOf(mRoutineName.getText());
@@ -460,7 +464,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         for (int j = 0; j < mItemsList.size(); j++) mRoutineItemSumLength += mItemsList.get(j).getmTime();
         if (mRoutineItemSumLength >= DAY_IN_SECONDS) {
             Toast.makeText(this, "Sorry, you can't have a routine longer than a day.", Toast.LENGTH_LONG).show();
-            return;
+            return true;
         }
         // Update the routine
         ContentValues values = new ContentValues();
@@ -504,6 +508,8 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
             AlarmNotificationReceiver.cancelAlarm(this, mCurrentUri);
         }
         Toast.makeText(this, "Your routine is updated", Toast.LENGTH_LONG).show();
+
+        return false;
     }
 
     @Override
