@@ -201,10 +201,10 @@ public class ClockService extends Service {
          mRoutineClock.setmTimesUsed(rTimesUsed);
 
          // Check diff time
-         int rDiffTime = 0;
+         long rDiffTime = 0;
          if (rCurrItem > -1) {
-             long currTime = System.currentTimeMillis() / 1000;
-             rDiffTime = (int) currTime - rInterruptTime;
+             long currTime = System.currentTimeMillis();
+             rDiffTime = (long) currTime - rInterruptTime;
          }
          mRoutineClock.setmDiffTime(rDiffTime);
      }
@@ -279,10 +279,12 @@ public class ClockService extends Service {
                 int minutes = cal.get(Calendar.MINUTE);
                 int seconds = cal.get(Calendar.SECOND);
                 int currTime = (hours * 3600) + (minutes * 60) + seconds;
-                int optimalTime = RoutineUtils.calculateIdealStartTime(mRoutineClock.getmEndTime(), mRoutineClock.getmLength());
-                int carry = optimalTime - currTime;
+                int optimalTime = RoutineUtils.calculateIdealStartTime(
+                        RoutineUtils.msecToSec(mRoutineClock.getmEndTime()),
+                        RoutineUtils.msecToSec(mRoutineClock.getmLength()));
+                long carry = RoutineUtils.secToMsec(optimalTime - currTime);
 
-                int s;
+                long s;
                 if (carry < 0) {
                     mRoutineClock.distributeCarryOnStart(carry);
                     mRoutineClock.setmLength(
@@ -301,7 +303,7 @@ public class ClockService extends Service {
 
         mCurrentItem = mRoutineClock.getCurrentItem();
         if (!timerIsInitialised) {
-            mCountdownTimer = new ClockCountdownTimer(mRoutineClock.getmLength() * 1000, 1000);
+            mCountdownTimer = new ClockCountdownTimer(mRoutineClock.getmLength(), 1000);
             mCountdownTimer.start();
             timerIsInitialised = true;
         }
@@ -371,8 +373,8 @@ public class ClockService extends Service {
         message.putExtra(SERVICE_ITEM_NAME_FIELD, mCurrentItem.getmItemName());
         message.putExtra(SERVICE_SUM_ITEMS_FIELD, mRoutineClock.getmRoutineItemsNum());
         message.putExtra(SERVICE_CURR_ITEM_FIELD, mRoutineClock.getmCurrentItemIndex());
-        message.putExtra(SERVICE_CURR_TIME_FIELD, mCurrentItem.getmCurrentTime());
-        message.putExtra(SERVICE_CARRY_FIELD, mRoutineClock.getmCarryTime());
+        message.putExtra(SERVICE_CURR_TIME_FIELD, RoutineUtils.msecToSec(mCurrentItem.getmCurrentTime()));
+        message.putExtra(SERVICE_CARRY_FIELD, RoutineUtils.msecToSec(mRoutineClock.getmCarryTime()));
         sendBroadcast(message);
     }
 
@@ -382,8 +384,8 @@ public class ClockService extends Service {
         message.putExtra(SERVICE_ITEM_NAME_FIELD, mCurrentItem.getmItemName());
         message.putExtra(SERVICE_SUM_ITEMS_FIELD, mRoutineClock.getmRoutineItemsNum());
         message.putExtra(SERVICE_CURR_ITEM_FIELD, -1);
-        message.putExtra(SERVICE_CURR_TIME_FIELD, mCurrentItem.getmCurrentTime());
-        message.putExtra(SERVICE_CARRY_FIELD, mRoutineClock.getmCarryTime());
+        message.putExtra(SERVICE_CURR_TIME_FIELD, RoutineUtils.msecToSec(mCurrentItem.getmCurrentTime()));
+        message.putExtra(SERVICE_CARRY_FIELD, RoutineUtils.msecToSec(mRoutineClock.getmCarryTime()));
         sendBroadcast(message);
 
     }
@@ -392,8 +394,8 @@ public class ClockService extends Service {
         // Make the notification
         String notificationText = "";
         if (!routineFinished) {
-            notificationText = "Time in item: " + RoutineUtils.formatLengthString(mCurrentItem.getmCurrentTime())
-                                + "Time left over: " + RoutineUtils.formatLengthString(mRoutineClock.getmCarryTime());
+            notificationText = "Time in item: " + RoutineUtils.formatLengthString(RoutineUtils.msecToSec(mCurrentItem.getmCurrentTime()))
+                                + "\nPlus time: " + RoutineUtils.formatLengthString(RoutineUtils.msecToSec(mRoutineClock.getmCarryTime()));
         } else {
             notificationText = "Time is up!";
         }
@@ -438,7 +440,7 @@ public class ClockService extends Service {
         values.put(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM, mRoutineClock.getmCurrentItemIndex());
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_CARRY, mRoutineClock.getmCarryTime());
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED, mRoutineClock.getmTimesUsed());
-        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_INTERRUPT_TIME, System.currentTimeMillis() / 1000);
+        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_INTERRUPT_TIME, System.currentTimeMillis());
         getContentResolver().update(mCurrentUri, values, null, null);
 
         long updatedRoutineId = mRoutineClock.getmId();
@@ -476,7 +478,7 @@ public class ClockService extends Service {
             // Update clocks
             mCurrentItem.incrementElapsedTime();
 
-            int currentItemTime = mCurrentItem.getmCurrentTime();
+            long currentItemTime = mCurrentItem.getmCurrentTime();
             if (currentItemTime == mCurrentItem.getStartTime() / 2 && currentItemTime != 0 && sVibrateOn) {
                 Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
                 vibr.vibrate(50);
@@ -491,20 +493,25 @@ public class ClockService extends Service {
                     Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
                     vibr.vibrate(pattern, -1);
                 }
-                mCurrentItem.setmCurrentTime(currentItemTime - 1);
+                // Subtract one second or zero the counter
+                if (currentItemTime - 1000 <= 0) {
+                    mCurrentItem.setmCurrentTime(0);
+                } else {
+                    mCurrentItem.setmCurrentTime(currentItemTime - 1000);
+                }
             } else {
-                int carry = mRoutineClock.getmCarryTime();
-                if (carry == 1 && sVibrateOn) {
+                long carry = mRoutineClock.getmCarryTime();
+                if (carry <= 1500 && carry > 500 && sVibrateOn) {
                     long[] pattern = {0, 50, 50, 50};
                     Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
                     vibr.vibrate(pattern, -1);
                 }
-                mRoutineClock.setmCarryTime(carry - 1);
+                mRoutineClock.setmCarryTime(carry - 1000);
             }
 
             // Check if routine ended. Interrupt if timer would continue with no time left.
             if (mRoutineClock.getmCurrentItemIndex() + 1 == mRoutineClock.getmRoutineItemsNum()
-                    && mRoutineClock.getmCarryTime() == 0
+                    && mRoutineClock.getmCarryTime() <= 0
                     && mCurrentItem.getmCurrentTime() == 0) {
                 onFinish();
             }
@@ -512,6 +519,7 @@ public class ClockService extends Service {
             // Send broadcast intent to Activity
             sendMessage();
             makeNotification();
+            // TODO since we have wakelock, isn't it redundant?
             writeRoutineToDB();
         }
 

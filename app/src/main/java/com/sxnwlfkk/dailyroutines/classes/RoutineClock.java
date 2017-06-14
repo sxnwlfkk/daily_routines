@@ -231,7 +231,7 @@ public class RoutineClock {
         return mLength;
     }
 
-    public void setmLength(int mLength) {
+    public void setmLength(long mLength) {
         this.mLength = mLength;
     }
 
@@ -247,7 +247,7 @@ public class RoutineClock {
         return mEndTime;
     }
 
-    public void setmEndTime(int mEndTime) {
+    public void setmEndTime(long mEndTime) {
         this.mEndTime = mEndTime;
     }
 
