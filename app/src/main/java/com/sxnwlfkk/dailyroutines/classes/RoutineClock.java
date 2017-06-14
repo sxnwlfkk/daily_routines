@@ -14,10 +14,10 @@ public class RoutineClock {
     private ArrayList<RoutineItem> mItemsList;
     private String mName;
     private int mCurrentItemIndex;
-    private int mCarryTime;
+    private long mCarryTime;
     private int mRoutineItemsNum;
-    private int mLength;
-    private int mEndTime;
+    private long mLength;
+    private long mEndTime;
 
 
     private boolean mEndTimeRequired;
@@ -26,23 +26,25 @@ public class RoutineClock {
     private int mDiffTime;
 
     // Distribute carry time
+    // Offset is the number, which the counter should be modified from the current item
+    // If the routine is started late, we should use 0 offset, for the algorithm to distribute
+    // the carry time among all the items. When a routine is underway, and the user goes to red
+    // we should use 1 as offset, to distribute among the remaining items.
     private void distibuteCarryTime(int offset) {
-        int remainingTime = 0;
-        double plusTime = 0;
+        long remainingTime = 0;
         for (int i = mCurrentItemIndex+offset; i < mItemsList.size(); i++) {
             remainingTime += mItemsList.get(i).getmCurrentTime();
         }
         for (int i = mCurrentItemIndex+offset; i < mItemsList.size(); i++) {
             RoutineItem item = mItemsList.get(i);
-            double ratio = (double) item.getmCurrentTime() / remainingTime;
-            double sub = ratio * mCarryTime;
-            double oldItemTime = item.getmCurrentTime();
-            double newItemTime = oldItemTime + sub;
-            plusTime += newItemTime - ((int) newItemTime);
-            item.setmCurrentTime((int) newItemTime);
+            long ratio = item.getmCurrentTime() / remainingTime;
+            long sub = ratio * mCarryTime;
+            long oldItemTime = item.getmCurrentTime();
+            long newItemTime = oldItemTime + sub;
+            item.setmCurrentTime(newItemTime);
             mItemsList.set(i, item);
         }
-        mCarryTime = (int) plusTime;
+        mCarryTime = 0;
     }
 
     // Distribute carry on start
