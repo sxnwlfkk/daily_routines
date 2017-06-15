@@ -569,10 +569,11 @@ public class ClockService extends Service {
                 if (mRoutineClock.getmCarryTime() > 1000
                         && RoutineUtils.getCurrentTimeInSec() < mRoutineClock.getmEndTime() / 1000) {
                     startCountdownTimer(mRoutineClock.getmCarryTime(), COUNTDOWN_INTERVAL_CONST);
+                    return;
                 }
             } else if (mRoutineClock.getmCarryTime() > 1000) {
                 startCountdownTimer(mRoutineClock.getmCarryTime(), COUNTDOWN_INTERVAL_CONST);
-
+                return;
             }
 
             routineFinished = true;
