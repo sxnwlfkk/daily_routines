@@ -59,6 +59,9 @@ public class ClockService extends Service {
     public static final String SERVICE_ITEM_NAME_FIELD = "item_name";
     public static final String SERVICE_ROUTINE_NAME_FIELD = "routine_name";
 
+    // Countdown interval constalt
+    public static final long COUNTDOWN_INTERVAL_CONST = 1000;
+
     public static final String LOG_TAG = ClockService.class.getSimpleName();
 
     public static String BROADCAST_ACTION = "com.sxnwlfkk.dailyroutines.clockUpdate";
@@ -127,26 +130,33 @@ public class ClockService extends Service {
 
         switch (command) {
             case CLOCK_SERVICE_ROUTINE_START:
+                Log.e(LOG_TAG, "Got command: START.");
                 if (!routineIsSetUp) {
                     startRoutine();
                 } else sendMessage();
                 break;
             case CLOCK_SERVICE_NEXT_ITEM:
+                Log.e(LOG_TAG, "Got command: NEXT.");
                 nextItem();
                 break;
             case CLOCK_SERVICE_PREV_ITEM:
+                Log.e(LOG_TAG, "Got command: PREV.");
                 prevItem();
                 break;
             case CLOCK_SERVICE_ROUTINE_CANCEL:
+                Log.e(LOG_TAG, "Got command: CANCEL.");
                 cancelRoutine();
                 break;
             case CLOCK_SERVICE_ROUTINE_FINISH:
+                Log.e(LOG_TAG, "Got command: FINISH.");
                 finishRoutine();
                 break;
             case CLOCK_SERVICE_SEND_UPDATE:
+                Log.e(LOG_TAG, "Got command: UPDATE.");
                 sendUpdate();
                 break;
             case CLOCK_SERVICE_STOP_TALKING:
+                Log.e(LOG_TAG, "Got command: STOP.");
                 stopTalking();
                 break;
         }
@@ -270,27 +280,24 @@ public class ClockService extends Service {
         Log.e(LOG_TAG, "Starting up or resuming routine service.");
         // Get data from DB
         queryDB();
+        Log.e(LOG_TAG, "After db query in startup method.");
 
         // First start of the routine
         if (!routineHasBennStarted) {
             if (mRoutineClock.ismEndTimeRequired()) {
-                Calendar cal = Calendar.getInstance();
-                int hours = cal.get(Calendar.HOUR_OF_DAY);
-                int minutes = cal.get(Calendar.MINUTE);
-                int seconds = cal.get(Calendar.SECOND);
-                int currTime = (hours * 3600) + (minutes * 60) + seconds;
+                int currTime = RoutineUtils.getCurrentTimeInSec();
+                Log.e(LOG_TAG, "Current time is: " + currTime);
                 int optimalTime = RoutineUtils.calculateIdealStartTime(
                         RoutineUtils.msecToSec(mRoutineClock.getmEndTime()),
                         RoutineUtils.msecToSec(mRoutineClock.getmLength()));
+                Log.e(LOG_TAG, "Optimal start time is: " + optimalTime);
                 long carry = RoutineUtils.secToMsec(optimalTime - currTime);
+                Log.e(LOG_TAG, "Carry time at start is: " + carry);
 
-                long s;
                 if (carry < 0) {
                     mRoutineClock.distributeCarryOnStart(carry);
-                    mRoutineClock.setmLength(
-                            ((s = mRoutineClock.getmLength() + carry) >= 0) ? s : 0
-                    );
-                } else if (carry >= 0) {
+                    mRoutineClock.calculateRemainingRoutineTime();
+                } else {
                     mRoutineClock.setmCarryTime(carry);
                     mRoutineClock.setmLength(mRoutineClock.getmLength() + carry);
                 }
@@ -303,8 +310,8 @@ public class ClockService extends Service {
 
         mCurrentItem = mRoutineClock.getCurrentItem();
         if (!timerIsInitialised) {
-            mCountdownTimer = new ClockCountdownTimer(mRoutineClock.getmLength(), 1000);
-            mCountdownTimer.start();
+            Log.e(LOG_TAG, "Setting countdown in the future: " + mRoutineClock.getmLength());
+            startCountdownTimer(mRoutineClock.getmLength(), COUNTDOWN_INTERVAL_CONST);
             timerIsInitialised = true;
         }
 
@@ -458,13 +465,18 @@ public class ClockService extends Service {
             Uri updateUri = ContentUris.withAppendedId(RoutineContract.ItemEntry.CONTENT_URI, item.getmId());
             ContentValues itemValues = new ContentValues();
             itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME, (int) item.getmAverageTime());
-            Log.e(LOG_TAG, "Item average in double " + item.getmAverageTime() + " and in int: " + (int) item.getmAverageTime());
             itemValues.put(RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME, item.getmElapsedTime());
             itemValues.put(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME, item.getmCurrentTime());
             itemValues.put(RoutineContract.ItemEntry.COLUMN_START_TIME, item.getStartTime());
 
             int rowsAffected = getContentResolver().update(updateUri, itemValues, null, null);
         }
+    }
+
+    // Just a helper method encapsulating this common pattern
+    private void startCountdownTimer(long millisInFuture, long countdownInterval) {
+        mCountdownTimer = new ClockCountdownTimer(millisInFuture, countdownInterval);
+        mCountdownTimer.start();
     }
 
 
@@ -524,10 +536,15 @@ public class ClockService extends Service {
                 mRoutineClock.setmCarryTime(carry - 1000);
             }
 
+            Log.e(LOG_TAG, "Current time in seconds is: " + RoutineUtils.getCurrentTimeInSec() +
+            " end time is in seconds: " + mRoutineClock.getmEndTime() / 1000);
             // Check if routine ended. Interrupt if timer would continue with no time left.
-            if (mRoutineClock.getmCurrentItemIndex() + 1 == mRoutineClock.getmRoutineItemsNum()
+            if ((mRoutineClock.getmCurrentItemIndex() + 1 == mRoutineClock.getmRoutineItemsNum()
                     && mRoutineClock.getmCarryTime() <= 0
-                    && mCurrentItem.getmCurrentTime() == 0) {
+                    && mCurrentItem.getmCurrentTime() == 0)
+                    ||
+                    (RoutineUtils.getCurrentTimeInSec() >= mRoutineClock.getmEndTime() / 1000
+                    && mRoutineClock.ismEndTimeRequired())) {
                 onFinish();
             }
 
@@ -540,7 +557,24 @@ public class ClockService extends Service {
 
         @Override
         public void onFinish() {
+
             mCurrentItem.incrementElapsedTime();
+
+            // When the internal countdown reaches zero, but the visual counter still has
+            // some time left, restart the countdown with that much time
+            // This is needed because there is some unpunctual behaviour that's still not found
+            // However, this checks if it's not advancing the user set limit. If it would step
+            // over, it kills the countdown
+            if (mRoutineClock.ismEndTimeRequired()) {
+                if (mRoutineClock.getmCarryTime() > 1000
+                        && RoutineUtils.getCurrentTimeInSec() < mRoutineClock.getmEndTime() / 1000) {
+                    startCountdownTimer(mRoutineClock.getmCarryTime(), COUNTDOWN_INTERVAL_CONST);
+                }
+            } else if (mRoutineClock.getmCarryTime() > 1000) {
+                startCountdownTimer(mRoutineClock.getmCarryTime(), COUNTDOWN_INTERVAL_CONST);
+
+            }
+
             routineFinished = true;
             makeNotification();
             // Stop countdown

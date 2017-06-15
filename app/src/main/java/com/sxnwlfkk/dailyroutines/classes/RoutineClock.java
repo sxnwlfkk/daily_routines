@@ -10,6 +10,8 @@ import java.util.ArrayList;
 
 public class RoutineClock {
 
+    public static final String LOG_TAG = RoutineClock.class.getSimpleName();
+
     // VARS
     private ArrayList<RoutineItem> mItemsList;
     private String mName;
@@ -30,11 +32,13 @@ public class RoutineClock {
     // If the routine is started late, we should use 0 offset, for the algorithm to distribute
     // the carry time among all the items. When a routine is underway, and the user goes to red
     // we should use 1 as offset, to distribute among the remaining items.
-    private void distibuteCarryTime(int offset) {
+    private void distributeCarryTime(int offset) {
         long remainingTime = 0;
         for (int i = mCurrentItemIndex+offset; i < mItemsList.size(); i++) {
             remainingTime += mItemsList.get(i).getmCurrentTime();
         }
+        Log.e(LOG_TAG, "Remaining time: " + remainingTime);
+        Log.e(LOG_TAG, "Carry time: " + mCarryTime);
         for (int i = mCurrentItemIndex+offset; i < mItemsList.size(); i++) {
             RoutineItem item = mItemsList.get(i);
             double ratio = (double) item.getmCurrentTime() / remainingTime;
@@ -43,6 +47,7 @@ public class RoutineClock {
             long newItemTime = (long) (oldItemTime + sub);
             item.setmCurrentTime(newItemTime);
             mItemsList.set(i, item);
+            Log.e(LOG_TAG, i + "-th new item time is: " + newItemTime);
         }
         mCarryTime = 0;
     }
@@ -50,7 +55,9 @@ public class RoutineClock {
     // Distribute carry on start
     public void distributeCarryOnStart(long carry) {
         mCarryTime = carry;
-        distibuteCarryTime(0);
+        if (carry < 0) {
+            distributeCarryTime(0);
+        }
     }
 
     // Next item
@@ -62,7 +69,7 @@ public class RoutineClock {
 
         // Time check
         if (currentItem.getmCurrentTime() == 0 && mCarryTime < 0) {
-            distibuteCarryTime(1);
+            distributeCarryTime(1);
         } else if (currentItem.getmCurrentTime() > 0) {
             mCarryTime += currentItem.getmCurrentTime();
             currentItem.setmCurrentTime(0);
@@ -147,15 +154,15 @@ public class RoutineClock {
             } else {
                 mItemsList.get(mCurrentItemIndex).setmCurrentTime(currTime - mDiffTime);
             }
-            remainingRoutineTime();
+            calculateRemainingRoutineTime();
         }
     }
 
     // Calculate the remaining time
-    void remainingRoutineTime() {
+    public void calculateRemainingRoutineTime() {
         long newLength = mCarryTime;
         for (int i = mCurrentItemIndex; i < mRoutineItemsNum; i++) {
-            newLength = mItemsList.get(i).getmCurrentTime();
+            newLength += mItemsList.get(i).getmCurrentTime();
         }
         mLength = newLength;
     }

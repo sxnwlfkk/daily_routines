@@ -1,5 +1,7 @@
 package com.sxnwlfkk.dailyroutines.classes;
 
+import java.util.Calendar;
+
 /**
  * Created by cs on 2017.04.17..
  */
@@ -97,5 +99,15 @@ public class RoutineUtils {
     // Converts msec-s to seconds with truncation
     public static int msecToSec(long msec) {
         return (int) msec / 1000;
+    }
+
+    public static int getCurrentTimeInSec() {
+        Calendar cal = Calendar.getInstance();
+        int hours = cal.get(Calendar.HOUR_OF_DAY);
+        int minutes = cal.get(Calendar.MINUTE);
+        int seconds = cal.get(Calendar.SECOND);
+        int currTime = (hours * 3600) + (minutes * 60) + seconds;
+
+        return currTime;
     }
 }
