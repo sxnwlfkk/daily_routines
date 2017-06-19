@@ -1,5 +1,6 @@
 package com.sxnwlfkk.dailyroutines.views.clock;
 
+import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -14,6 +15,7 @@ import android.net.Uri;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.os.Vibrator;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
@@ -22,6 +24,8 @@ import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
 import com.sxnwlfkk.dailyroutines.R;
+import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
+import com.sxnwlfkk.dailyroutines.backend.VibrationNotificationReceiver;
 import com.sxnwlfkk.dailyroutines.classes.RoutineClock;
 import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
 import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
@@ -33,6 +37,18 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import static com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver.ALARM_INTENT_LENGTH;
+import static com.sxnwlfkk.dailyroutines.backend.VibrationNotificationReceiver.END_PATTERN;
+import static com.sxnwlfkk.dailyroutines.backend.VibrationNotificationReceiver.LONG_PATTERN;
+import static com.sxnwlfkk.dailyroutines.backend.VibrationNotificationReceiver.NO_PATTERN;
+import static com.sxnwlfkk.dailyroutines.backend.VibrationNotificationReceiver.SHORT_PATTERN;
+import static com.sxnwlfkk.dailyroutines.backend.VibrationNotificationReceiver.VIBRATION_CARRY_ZERO;
+import static com.sxnwlfkk.dailyroutines.backend.VibrationNotificationReceiver.VIBRATION_END_ALARM;
+import static com.sxnwlfkk.dailyroutines.backend.VibrationNotificationReceiver.VIBRATION_HALFTIME_ALARM;
+import static com.sxnwlfkk.dailyroutines.backend.VibrationNotificationReceiver.VIBRATION_MAIN_ZERO;
+import static com.sxnwlfkk.dailyroutines.backend.VibrationNotificationReceiver.VIBRATION_PATTERN;
+import static com.sxnwlfkk.dailyroutines.backend.VibrationNotificationReceiver.VIBRATION_THIRD_ALARM;
 
 /**
  * Created by cs on 2017.04.20..
@@ -59,7 +75,7 @@ public class ClockService extends Service {
     public static final String SERVICE_ITEM_NAME_FIELD = "item_name";
     public static final String SERVICE_ROUTINE_NAME_FIELD = "routine_name";
 
-    // Countdown interval constalt
+    // Countdown interval constant
     public static final long COUNTDOWN_INTERVAL_CONST = 1000;
 
     public static final String LOG_TAG = ClockService.class.getSimpleName();
@@ -75,6 +91,9 @@ public class ClockService extends Service {
     NotificationManager mNotificationManager;
     NotificationCompat.Builder mBuilder;
     PowerManager.WakeLock mWakelock;
+
+    boolean shouldVibrateInServiceNext;
+    long[] inServiceVibrationPattern;
 
     // Sentinel
     private boolean timerIsInitialised;
@@ -98,6 +117,8 @@ public class ClockService extends Service {
         routineIsSetUp = false;
         routineFinished = false;
         mBuilder = null;
+        shouldVibrateInServiceNext = false;
+        inServiceVibrationPattern = NO_PATTERN;
 //        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
 //        mWakelock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
 //                "MyWakelockTag");
@@ -319,6 +340,10 @@ public class ClockService extends Service {
         makeNotification();
         startForeground((int) mRoutineClock.getmId(), mBuilder.build());
 
+        // Register vibrations
+        registerEndVibration();
+        registerItemVibrations();
+
         // Send back confirmation and basic data message
         sendMessage();
     }
@@ -337,6 +362,8 @@ public class ClockService extends Service {
         routineIsSetUp = false;
         routineFinished = false;
         mBuilder = null;
+        cancelItemVibrations();
+        cancelEndVibration();
         stopSelf();
     }
 
@@ -352,6 +379,8 @@ public class ClockService extends Service {
         routineIsSetUp = false;
         routineFinished = false;
         mBuilder = null;
+        cancelItemVibrations();
+        cancelEndVibration();
         stopSelf();
     }
 
@@ -363,14 +392,19 @@ public class ClockService extends Service {
             mRoutineClock.setmCarryTime(mRoutineClock.getmCarryTime() - 500);
         }
         mCurrentItem = mRoutineClock.nextItem(mCurrentItem);
+        cancelItemVibrations();
+        registerItemVibrations();
         sendMessage();
     }
 
     private void prevItem() {
         mRoutineClock.setmCarryTime(mRoutineClock.getmCarryTime() - 500);
         mCurrentItem = mRoutineClock.prevItem(mCurrentItem);
+        cancelItemVibrations();
+        registerItemVibrations();
         sendMessage();
     }
+
 
     private void sendUpdate() {
         sendMessage();
@@ -473,6 +507,107 @@ public class ClockService extends Service {
         }
     }
 
+    // VIBRATIONS
+
+    // Registers a vibration event in the future, with the type in the args
+    private void registerVibration(int vibrationType, long timeInFuture) {
+        AlarmManager mgr = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+
+        Intent i = new Intent(this, VibrationNotificationReceiver.class);
+        i.putExtra(VIBRATION_PATTERN, vibrationType);
+
+        PendingIntent pi = PendingIntent.getBroadcast(this, vibrationType, i, PendingIntent.FLAG_UPDATE_CURRENT);
+        mgr.setExact(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime() + timeInFuture, pi);
+    }
+
+    private void cancelVibration(int vibrationType) {
+        AlarmManager mgr = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+
+        Intent i = new Intent(this, VibrationNotificationReceiver.class);
+        PendingIntent pi = PendingIntent.getBroadcast(this, vibrationType, i, PendingIntent.FLAG_CANCEL_CURRENT);
+        mgr.cancel(pi);
+    }
+
+    // If there is less than 5 seconds left until the end, the app tries to vibrate on the main thread
+    // else it tries to work with a broadcast receiver
+    private void registerEndVibration() {
+        long endTime = mRoutineClock.getmLength();
+        if (endTime < 5500) {
+            shouldVibrateInServiceNext = true;
+            inServiceVibrationPattern = END_PATTERN;
+        } else {
+            registerVibration(VIBRATION_END_ALARM, endTime);
+        }
+    }
+
+    private void cancelEndVibration() {
+        cancelVibration(VIBRATION_END_ALARM);
+    }
+
+    private void registerItemVibrations() {
+        long startTime = mCurrentItem.getmCurrentTime();
+        long halfTime = startTime / 2;
+        long thirdTime = (long) (startTime * (2.0 / 3));
+        long carryZero = startTime + mRoutineClock.getmCarryTime();
+
+        Log.e(LOG_TAG, "Start time in registerItemVibrations: " + startTime);
+
+        // Setting item end vibs
+        if (startTime < 5500) {
+            shouldVibrateInServiceNext = true;
+            inServiceVibrationPattern = LONG_PATTERN;
+        } else {
+            Log.e(LOG_TAG, "Registering item end vibration.");
+            registerVibration(VIBRATION_MAIN_ZERO, startTime);
+        }
+
+        // Setting half-time vibs
+        if (halfTime < 5500) {
+            shouldVibrateInServiceNext = true;
+            inServiceVibrationPattern = SHORT_PATTERN;
+        } else {
+            Log.e(LOG_TAG, "Registering halftime vibration.");
+            registerVibration(VIBRATION_HALFTIME_ALARM, halfTime);
+        }
+
+        // Settings third vibs
+        if (startTime > 30500) {
+            if (thirdTime < 5500) {
+                shouldVibrateInServiceNext = true;
+                inServiceVibrationPattern = SHORT_PATTERN;
+            } else {
+                Log.e(LOG_TAG, "Registering thirdtime vibration.");
+                registerVibration(VIBRATION_THIRD_ALARM, thirdTime);
+            }
+        }
+
+        // Setting carry end vibs
+        if (carryZero < 5500) {
+            shouldVibrateInServiceNext = true;
+            inServiceVibrationPattern = LONG_PATTERN;
+        } else {
+            Log.e(LOG_TAG, "Registering carry end vibration.");
+            registerVibration(VIBRATION_CARRY_ZERO, carryZero);
+        }
+
+    }
+
+    private void cancelItemVibrations() {
+        cancelVibration(VIBRATION_CARRY_ZERO);
+        cancelVibration(VIBRATION_MAIN_ZERO);
+        cancelVibration(VIBRATION_THIRD_ALARM);
+        cancelVibration(VIBRATION_HALFTIME_ALARM);
+
+    }
+
+    private void vibrateInService (long[] pattern) {
+        if(shouldVibrateInServiceNext) {
+            Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+            vibr.vibrate(pattern, -1);
+            shouldVibrateInServiceNext = false;
+        }
+    }
+
     // Just a helper method encapsulating this common pattern
     private void startCountdownTimer(long millisInFuture, long countdownInterval) {
         mCountdownTimer = new ClockCountdownTimer(millisInFuture, countdownInterval);
@@ -503,22 +638,18 @@ public class ClockService extends Service {
             if (currentItemTime <= (mCurrentItem.getStartTime() / 2) + 500
                     && currentItemTime > (mCurrentItem.getStartTime() / 2) - 500
                     && currentItemTime != 0 && sVibrateOn) {
-//                Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-//                vibr.vibrate(50);
+                vibrateInService(inServiceVibrationPattern);
             } else if (currentItemTime <= (mCurrentItem.getStartTime() / 3) + 500
                     && currentItemTime > (mCurrentItem.getStartTime() / 3) - 500
                     && currentItemTime != 0 && sVibrateOn) {
-//                Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-//                vibr.vibrate(50);
+                vibrateInService(inServiceVibrationPattern);
             }
 
             if (currentItemTime > 0) {
                 if (currentItemTime <= 1500
                         && currentItemTime > 500
                         && sVibrateOn) {
-//                    long[] pattern = {0, 50, 50, 50};
-//                    Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-//                    vibr.vibrate(pattern, -1);
+                    vibrateInService(inServiceVibrationPattern);
                 }
                 // Subtract one second or zero the counter
                 if (currentItemTime - 1000 <= 0) {
@@ -529,9 +660,7 @@ public class ClockService extends Service {
             } else {
                 long carry = mRoutineClock.getmCarryTime();
                 if (carry <= 1500 && carry > 500 && sVibrateOn) {
-//                    long[] pattern = {0, 50, 50, 50};
-//                    Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-//                    vibr.vibrate(pattern, -1);
+                    vibrateInService(inServiceVibrationPattern);
                 }
                 mRoutineClock.setmCarryTime(carry - 1000);
             }
@@ -580,9 +709,7 @@ public class ClockService extends Service {
             makeNotification();
             // Stop countdown
             if (sVibrateOn) {
-//                long[] pattern = {0, 50, 50, 50, 50, 50};
-//                Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-//                vibr.vibrate(pattern, -1);
+                vibrateInService(inServiceVibrationPattern);
             }
 
             final Timer finishTimer = new Timer();
