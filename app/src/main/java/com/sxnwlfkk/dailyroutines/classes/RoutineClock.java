@@ -21,6 +21,11 @@ public class RoutineClock {
     private long mLength;
     private long mEndTime;
 
+    // The time when the device got interrupted
+    private long mInterruptTime;
+    // The time that the current item had, when the device got interrupted
+    private long mInterruptCurrentTime;
+
 
     private boolean mEndTimeRequired;
     private long mId;
@@ -113,6 +118,8 @@ public class RoutineClock {
     public void resetRoutine() {
         mCarryTime = 0;
         mCurrentItemIndex = -1;
+        mInterruptTime = 0;
+        mInterruptCurrentTime = 0;
 
         // Clear items
         for (int i = 0; i < mItemsList.size(); i++) {
@@ -128,6 +135,8 @@ public class RoutineClock {
         mCarryTime = 0;
         mCurrentItemIndex = -1;
         mTimesUsed++;
+        mInterruptTime = 0;
+        mInterruptCurrentTime = 0;
 
         for (int i = 0; i < mItemsList.size(); i++) {
             RoutineItem item = mItemsList.get(i);
@@ -140,6 +149,7 @@ public class RoutineClock {
     // Sort out diff time
     public void sortDiffTime() {
         if (mDiffTime != 0) {
+            Log.e(LOG_TAG, "Diff time is: " + mDiffTime + " current item time is: " + getCurrentItem().getmCurrentTime());
             long currTime = mItemsList.get(mCurrentItemIndex).getmCurrentTime();
             long itemsElapsedTime = mItemsList.get(mCurrentItemIndex).getmElapsedTime();
             if (mLength < mDiffTime) {
@@ -155,6 +165,7 @@ public class RoutineClock {
                 mItemsList.get(mCurrentItemIndex).setmCurrentTime(currTime - mDiffTime);
             }
             calculateRemainingRoutineTime();
+            Log.e(LOG_TAG, "The updated time is: " + getCurrentItem().getmCurrentTime());
         }
     }
 
@@ -282,4 +293,19 @@ public class RoutineClock {
         this.mEndTimeRequired = mEndTimeRequired;
     }
 
+    public long getmInterruptTime() {
+        return mInterruptTime;
+    }
+
+    public void setmInterruptTime(long mInterruptTime) {
+        this.mInterruptTime = mInterruptTime;
+    }
+
+    public long getmInterruptCurrentTime() {
+        return mInterruptCurrentTime;
+    }
+
+    public void setmInterruptCurrentTime(long mInterruptCurrentTime) {
+        this.mInterruptCurrentTime = mInterruptCurrentTime;
+    }
 }

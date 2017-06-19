@@ -4,10 +4,12 @@ import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
@@ -24,7 +26,7 @@ import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 
 import com.sxnwlfkk.dailyroutines.R;
-import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
+import com.sxnwlfkk.dailyroutines.backend.ScreenOnOffReceiver;
 import com.sxnwlfkk.dailyroutines.backend.VibrationNotificationReceiver;
 import com.sxnwlfkk.dailyroutines.classes.RoutineClock;
 import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
@@ -34,11 +36,9 @@ import com.sxnwlfkk.dailyroutines.views.preference.SettingsActivity;
 import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver.ALARM_INTENT_LENGTH;
 import static com.sxnwlfkk.dailyroutines.backend.VibrationNotificationReceiver.END_PATTERN;
 import static com.sxnwlfkk.dailyroutines.backend.VibrationNotificationReceiver.LONG_PATTERN;
 import static com.sxnwlfkk.dailyroutines.backend.VibrationNotificationReceiver.NO_PATTERN;
@@ -64,6 +64,8 @@ public class ClockService extends Service {
     public static final int CLOCK_SERVICE_PREV_ITEM = 504;
     public static final int CLOCK_SERVICE_SEND_UPDATE = 505;
     public static final int CLOCK_SERVICE_STOP_TALKING = 506;
+    public static final int CLOCK_SERVICE_SCREEN_OFF = 507;
+    public static final int CLOCK_SERVICE_SCREEN_ON = 508;
 
     // Intent field constants
     public static final String SERVICE_COMMAND_FIELD = "command";
@@ -90,7 +92,7 @@ public class ClockService extends Service {
     Uri mCurrentUri;
     NotificationManager mNotificationManager;
     NotificationCompat.Builder mBuilder;
-    PowerManager.WakeLock mWakelock;
+    BroadcastReceiver mReceiver;
 
     boolean shouldVibrateInServiceNext;
     long[] inServiceVibrationPattern;
@@ -100,7 +102,8 @@ public class ClockService extends Service {
     private boolean shouldSpeak;
     private boolean routineIsSetUp;
     private boolean routineFinished;
-    private boolean routineHasBennStarted;
+    private boolean routineHasBeenStarted;
+    private boolean mScreenIsOn;
 
     // Settings
     private boolean sVibrateOn;
@@ -117,6 +120,7 @@ public class ClockService extends Service {
         routineIsSetUp = false;
         routineFinished = false;
         mBuilder = null;
+        mScreenIsOn = true;
         shouldVibrateInServiceNext = false;
         inServiceVibrationPattern = NO_PATTERN;
 
@@ -126,11 +130,21 @@ public class ClockService extends Service {
 
         // Get notification manager
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Get screen events receiver
+        IntentFilter filter = new IntentFilter(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        mReceiver = new ScreenOnOffReceiver();
+        registerReceiver(mReceiver, filter);
     }
 
     @Override
     public void onDestroy() {
         mNotificationManager.cancelAll();
+
+        if(mReceiver!=null)
+            unregisterReceiver(mReceiver);
+
         super.onDestroy();
     }
 
@@ -140,7 +154,9 @@ public class ClockService extends Service {
         Log.e(LOG_TAG, "In service on start command.");
 
         int command = intent.getIntExtra(SERVICE_COMMAND_FIELD, 0);
-        mCurrentUri = intent.getData();
+        if (intent.getData() != null) {
+            mCurrentUri = intent.getData();
+        }
 
         switch (command) {
             case CLOCK_SERVICE_ROUTINE_START:
@@ -167,6 +183,15 @@ public class ClockService extends Service {
                 break;
             case CLOCK_SERVICE_SEND_UPDATE:
                 Log.e(LOG_TAG, "Got command: UPDATE.");
+                sendUpdate();
+                break;
+            case CLOCK_SERVICE_SCREEN_OFF:
+                Log.e(LOG_TAG, "Got command: SCREEN OFF.");
+                clockScreenOff();
+                break;
+            case CLOCK_SERVICE_SCREEN_ON:
+                Log.e(LOG_TAG, "Got command: SCREEN ON.");
+                clockScreenOn();
                 sendUpdate();
                 break;
             case CLOCK_SERVICE_STOP_TALKING:
@@ -209,9 +234,9 @@ public class ClockService extends Service {
 
          // Set first start sentry
          if (rCurrItem == -1) {
-             routineHasBennStarted = false;
+             routineHasBeenStarted = false;
          } else {
-             routineHasBennStarted = true;
+             routineHasBeenStarted = true;
          }
 
          // Set these data to the clock object
@@ -228,7 +253,7 @@ public class ClockService extends Service {
          long rDiffTime = 0;
          if (rCurrItem > -1) {
              long currTime = System.currentTimeMillis();
-             rDiffTime = (long) currTime - rInterruptTime;
+             rDiffTime = currTime - rInterruptTime;
          }
          mRoutineClock.setmDiffTime(rDiffTime);
      }
@@ -297,7 +322,7 @@ public class ClockService extends Service {
         Log.e(LOG_TAG, "After db query in startup method.");
 
         // First start of the routine
-        if (!routineHasBennStarted) {
+        if (!routineHasBeenStarted) {
             if (mRoutineClock.ismEndTimeRequired()) {
                 int currTime = RoutineUtils.getCurrentTimeInSec();
                 Log.e(LOG_TAG, "Current time is: " + currTime);
@@ -321,6 +346,8 @@ public class ClockService extends Service {
         } else {
             mRoutineClock.sortDiffTime();
         }
+
+        routineHasBeenStarted = true;
 
         mCurrentItem = mRoutineClock.getCurrentItem();
         if (!timerIsInitialised) {
@@ -396,6 +423,35 @@ public class ClockService extends Service {
         sendMessage();
     }
 
+    private void clockScreenOn() {
+        if (routineHasBeenStarted) {
+            checkDiffTime();
+            mScreenIsOn = true;
+        }
+    }
+
+    private void clockScreenOff() {
+        PowerManager.WakeLock wl = getWakeLock();
+        wl.acquire();
+        if (routineHasBeenStarted) {
+            writeRoutineToDB();
+            mScreenIsOn = false;
+            mRoutineClock.setmInterruptTime(System.currentTimeMillis());
+        }
+        wl.release();
+    }
+
+    private void checkDiffTime() {
+        // Check diff time
+        if (mRoutineClock.getmInterruptTime() != 0) {
+            long rDiffTime = System.currentTimeMillis() - mRoutineClock.getmInterruptTime();
+            Log.e(LOG_TAG, "Diff time: " + rDiffTime);
+            if (rDiffTime > 1010) {
+                mRoutineClock.setmDiffTime(rDiffTime);
+                mRoutineClock.sortDiffTime();
+            }
+        }
+    }
 
     private void sendUpdate() {
         sendMessage();
@@ -591,6 +647,12 @@ public class ClockService extends Service {
 
     }
 
+    private PowerManager.WakeLock getWakeLock() {
+        PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+        PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "ServiceTempWakelock");
+        return wl;
+    }
+
     private void vibrateInService (long[] pattern) {
         if(shouldVibrateInServiceNext) {
             Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
@@ -622,57 +684,59 @@ public class ClockService extends Service {
 
         @Override
         public void onTick(long millisUntilFinished) {
-            // Update clocks
-            mCurrentItem.incrementElapsedTime();
-
-            long currentItemTime = mCurrentItem.getmCurrentTime();
-            if (currentItemTime <= (mCurrentItem.getStartTime() / 2) + 500
-                    && currentItemTime > (mCurrentItem.getStartTime() / 2) - 500
-                    && currentItemTime != 0 && sVibrateOn) {
-                vibrateInService(inServiceVibrationPattern);
-            } else if (currentItemTime <= (mCurrentItem.getStartTime() / 3) + 500
-                    && currentItemTime > (mCurrentItem.getStartTime() / 3) - 500
-                    && currentItemTime != 0 && sVibrateOn) {
-                vibrateInService(inServiceVibrationPattern);
-            }
-
-            if (currentItemTime > 0) {
-                if (currentItemTime <= 1500
-                        && currentItemTime > 500
-                        && sVibrateOn) {
+            PowerManager.WakeLock wl = getWakeLock();
+            wl.acquire();
+            if (mScreenIsOn) {
+                long currentItemTime = mCurrentItem.getmCurrentTime();
+                if (currentItemTime <= (mCurrentItem.getStartTime() / 2) + 500
+                        && currentItemTime > (mCurrentItem.getStartTime() / 2) - 500
+                        && currentItemTime != 0 && sVibrateOn) {
+                    vibrateInService(inServiceVibrationPattern);
+                } else if (currentItemTime <= (mCurrentItem.getStartTime() / 3) + 500
+                        && currentItemTime > (mCurrentItem.getStartTime() / 3) - 500
+                        && currentItemTime != 0 && sVibrateOn) {
                     vibrateInService(inServiceVibrationPattern);
                 }
-                // Subtract one second or zero the counter
-                if (currentItemTime - 1000 <= 0) {
-                    mCurrentItem.setmCurrentTime(0);
+
+                if (currentItemTime > 0) {
+                    if (currentItemTime <= 1500
+                            && currentItemTime > 500
+                            && sVibrateOn) {
+                        vibrateInService(inServiceVibrationPattern);
+                    }
+                    // Subtract one second or zero the counter
+                    if (currentItemTime - 1000 <= 0) {
+                        mCurrentItem.setmCurrentTime(0);
+                    } else {
+                        mCurrentItem.setmCurrentTime(currentItemTime - 1000);
+                    }
                 } else {
-                    mCurrentItem.setmCurrentTime(currentItemTime - 1000);
+                    long carry = mRoutineClock.getmCarryTime();
+                    if (carry <= 1500 && carry > 500 && sVibrateOn) {
+                        vibrateInService(inServiceVibrationPattern);
+                    }
+                    mRoutineClock.setmCarryTime(carry - 1000);
                 }
-            } else {
-                long carry = mRoutineClock.getmCarryTime();
-                if (carry <= 1500 && carry > 500 && sVibrateOn) {
-                    vibrateInService(inServiceVibrationPattern);
+
+                // Check if routine ended. Interrupt if timer would continue with no time left.
+                if ((mRoutineClock.getmCurrentItemIndex() + 1 == mRoutineClock.getmRoutineItemsNum()
+                        && mRoutineClock.getmCarryTime() <= 0
+                        && mCurrentItem.getmCurrentTime() == 0)
+                        ||
+                        (RoutineUtils.getCurrentTimeInSec() >= mRoutineClock.getmEndTime() / 1000
+                                && mRoutineClock.ismEndTimeRequired())) {
+                    onFinish();
                 }
-                mRoutineClock.setmCarryTime(carry - 1000);
-            }
 
-            Log.e(LOG_TAG, "Current time in seconds is: " + RoutineUtils.getCurrentTimeInSec() +
-            " end time is in seconds: " + mRoutineClock.getmEndTime() / 1000);
-            // Check if routine ended. Interrupt if timer would continue with no time left.
-            if ((mRoutineClock.getmCurrentItemIndex() + 1 == mRoutineClock.getmRoutineItemsNum()
-                    && mRoutineClock.getmCarryTime() <= 0
-                    && mCurrentItem.getmCurrentTime() == 0)
-                    ||
-                    (RoutineUtils.getCurrentTimeInSec() >= mRoutineClock.getmEndTime() / 1000
-                    && mRoutineClock.ismEndTimeRequired())) {
-                onFinish();
+                // Send broadcast intent to Activity
+                sendMessage();
+                makeNotification();
+                writeRoutineToDB();
+                // Update clocks
+                mCurrentItem.incrementElapsedTime();
+                mRoutineClock.setmInterruptTime(System.currentTimeMillis());
             }
-
-            // Send broadcast intent to Activity
-            sendMessage();
-            makeNotification();
-            // TODO since we have wakelock, isn't it redundant?
-            writeRoutineToDB();
+            wl.release();
         }
 
         @Override

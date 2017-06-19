@@ -60,6 +60,7 @@
             </intent-filter>
         </receiver>
         <receiver android:name=".backend.VibrationNotificationReceiver"></receiver>
+        <receiver android:name=".backend.ScreenOnOffReceiver"></receiver>
         <service android:name=".views.clock.ClockService" />
     </application>
 
