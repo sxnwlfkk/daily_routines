@@ -98,10 +98,10 @@ public class ClockService extends Service {
         routineIsSetUp = false;
         routineFinished = false;
         mBuilder = null;
-        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        mWakelock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-                "MyWakelockTag");
-        mWakelock.acquire();
+//        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+//        mWakelock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+//                "MyWakelockTag");
+//        mWakelock.acquire();
 
         // Get settings
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
@@ -115,9 +115,9 @@ public class ClockService extends Service {
     public void onDestroy() {
         mNotificationManager.cancelAll();
         super.onDestroy();
-        if (mWakelock.isHeld()) {
-            mWakelock.release();
-        }
+//        if (mWakelock.isHeld()) {
+//            mWakelock.release();
+//        }
     }
 
     @Override
@@ -326,7 +326,7 @@ public class ClockService extends Service {
     private void cancelRoutine() {
         Log.e(LOG_TAG, "In cancel routinte service.");
         mCountdownTimer.cancel();
-        mWakelock.release();
+//        mWakelock.release();
         mRoutineClock.resetRoutine();
         writeRoutineToDB();
         stopForeground(true);
@@ -342,7 +342,7 @@ public class ClockService extends Service {
 
     private void finishRoutine() {
         mCountdownTimer.cancel();
-        mWakelock.release();
+//        mWakelock.release();
         mRoutineClock.finishRoutine();
         writeRoutineToDB();
         stopForeground(true);
@@ -503,22 +503,22 @@ public class ClockService extends Service {
             if (currentItemTime <= (mCurrentItem.getStartTime() / 2) + 500
                     && currentItemTime > (mCurrentItem.getStartTime() / 2) - 500
                     && currentItemTime != 0 && sVibrateOn) {
-                Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-                vibr.vibrate(50);
+//                Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+//                vibr.vibrate(50);
             } else if (currentItemTime <= (mCurrentItem.getStartTime() / 3) + 500
                     && currentItemTime > (mCurrentItem.getStartTime() / 3) - 500
                     && currentItemTime != 0 && sVibrateOn) {
-                Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-                vibr.vibrate(50);
+//                Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+//                vibr.vibrate(50);
             }
 
             if (currentItemTime > 0) {
                 if (currentItemTime <= 1500
                         && currentItemTime > 500
                         && sVibrateOn) {
-                    long[] pattern = {0, 50, 50, 50};
-                    Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-                    vibr.vibrate(pattern, -1);
+//                    long[] pattern = {0, 50, 50, 50};
+//                    Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+//                    vibr.vibrate(pattern, -1);
                 }
                 // Subtract one second or zero the counter
                 if (currentItemTime - 1000 <= 0) {
@@ -529,9 +529,9 @@ public class ClockService extends Service {
             } else {
                 long carry = mRoutineClock.getmCarryTime();
                 if (carry <= 1500 && carry > 500 && sVibrateOn) {
-                    long[] pattern = {0, 50, 50, 50};
-                    Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-                    vibr.vibrate(pattern, -1);
+//                    long[] pattern = {0, 50, 50, 50};
+//                    Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+//                    vibr.vibrate(pattern, -1);
                 }
                 mRoutineClock.setmCarryTime(carry - 1000);
             }
@@ -580,9 +580,9 @@ public class ClockService extends Service {
             makeNotification();
             // Stop countdown
             if (sVibrateOn) {
-                long[] pattern = {0, 50, 50, 50, 50, 50};
-                Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
-                vibr.vibrate(pattern, -1);
+//                long[] pattern = {0, 50, 50, 50, 50, 50};
+//                Vibrator vibr = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+//                vibr.vibrate(pattern, -1);
             }
 
             final Timer finishTimer = new Timer();
