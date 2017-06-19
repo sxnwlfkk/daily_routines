@@ -92,7 +92,6 @@ public class ClockActivity extends Activity {
 
             if (mCurrentItem == -1) {
                 Log.e(LOG_TAG, "Starting onFinish method.");
-                sendStopTalkingMessage();
                 onFinish();
             } else if (waitingForScreenRefresh) {
                 refreshScreen();
@@ -320,6 +319,7 @@ public class ClockActivity extends Activity {
                 Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
                 intent.setData(mCurrentUri);
                 startActivity(intent);
+                sendStopTalkingMessage();
                 finish();
             }
         });
@@ -331,6 +331,7 @@ public class ClockActivity extends Activity {
                 Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
                 intent.setData(mCurrentUri);
                 startActivity(intent);
+                sendStopTalkingMessage();
                 finish();
             }
         });
