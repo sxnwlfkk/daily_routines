@@ -81,6 +81,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
     private Button mDownItem;
 
     private TextView mItemNameTextView;
+    private TextView mItemNumber;
 
     // Click listeners
     private View.OnClickListener itemSaveButtonClickListener = new View.OnClickListener() {
@@ -94,6 +95,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                 mNewItemLengthSeconds.setText("");
                 mCurrentItemIndex = -1;
                 mRoutineHasChanged = true;
+                mItemNumber.setVisibility(View.GONE);
             }
         }
         private void addNewItemToList() {
@@ -155,11 +157,13 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                 updateListView();
                 mCurrentItemIndex = -1;
                 mRoutineHasChanged = true;
+                mItemNumber.setVisibility(View.GONE);
             }
             mNewItemName.setText("");
             mNewItemLengthMinutes.setText("");
         }
     };
+
     private View.OnClickListener itemUpButtonClickListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -170,6 +174,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                 updateListView();
                 mCurrentItemIndex--;
                 mRoutineHasChanged = true;
+                setItemNumberText(mCurrentItemIndex);
             }
         }
     };
@@ -183,6 +188,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                 updateListView();
                 mCurrentItemIndex++;
                 mRoutineHasChanged = true;
+                setItemNumberText(mCurrentItemIndex);
             }
         }
     };
@@ -229,6 +235,8 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                 showTimePickerDialog(v);
             }
         });
+        mItemNumber = (TextView) findViewById(R.id.edit_item_textbox_number);
+        mItemNumber.setVisibility(View.GONE);
 
         // Setting up Routine main fields
         mRoutineName = (EditText) findViewById(R.id.edit_textbox_routine_name);
@@ -378,6 +386,9 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                 mNewItemName.setText(name);
                 mNewItemLengthMinutes.setText(lengthMin);
                 mNewItemLengthSeconds.setText(lengthSec);
+
+                mItemNumber.setVisibility(View.VISIBLE);
+                setItemNumberText(mCurrentItemIndex);
             }
         });
     }
@@ -514,6 +525,11 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
 
         return false;
     }
+
+    private void setItemNumberText(int i) {
+        mItemNumber.setText(i + 1 + ".");
+    }
+
 
     @Override
     public Loader<Cursor> onCreateLoader(int loaderId, Bundle args) {

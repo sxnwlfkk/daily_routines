@@ -30,6 +30,9 @@ public class ProfileCursorAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
+        TextView itemNo = (TextView) view.findViewById(R.id.profile_list_number);
+        itemNo.setVisibility(View.GONE);
+
         TextView tvName = (TextView) view.findViewById(R.id.profile_list_name);
         TextView tvLength = (TextView) view.findViewById(R.id.profile_list_length);
         TextView tvAvg = (TextView) view.findViewById(R.id.profile_list_item_avg);

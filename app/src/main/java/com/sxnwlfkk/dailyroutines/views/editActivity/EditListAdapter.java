@@ -13,6 +13,8 @@ import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
 import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
 
+import org.w3c.dom.Text;
+
 import java.util.List;
 
 /**
@@ -45,6 +47,9 @@ public class EditListAdapter extends ArrayAdapter<RoutineItem> {
 
         TextView avgView = (TextView) listItemView.findViewById(R.id.profile_list_item_avg);
         avgView.setText(RoutineUtils.formatLengthString(RoutineUtils.msecToSec((long) rItem.getmAverageTime())));
+
+        TextView itemNo = (TextView) listItemView.findViewById(R.id.profile_list_number);
+        itemNo.setText((position + 1) + ".");
 
         // Setting average cell background for visual information conveying
         int relation = RoutineUtils.decideAvgColor(rItem.getmTime(), (int) rItem.getmAverageTime());
