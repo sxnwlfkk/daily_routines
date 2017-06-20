@@ -140,6 +140,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
         String[] projection = {
                 RoutineContract.RoutineEntry._ID,
                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME,
