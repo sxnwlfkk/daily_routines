@@ -422,19 +422,23 @@ public class ClockService extends Service {
     }
 
     private void nextItem() {
-        stepTimeCorrection("next");
-        mCurrentItem = mRoutineClock.nextItem(mCurrentItem);
-        cancelItemVibrations();
-        registerItemVibrations();
-        sendMessage();
+        if (mRoutineClock.getmCurrentItemIndex() < mRoutineClock.getmRoutineItemsNum() - 1) {
+            stepTimeCorrection("next");
+            mCurrentItem = mRoutineClock.nextItem(mCurrentItem);
+            cancelItemVibrations();
+            registerItemVibrations();
+            sendMessage();
+        }
     }
 
     private void prevItem() {
-        stepTimeCorrection("prev");
-        mCurrentItem = mRoutineClock.prevItem(mCurrentItem);
-        cancelItemVibrations();
-        registerItemVibrations();
-        sendMessage();
+        if (mRoutineClock.getmCurrentItemIndex() > 0) {
+            stepTimeCorrection("prev");
+            mCurrentItem = mRoutineClock.prevItem(mCurrentItem);
+            cancelItemVibrations();
+            registerItemVibrations();
+            sendMessage();
+        }
     }
 
     private void clockScreenOn() {
@@ -503,18 +507,37 @@ public class ClockService extends Service {
         // Make the notification
         String notificationText = "";
         if (!routineFinished) {
-            notificationText = "Time in item: " + RoutineUtils.formatLengthString(RoutineUtils.msecToSec(mCurrentItem.getmCurrentTime()))
-                                + "\nPlus time: " + RoutineUtils.formatLengthString(RoutineUtils.msecToSec(mRoutineClock.getmCarryTime()));
+            if (mCurrentItem.getmCurrentTime() > 0) {
+                notificationText = "Item time: " + RoutineUtils.formatLengthString(RoutineUtils.msecToSec(mCurrentItem.getmCurrentTime()));
+            } else {
+                notificationText = "Leftover time: " + RoutineUtils.formatLengthString(RoutineUtils.msecToSec(mRoutineClock.getmCarryTime()));
+            }
         } else {
             notificationText = "Time is up!";
         }
 
+
         if (mBuilder == null) {
+            // Prepare notification button intents
+            Intent nextIntent = new Intent(this, ClockService.class);
+            nextIntent.setData(mCurrentUri);
+            nextIntent.putExtra(SERVICE_COMMAND_FIELD, CLOCK_SERVICE_NEXT_ITEM);
+            PendingIntent pNextIntent = PendingIntent.getService(this, (int) System.currentTimeMillis(), nextIntent, 0);
+
+            // Prepare notification button intents
+            Intent prevIntent = new Intent(this, ClockService.class);
+            prevIntent.setData(mCurrentUri);
+            prevIntent.putExtra(SERVICE_COMMAND_FIELD, CLOCK_SERVICE_PREV_ITEM);
+            PendingIntent pPrevIntent = PendingIntent.getService(this, (int) System.currentTimeMillis(), prevIntent, 0);
+            
             mBuilder =
                     new NotificationCompat.Builder(getApplicationContext())
                             .setSmallIcon(R.drawable.ic_stat_watch)
-                            .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
+//                            .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
+                            .setPriority(2)
                             .setContentTitle(mCurrentItem.getmItemName())
+                            .addAction(R.drawable.ic_arrow_left_bold_circle_outline_grey600_36dp, "Prev", pPrevIntent)
+                            .addAction(R.drawable.ic_arrow_right_bold_circle_outline_grey600_36dp, "Next", pNextIntent)
                             .setContentText(notificationText);
         }
         mBuilder.setContentTitle(mCurrentItem.getmItemName())
