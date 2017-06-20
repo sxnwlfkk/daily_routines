@@ -79,6 +79,8 @@ public class ClockService extends Service {
 
     // Countdown interval constant
     public static final long COUNTDOWN_INTERVAL_CONST = 1000;
+    // Step correction constant
+    private static final long STEP_CORRECTION_CONST = 0;
 
     public static final String LOG_TAG = ClockService.class.getSimpleName();
 
@@ -248,6 +250,8 @@ public class ClockService extends Service {
          mRoutineClock.setmCarryTime(rCarryTime);
          mRoutineClock.setmRoutineItemsNum(rItemsNumber);
          mRoutineClock.setmTimesUsed(rTimesUsed);
+         mRoutineClock.setmInterruptTime(0);
+         mRoutineClock.setmInterruptCurrentTime(0);
 
          // Check diff time
          long rDiffTime = 0;
@@ -342,12 +346,12 @@ public class ClockService extends Service {
                 }
             }
             mRoutineClock.setStartTime();
+            routineHasBeenStarted = true;
         // Routine was started but the service was killed after
         } else {
             mRoutineClock.sortDiffTime();
         }
 
-        routineHasBeenStarted = true;
 
         mCurrentItem = mRoutineClock.getCurrentItem();
         if (!timerIsInitialised) {
@@ -402,13 +406,23 @@ public class ClockService extends Service {
         stopSelf();
     }
 
-    private void nextItem() {
-        long currTime = mCurrentItem.getmCurrentTime();
-        if (currTime > 500) {
-            mCurrentItem.setmCurrentTime(currTime - 500);
-        } else {
-            mRoutineClock.setmCarryTime(mRoutineClock.getmCarryTime() - 500);
+    // This method tries to mitigate the time surplus gained by not subtracting anything when
+    // pushing prev or next.
+    private void stepTimeCorrection(String direction) {
+        if (direction == "next") {
+            long currTime = mCurrentItem.getmCurrentTime();
+            if (currTime > STEP_CORRECTION_CONST) {
+                mCurrentItem.setmCurrentTime(currTime - STEP_CORRECTION_CONST);
+            } else {
+                mRoutineClock.setmCarryTime(mRoutineClock.getmCarryTime() - STEP_CORRECTION_CONST);
+            }
+        } else if (direction == "prev") {
+            mRoutineClock.setmCarryTime(mRoutineClock.getmCarryTime() - STEP_CORRECTION_CONST);
         }
+    }
+
+    private void nextItem() {
+        stepTimeCorrection("next");
         mCurrentItem = mRoutineClock.nextItem(mCurrentItem);
         cancelItemVibrations();
         registerItemVibrations();
@@ -416,7 +430,7 @@ public class ClockService extends Service {
     }
 
     private void prevItem() {
-        mRoutineClock.setmCarryTime(mRoutineClock.getmCarryTime() - 500);
+        stepTimeCorrection("prev");
         mCurrentItem = mRoutineClock.prevItem(mCurrentItem);
         cancelItemVibrations();
         registerItemVibrations();

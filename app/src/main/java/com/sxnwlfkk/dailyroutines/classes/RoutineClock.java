@@ -38,12 +38,11 @@ public class RoutineClock {
     // the carry time among all the items. When a routine is underway, and the user goes to red
     // we should use 1 as offset, to distribute among the remaining items.
     private void distributeCarryTime(int offset) {
+
         long remainingTime = 0;
         for (int i = mCurrentItemIndex+offset; i < mItemsList.size(); i++) {
             remainingTime += mItemsList.get(i).getmCurrentTime();
         }
-        Log.e(LOG_TAG, "Remaining time: " + remainingTime);
-        Log.e(LOG_TAG, "Carry time: " + mCarryTime);
         for (int i = mCurrentItemIndex+offset; i < mItemsList.size(); i++) {
             RoutineItem item = mItemsList.get(i);
             double ratio = (double) item.getmCurrentTime() / remainingTime;
