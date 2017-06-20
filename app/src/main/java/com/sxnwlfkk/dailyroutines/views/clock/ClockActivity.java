@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -18,6 +19,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.sxnwlfkk.dailyroutines.R;
@@ -38,7 +40,9 @@ import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_CARRY_
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_COMMAND_FIELD;
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_CURR_ITEM_FIELD;
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_CURR_TIME_FIELD;
+import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_ELAPSED_TIME;
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_ITEM_NAME_FIELD;
+import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_ROUTINE_LENGTH;
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_ROUTINE_NAME_FIELD;
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_SUM_ITEMS_FIELD;
 
@@ -57,6 +61,8 @@ public class ClockActivity extends Activity {
     int mSumOfItems;
     int mCarryTime;
     int mCurrentTime;
+    long mElapsedTime;
+    long mRoutineLength;
     String mItemName;
     String mRoutineName;
 
@@ -68,6 +74,7 @@ public class ClockActivity extends Activity {
     private TextView mCarryClockText;
     private TextView mItemNameText;
     private TextView mItemCounterText;
+    private ProgressBar mProgressBar;
 
     // Buttons
     private Button mPreviousButton;
@@ -90,6 +97,8 @@ public class ClockActivity extends Activity {
             mCurrentTime = ((c = intent.getIntExtra(SERVICE_CURR_TIME_FIELD, -1)) != -1) ? c : mCurrentTime;
             mCurrentItem = c = intent.getIntExtra(SERVICE_CURR_ITEM_FIELD, -1);
             mSumOfItems = ((c = intent.getIntExtra(SERVICE_SUM_ITEMS_FIELD, -1)) != -1) ? c : mSumOfItems;
+            mElapsedTime = intent.getLongExtra(SERVICE_ELAPSED_TIME, 0);
+            mRoutineLength = intent.getLongExtra(SERVICE_ROUTINE_LENGTH, 0);
 
             if (mCurrentItem == -1) {
                 Log.e(LOG_TAG, "Starting onFinish method.");
@@ -178,6 +187,7 @@ public class ClockActivity extends Activity {
         textColor = mCarryClockText.getCurrentTextColor();
         mItemNameText = (TextView) findViewById(R.id.clock_item_name_text);
         mItemCounterText = (TextView) findViewById(R.id.clock_routine_item_counter_text);
+        mProgressBar = (ProgressBar) findViewById(R.id.clock_progressbar);
 
         // Load buttons
         mPreviousButton = (Button) findViewById(R.id.clock_previous_button);
@@ -287,15 +297,32 @@ public class ClockActivity extends Activity {
             mMainClockText.setText(clockText);
         } else {
             canBeNegative = true;
-            if (mCarryTime < 0) {
-                mCarryClockText.setTextColor(getResources().getColor(R.color.material_red));
-            } else {
-                mCarryClockText.setTextColor(textColor);
-            }
             clockText = renderTime(mCarryTime, canBeNegative);
             mCarryClockText.setText(clockText);
             mMainClockText.setText("00:00");
         }
+        if (mCarryTime < 0) {
+            mCarryClockText.setBackgroundColor(getResources().getColor(R.color.material_red_lighten1));
+            mCarryClockText.setTextColor(getResources().getColor(R.color.white));
+        } else if (mCarryTime > 0){
+            mCarryClockText.setBackgroundColor(getResources().getColor(R.color.material_teal_lighten3));
+            mCarryClockText.setTextColor(getResources().getColor(R.color.white));
+        } else {
+            mCarryClockText.setBackgroundColor(Color.TRANSPARENT);
+            mCarryClockText.setTextColor(textColor);
+        }
+        updateProgressBar();
+    }
+
+    private void updateProgressBar() {
+        int perc = 0;
+        if (mRoutineLength != 0) {
+            perc = (int) (((double) mElapsedTime / mRoutineLength) * 100);
+            mProgressBar.setProgress(perc);
+        } else {
+            mProgressBar.setProgress(perc);
+        }
+
     }
 
     private String renderTime(int timeInSeconds, boolean canBeNegative) {

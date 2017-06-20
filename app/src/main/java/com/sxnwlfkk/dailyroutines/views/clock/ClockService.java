@@ -76,6 +76,11 @@ public class ClockService extends Service {
     public static final String SERVICE_SUM_ITEMS_FIELD = "sum_of_items";
     public static final String SERVICE_ITEM_NAME_FIELD = "item_name";
     public static final String SERVICE_ROUTINE_NAME_FIELD = "routine_name";
+    public static final String SERVICE_ROUTINE_LENGTH = "routine_length";
+    public static final String SERVICE_ELAPSED_TIME = "elapsed_time";
+
+    // Namestring of preference in the service
+    public static final String SERVICE_PREFERENCE_LENGTH_WHEN_STARTED = "length_when_started";
 
     // Countdown interval constant
     public static final long COUNTDOWN_INTERVAL_CONST = 1000;
@@ -87,7 +92,6 @@ public class ClockService extends Service {
     public static String BROADCAST_ACTION = "com.sxnwlfkk.dailyroutines.clockUpdate";
 
     // VARS
-    // TODO
     RoutineClock mRoutineClock;
     RoutineItem mCurrentItem;
     CountDownTimer mCountdownTimer;
@@ -95,6 +99,9 @@ public class ClockService extends Service {
     NotificationManager mNotificationManager;
     NotificationCompat.Builder mBuilder;
     BroadcastReceiver mReceiver;
+    SharedPreferences mPrefs;
+
+    long mRoutineLengthWhenStarted;
 
     boolean shouldVibrateInServiceNext;
     long[] inServiceVibrationPattern;
@@ -127,8 +134,9 @@ public class ClockService extends Service {
         inServiceVibrationPattern = NO_PATTERN;
 
         // Get settings
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-        sVibrateOn = prefs.getBoolean(SettingsActivity.VIBRATE_PREF_NAME, true);
+        mPrefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        sVibrateOn = mPrefs.getBoolean(SettingsActivity.VIBRATE_PREF_NAME, true);
+        mRoutineLengthWhenStarted = mPrefs.getLong(SERVICE_PREFERENCE_LENGTH_WHEN_STARTED, 0);
 
         // Get notification manager
         mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -357,6 +365,9 @@ public class ClockService extends Service {
         if (!timerIsInitialised) {
             Log.e(LOG_TAG, "Setting countdown in the future: " + mRoutineClock.getmLength());
             startCountdownTimer(mRoutineClock.getmLength(), COUNTDOWN_INTERVAL_CONST);
+            mRoutineLengthWhenStarted = mRoutineClock.getmLength();
+            updateLengthPref(mRoutineLengthWhenStarted);
+            mRoutineClock.calculateElapsedTime();
             timerIsInitialised = true;
         }
 
@@ -387,6 +398,7 @@ public class ClockService extends Service {
         mBuilder = null;
         cancelItemVibrations();
         cancelEndVibration();
+        updateLengthPref(0);
         stopSelf();
     }
 
@@ -403,6 +415,7 @@ public class ClockService extends Service {
         mBuilder = null;
         cancelItemVibrations();
         cancelEndVibration();
+        updateLengthPref(0);
         stopSelf();
     }
 
@@ -488,6 +501,8 @@ public class ClockService extends Service {
         message.putExtra(SERVICE_CURR_ITEM_FIELD, mRoutineClock.getmCurrentItemIndex());
         message.putExtra(SERVICE_CURR_TIME_FIELD, RoutineUtils.msecToSec(mCurrentItem.getmCurrentTime()));
         message.putExtra(SERVICE_CARRY_FIELD, RoutineUtils.msecToSec(mRoutineClock.getmCarryTime()));
+        message.putExtra(SERVICE_ROUTINE_LENGTH, mRoutineLengthWhenStarted);
+        message.putExtra(SERVICE_ELAPSED_TIME, mRoutineClock.getmElapsedTime());
         sendBroadcast(message);
     }
 
@@ -529,7 +544,7 @@ public class ClockService extends Service {
             prevIntent.setData(mCurrentUri);
             prevIntent.putExtra(SERVICE_COMMAND_FIELD, CLOCK_SERVICE_PREV_ITEM);
             PendingIntent pPrevIntent = PendingIntent.getService(this, (int) System.currentTimeMillis(), prevIntent, 0);
-            
+
             mBuilder =
                     new NotificationCompat.Builder(getApplicationContext())
                             .setSmallIcon(R.drawable.ic_stat_watch)
@@ -589,6 +604,14 @@ public class ClockService extends Service {
 
             int rowsAffected = getContentResolver().update(updateUri, itemValues, null, null);
         }
+    }
+
+    // Writes to shared preferences
+
+    private void updateLengthPref(long length) {
+        SharedPreferences.Editor editor = mPrefs.edit();
+        editor.putLong(SERVICE_PREFERENCE_LENGTH_WHEN_STARTED, length);
+        editor.commit();
     }
 
     // VIBRATIONS

@@ -32,6 +32,14 @@ public class RoutineClock {
     private int mTimesUsed;
     private long mDiffTime;
 
+    private long mElapsedTime;
+    private long mLongWhenStarted;
+
+    public void RoutineClock() {
+        mElapsedTime = -1;
+    }
+
+
     // Distribute carry time
     // Offset is the number, which the counter should be modified from the current item
     // If the routine is started late, we should use 0 offset, for the algorithm to distribute
@@ -175,6 +183,16 @@ public class RoutineClock {
             newLength += mItemsList.get(i).getmCurrentTime();
         }
         mLength = newLength;
+        calculateElapsedTime();
+    }
+
+    // Calculate elapsed time
+    public void calculateElapsedTime() {
+        long elapsedTime = 0;
+        for (int i = 0; i < mRoutineItemsNum; i++) {
+            elapsedTime += mItemsList.get(i).getmElapsedTime();
+        }
+        mElapsedTime = elapsedTime;
     }
 
 
@@ -306,5 +324,22 @@ public class RoutineClock {
 
     public void setmInterruptCurrentTime(long mInterruptCurrentTime) {
         this.mInterruptCurrentTime = mInterruptCurrentTime;
+    }
+
+    public long getmElapsedTime() {
+        calculateElapsedTime();
+        return mElapsedTime;
+    }
+
+    public void incrementElapsedTime() {
+        this.mElapsedTime++;
+    }
+
+    public long getmLongWhenStarted() {
+        return mLongWhenStarted;
+    }
+
+    public void setmLongWhenStarted(long mLongWhenStarted) {
+        this.mLongWhenStarted = mLongWhenStarted;
     }
 }

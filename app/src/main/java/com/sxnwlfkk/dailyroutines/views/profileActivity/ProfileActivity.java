@@ -45,8 +45,11 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
     private TextView mRoutineName;
     private TextView mRoutineLength;
     private TextView mRoutineItemNum;
+    private TextView mAvgRoutineLength;
 
     private ProfileCursorAdapter mCursorAdapter;
+    private long mAvgTime;
+    private long mLength;
 
     // Button click listener
     private View.OnClickListener mStartButtonClickListener = new View.OnClickListener() {
@@ -78,6 +81,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
         // Finding the Routine Text fields
         mRoutineLength = (TextView) findViewById(R.id.profile_routine_length);
         mRoutineItemNum = (TextView) findViewById(R.id.profile_item_number);
+        mAvgRoutineLength = (TextView) findViewById(R.id.profile_routine_avg_length);
 
         ListView listView = (ListView) findViewById(R.id.profile_list_view);
         mCursorAdapter = new ProfileCursorAdapter(this, null);
@@ -85,6 +89,10 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
 
         getLoaderManager().initLoader(PROFILE_ROUTINE_LOADER, null, this);
         getLoaderManager().initLoader(PROFILE_ITEMS_LOADER, null, this);
+
+        // Initialize variables
+        mLength = -1;
+        mAvgTime = -1;
     }
 
     // Dialog
@@ -268,7 +276,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
             case PROFILE_ROUTINE_LOADER:
                 cursor.moveToFirst();
                 String name = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME));
-                int length = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH));
+                mLength = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH));
                 int itemNum = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER));
                 int endTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
                 boolean requireEnd = (cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END)) == 1);
@@ -283,14 +291,14 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                 }
 
                 mRoutineLength.setText(RoutineUtils.formatLengthString(
-                        RoutineUtils.msecToSec(length)));
+                        RoutineUtils.msecToSec(mLength)));
                 mRoutineItemNum.setText(String.valueOf(itemNum));
 
                 if (requireEnd) {
                     TextView numOfItems = (TextView) findViewById(R.id.profile_num_of_items_text);
                     numOfItems.setText(R.string.optimal_start_text);
                     mRoutineItemNum.setText(RoutineUtils.formatClockTimeString(
-                            RoutineUtils.calculateIdealStartTime(endTime, length) / 1000));
+                            RoutineUtils.calculateIdealStartTime(endTime, RoutineUtils.msecToSec(mLength)) / 1000));
                 } else {
                     TextView numOfItems = (TextView) findViewById(R.id.profile_num_of_items_text);
                     numOfItems.setText(R.string.number_of_items_text);
@@ -302,10 +310,35 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
 
                 break;
             case PROFILE_ITEMS_LOADER:
+                calculateAvgTime(cursor);
                 mCursorAdapter.swapCursor(cursor);
                 break;
         }
 
+
+        // Show avg time if both loaders are in
+        if (mLength != -1 && mAvgTime != -1) {
+            mAvgRoutineLength.setVisibility(View.VISIBLE);
+            mAvgRoutineLength.setText(RoutineUtils.formatLengthString(RoutineUtils.msecToSec(mAvgTime)));
+            mAvgRoutineLength.setTextColor(getResources().getColor(R.color.material_indigo_lighten1));
+        } else {
+            mAvgRoutineLength.setVisibility(View.INVISIBLE);
+        }
+
+    }
+
+    private void calculateAvgTime(Cursor cursor) {
+        long avg = 0;
+        if (cursor != null) {
+            cursor.moveToFirst();
+            while (!cursor.isAfterLast()) {
+                int itemAvg = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
+                avg += itemAvg;
+                cursor.moveToNext();
+            }
+            cursor.moveToFirst();
+        }
+        if (avg != 0) mAvgTime = avg;
     }
 
     @Override
