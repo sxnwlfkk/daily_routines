@@ -298,7 +298,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                     TextView numOfItems = (TextView) findViewById(R.id.profile_num_of_items_text);
                     numOfItems.setText(R.string.optimal_start_text);
                     mRoutineItemNum.setText(RoutineUtils.formatClockTimeString(
-                            RoutineUtils.calculateIdealStartTime(endTime, RoutineUtils.msecToSec(mLength)) / 1000));
+                            RoutineUtils.calculateIdealStartTime(RoutineUtils.msecToSec(endTime), RoutineUtils.msecToSec(mLength))));
                 } else {
                     TextView numOfItems = (TextView) findViewById(R.id.profile_num_of_items_text);
                     numOfItems.setText(R.string.number_of_items_text);
