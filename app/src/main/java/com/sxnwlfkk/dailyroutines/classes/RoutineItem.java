@@ -16,6 +16,9 @@ public class RoutineItem {
 
     private long mElapsedTime;
 
+    private long mRemainingTime;
+
+
     private long mId;
 
     private long startTime;
@@ -124,4 +127,11 @@ public class RoutineItem {
         this.startTime = startTime;
     }
 
+    public long getmRemainingTime() {
+        return mRemainingTime;
+    }
+
+    public void setmRemainingTime(long mRemainingTime) {
+        this.mRemainingTime = mRemainingTime;
+    }
 }

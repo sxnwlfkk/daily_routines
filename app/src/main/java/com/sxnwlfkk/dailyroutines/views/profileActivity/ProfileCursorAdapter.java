@@ -30,8 +30,8 @@ public class ProfileCursorAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, Context context, Cursor cursor) {
-        TextView itemNo = (TextView) view.findViewById(R.id.profile_list_number);
-        itemNo.setVisibility(View.GONE);
+        TextView itemNoView = (TextView) view.findViewById(R.id.profile_list_number);
+//        itemNoView.setVisibility(View.GONE);
 
         TextView tvName = (TextView) view.findViewById(R.id.profile_list_name);
         TextView tvLength = (TextView) view.findViewById(R.id.profile_list_length);
@@ -40,6 +40,9 @@ public class ProfileCursorAdapter extends CursorAdapter {
         String name = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_NAME));
         int length = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH));
         int avg = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
+        int itemNo = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_NO));
+
+        itemNoView.setText(itemNo + 1 + ".");
 
         // Setting average cell bacground for visual information conveying
         int relation = RoutineUtils.decideAvgColor(length, avg);

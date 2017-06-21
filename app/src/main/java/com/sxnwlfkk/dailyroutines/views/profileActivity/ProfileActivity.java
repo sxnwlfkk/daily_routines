@@ -13,6 +13,8 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.NavUtils;
 import android.util.Log;
 import android.view.Menu;
@@ -20,11 +22,14 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
 import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
+import com.sxnwlfkk.dailyroutines.data.RoutineCloner;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.views.clock.ClockActivity;
 import com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity;
@@ -178,12 +183,43 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
             case R.id.menu_profile_reset_statistics:
                 showResetStatisticsDialog();
                 break;
+            case R.id.menu_profile_clone_routine:
+                cloneCurrentRoutine();
+                break;
             case R.id.home:
                 Intent homeIntent = new Intent(this, MainActivity.class);
                 startActivity(homeIntent);
                 finish();
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private void cloneCurrentRoutine() {
+        Toast.makeText(getApplicationContext(), R.string.clone_routine_started_cloning, Toast.LENGTH_LONG).show();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                RoutineCloner cloner = new RoutineCloner();
+                long response = cloner.cloneRoutine(getApplicationContext(), mCurrentUri);
+                if (response != 0) {
+                    // Success
+                    Handler h = new Handler(Looper.getMainLooper());
+                    h.post(new Runnable() {
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), R.string.clone_routine_success_message, Toast.LENGTH_LONG).show();
+                        }
+                    });
+                } else {
+                    // Failure
+                    Handler h = new Handler(Looper.getMainLooper());
+                    h.post(new Runnable() {
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), R.string.clone_routine_failure_message, Toast.LENGTH_LONG).show();
+                        }
+                    });
+                }
+            }
+        }).start();
     }
 
     private void resetStatistics() {
@@ -249,6 +285,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                     RoutineContract.ItemEntry.COLUMN_ITEM_NAME,
                     RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH,
                     RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME,
+                    RoutineContract.ItemEntry.COLUMN_ITEM_NO,
             };
 
             String selection = RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE + "=?";

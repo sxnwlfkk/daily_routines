@@ -18,6 +18,9 @@
     <string name="title_activity_clock">ClockActivity</string>
     <string name="save_without_item_message">Can\'t save routine without at least one item. Try adding one.</string>
     <string name="save_routine_have_no_name_message">Please write in the routine\'s name.</string>
+    <string name="clone_routine_started_cloning">Started cloning. Please stand by.</string>
+    <string name="clone_routine_success_message">Successfully cloned routine.</string>
+    <string name="clone_routine_failure_message">The cloning encountered some errors.</string>
     <string name="routine_finish_message">Your routine has finished, it\'s time to go.\n\nDo you want to save the statistical data, or discard it?</string>
     <string name="routine_finish_button">Finish</string>
     <string name="routine_next_button">Next</string>
@@ -106,4 +109,8 @@
     <string name="number_of_items_text">Number of items:</string>
     <string name="end_time_switch_text">Routine has fix end time</string>
     <string name="length_of_routine">Length of routine (Average length):</string>
+    <string name="menu_profile_clone_routine_string">Clone routine</string>
+    <string name="menu_profile_delete_routine_string">Delete routine</string>
+    <string name="menu_profile_reset_statistics_string">Reset statistics</string>
+    <string name="menu_profile_edit_routine_string">Edit routine</string>
 </resources>

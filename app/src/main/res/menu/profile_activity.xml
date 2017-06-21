@@ -4,11 +4,14 @@
 
     <item
         android:id="@+id/menu_profile_edit_routine"
-        android:title="Edit routine" />
+        android:title="@string/menu_profile_edit_routine_string" />
+    <item
+        android:id="@+id/menu_profile_clone_routine"
+        android:title="@string/menu_profile_clone_routine_string" />
     <item
         android:id="@+id/menu_profile_delete_routine"
-        android:title="Delete routine" />
+        android:title="@string/menu_profile_delete_routine_string" />
     <item
         android:id="@+id/menu_profile_reset_statistics"
-        android:title="Reset statistics" />
+        android:title="@string/menu_profile_reset_statistics_string" />
 </menu>
