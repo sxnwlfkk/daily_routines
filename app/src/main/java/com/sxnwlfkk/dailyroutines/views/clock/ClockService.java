@@ -78,6 +78,7 @@ public class ClockService extends Service {
     public static final String SERVICE_ROUTINE_NAME_FIELD = "routine_name";
     public static final String SERVICE_ROUTINE_LENGTH = "routine_length";
     public static final String SERVICE_ELAPSED_TIME = "elapsed_time";
+    public static final String SERVICE_CLOCK_FORCE_REFRESH = "force_refresh";
 
     // Namestring of preference in the service
     public static final String SERVICE_PREFERENCE_LENGTH_WHEN_STARTED = "length_when_started";
@@ -85,7 +86,7 @@ public class ClockService extends Service {
     // Countdown interval constant
     public static final long COUNTDOWN_INTERVAL_CONST = 1000;
     // Step correction constant
-    private static final long STEP_CORRECTION_CONST = 0;
+private static final long STEP_CORRECTION_CONST = 500;
 
     public static final String LOG_TAG = ClockService.class.getSimpleName();
 
@@ -258,8 +259,7 @@ public class ClockService extends Service {
          mRoutineClock.setmCarryTime(rCarryTime);
          mRoutineClock.setmRoutineItemsNum(rItemsNumber);
          mRoutineClock.setmTimesUsed(rTimesUsed);
-         mRoutineClock.setmInterruptTime(0);
-         mRoutineClock.setmInterruptCurrentTime(0);
+         mRoutineClock.setmInterruptTime(rInterruptTime);
 
          // Check diff time
          long rDiffTime = 0;
@@ -440,7 +440,7 @@ public class ClockService extends Service {
             mCurrentItem = mRoutineClock.nextItem(mCurrentItem);
             cancelItemVibrations();
             registerItemVibrations();
-            sendMessage();
+            sendMessageForcedRefresh();
         }
     }
 
@@ -450,7 +450,7 @@ public class ClockService extends Service {
             mCurrentItem = mRoutineClock.prevItem(mCurrentItem);
             cancelItemVibrations();
             registerItemVibrations();
-            sendMessage();
+            sendMessageForcedRefresh();
         }
     }
 
@@ -493,29 +493,41 @@ public class ClockService extends Service {
         shouldSpeak = false;
     }
 
-    private void sendMessage() {
+    private Intent getBasicMessageIntent() {
         Intent message = new Intent(BROADCAST_ACTION);
         message.putExtra(SERVICE_ROUTINE_NAME_FIELD, mRoutineClock.getmName());
         message.putExtra(SERVICE_ITEM_NAME_FIELD, mCurrentItem.getmItemName());
         message.putExtra(SERVICE_SUM_ITEMS_FIELD, mRoutineClock.getmRoutineItemsNum());
-        message.putExtra(SERVICE_CURR_ITEM_FIELD, mRoutineClock.getmCurrentItemIndex());
         message.putExtra(SERVICE_CURR_TIME_FIELD, RoutineUtils.msecToSec(mCurrentItem.getmCurrentTime()));
         message.putExtra(SERVICE_CARRY_FIELD, RoutineUtils.msecToSec(mRoutineClock.getmCarryTime()));
         message.putExtra(SERVICE_ROUTINE_LENGTH, mRoutineLengthWhenStarted);
         message.putExtra(SERVICE_ELAPSED_TIME, mRoutineClock.getmElapsedTime());
+
+        return message;
+    }
+
+    // General message containing basic information about the current state of the routine
+    private void sendMessage() {
+        Intent message = getBasicMessageIntent();
+        message.putExtra(SERVICE_CURR_ITEM_FIELD, mRoutineClock.getmCurrentItemIndex());
         sendBroadcast(message);
     }
 
+    // Sends a general message but with the forceRefresh flag, to elicit refresh started from the
+    // service. Used when previous or next command was issued from the notification.
+    private void sendMessageForcedRefresh() {
+        Intent message = getBasicMessageIntent();
+        message.putExtra(SERVICE_CURR_ITEM_FIELD, mRoutineClock.getmCurrentItemIndex());
+        message.putExtra(SERVICE_CLOCK_FORCE_REFRESH, true);
+        sendBroadcast(message);
+    }
+
+    // Sends an update message to the view with a specified item number
+    // Currently used for signaling the end of the routine to the view
     private void sendMessage(int currentItem) {
         Intent message = new Intent(BROADCAST_ACTION);
-        message.putExtra(SERVICE_ROUTINE_NAME_FIELD, mRoutineClock.getmName());
-        message.putExtra(SERVICE_ITEM_NAME_FIELD, mCurrentItem.getmItemName());
-        message.putExtra(SERVICE_SUM_ITEMS_FIELD, mRoutineClock.getmRoutineItemsNum());
         message.putExtra(SERVICE_CURR_ITEM_FIELD, -1);
-        message.putExtra(SERVICE_CURR_TIME_FIELD, RoutineUtils.msecToSec(mCurrentItem.getmCurrentTime()));
-        message.putExtra(SERVICE_CARRY_FIELD, RoutineUtils.msecToSec(mRoutineClock.getmCarryTime()));
         sendBroadcast(message);
-
     }
 
     private void makeNotification() {

@@ -37,6 +37,7 @@ import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.CLOCK_SERVICE_
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.CLOCK_SERVICE_STOP_TALKING;
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.LOG_TAG;
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_CARRY_FIELD;
+import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_CLOCK_FORCE_REFRESH;
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_COMMAND_FIELD;
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_CURR_ITEM_FIELD;
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_CURR_TIME_FIELD;
@@ -99,11 +100,12 @@ public class ClockActivity extends Activity {
             mSumOfItems = ((c = intent.getIntExtra(SERVICE_SUM_ITEMS_FIELD, -1)) != -1) ? c : mSumOfItems;
             mElapsedTime = intent.getLongExtra(SERVICE_ELAPSED_TIME, 0);
             mRoutineLength = intent.getLongExtra(SERVICE_ROUTINE_LENGTH, 0);
+            boolean forceRefresh = intent.getBooleanExtra(SERVICE_CLOCK_FORCE_REFRESH, false);
 
             if (mCurrentItem == -1) {
                 Log.e(LOG_TAG, "Starting onFinish method.");
                 onFinish();
-            } else if (waitingForScreenRefresh) {
+            } else if (forceRefresh || waitingForScreenRefresh) {
                 refreshScreen();
                 waitingForScreenRefresh = false;
             } else {

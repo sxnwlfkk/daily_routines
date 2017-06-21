@@ -23,9 +23,6 @@ public class RoutineClock {
 
     // The time when the device got interrupted
     private long mInterruptTime;
-    // The time that the current item had, when the device got interrupted
-    private long mInterruptCurrentTime;
-
 
     private boolean mEndTimeRequired;
     private long mId;
@@ -33,7 +30,7 @@ public class RoutineClock {
     private long mDiffTime;
 
     private long mElapsedTime;
-    private long mLongWhenStarted;
+    private long mLengthWhenStarted;
 
     public void RoutineClock() {
         mElapsedTime = -1;
@@ -126,7 +123,6 @@ public class RoutineClock {
         mCarryTime = 0;
         mCurrentItemIndex = -1;
         mInterruptTime = 0;
-        mInterruptCurrentTime = 0;
 
         // Clear items
         for (int i = 0; i < mItemsList.size(); i++) {
@@ -143,7 +139,6 @@ public class RoutineClock {
         mCurrentItemIndex = -1;
         mTimesUsed++;
         mInterruptTime = 0;
-        mInterruptCurrentTime = 0;
 
         for (int i = 0; i < mItemsList.size(); i++) {
             RoutineItem item = mItemsList.get(i);
@@ -318,14 +313,6 @@ public class RoutineClock {
         this.mInterruptTime = mInterruptTime;
     }
 
-    public long getmInterruptCurrentTime() {
-        return mInterruptCurrentTime;
-    }
-
-    public void setmInterruptCurrentTime(long mInterruptCurrentTime) {
-        this.mInterruptCurrentTime = mInterruptCurrentTime;
-    }
-
     public long getmElapsedTime() {
         calculateElapsedTime();
         return mElapsedTime;
@@ -335,11 +322,11 @@ public class RoutineClock {
         this.mElapsedTime++;
     }
 
-    public long getmLongWhenStarted() {
-        return mLongWhenStarted;
+    public long getmLengthWhenStarted() {
+        return mLengthWhenStarted;
     }
 
-    public void setmLongWhenStarted(long mLongWhenStarted) {
-        this.mLongWhenStarted = mLongWhenStarted;
+    public void setmLengthWhenStarted(long mLengthWhenStarted) {
+        this.mLengthWhenStarted = mLengthWhenStarted;
     }
 }
