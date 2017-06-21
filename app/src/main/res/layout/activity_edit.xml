@@ -12,13 +12,13 @@
         android:id="@+id/edit_textbox_routine_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="0"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:paddingTop="16dp"
+        android:layout_weight="0"
         android:ems="10"
         android:hint="Name of the routine"
-        android:inputType="text" />
+        android:inputType="text|textCapSentences"
+        android:paddingTop="16dp" />
 
     <Switch
         android:id="@+id/edit_end_time_switch"
@@ -116,7 +116,7 @@
                 android:layout_weight="5"
                 android:ems="10"
                 android:hint="Item name"
-                android:inputType="textPersonName" />
+                android:inputType="text|textCapSentences" />
         </LinearLayout>
 
         <LinearLayout

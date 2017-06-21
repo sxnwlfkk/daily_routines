@@ -8,7 +8,9 @@
     <string name="main_empty_view_text">There are no routines yet. You can make one with the watch button on the bottom right.</string>
     <string name="edit_item">Edit routine</string>
     <string name="unsaved_changes_dialog_msg">There are unsaved changes. Are you sure you want to continue?</string>
+    <string name="optmimize_dialog_msg">This action will optimize your routine. It you don\'t like it, just discard the edits.\n\nDo you want to proceed?</string>
     <string name="discard">Discard changes</string>
+    <string name="optimize_button_text">Optimize!</string>
     <string name="keep_editing">Keep editing</string>
     <string name="delete_this_routine">Are you sure, you want to delete this routine?</string>
     <string name="yes">Yes</string>
@@ -113,4 +115,6 @@
     <string name="menu_profile_delete_routine_string">Delete routine</string>
     <string name="menu_profile_reset_statistics_string">Reset statistics</string>
     <string name="menu_profile_edit_routine_string">Edit routine</string>
+    <string name="edit_menu_optimize_string">Optimize routine</string>
+
 </resources>

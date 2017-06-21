@@ -64,6 +64,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
     private int mCurrentItemIndex = -1;
     private int mRoutineItemSumLength = 0;
     private long mRoutineEndTime = 0;
+    private int mTimesUsed;
 
     // Views
     private ListView mListView;
@@ -319,6 +320,25 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         alertDialog.show();
     }
 
+    private void showOptimizeDialog(DialogInterface.OnClickListener optimizeButtonClockListener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.optmimize_dialog_msg);
+        builder.setPositiveButton(R.string.optimize_button_text, optimizeButtonClockListener);
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Nope" button, so dismiss the dialog
+                // and continue editing the routine.
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+
+            }
+        });
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
     // Options
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -363,9 +383,32 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                     finish();
                 }
                 return true;
+            case R.id.edit_menu_optimize_button:
+                if (mCurrentUri == null) {
+                    Toast.makeText(this, "Can't optimize a new routine, sorry.", Toast.LENGTH_LONG).show();
+                } else if (mTimesUsed < 2) {
+                    Toast.makeText(this, "Not enough information about the routine. Finish it a couple of times then come back.", Toast.LENGTH_LONG).show();
+                } else {
+                    DialogInterface.OnClickListener optimizeButtonClickListener =
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    // User clicked "Optimize!" button
+                                    optimizeRoutine();
+                                }
+                            };
+                    showOptimizeDialog(optimizeButtonClickListener);
+                }
+                break;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void optimizeRoutine() {
+        for (int i = 0; i < mItemsList.size(); i++) {
+            mItemsList.get(i).setmTime((long) mItemsList.get(i).getmAverageTime());
+        }
     }
 
     /**
@@ -548,6 +591,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                     RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER,
                     RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME,
                     RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END,
+                    RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED,
             };
 
             return new CursorLoader(this,
@@ -590,6 +634,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
                 String rName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME));
                 int rEndTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
                 int rRequireEnd = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END));
+                mTimesUsed = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED));
 
 
                 mRoutineName.setText(rName);

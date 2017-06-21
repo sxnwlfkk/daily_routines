@@ -10,4 +10,8 @@
         android:title="Save routine"
         android:visible="true"
         android:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/edit_menu_optimize_button"
+        android:title="@string/edit_menu_optimize_string" />
 </menu>
