@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Daily Routines</string>
     <string name="new_item">New routine</string>
+    <string name="package_name">com.sxnwlfkk.dailyroutines</string>
     <string name="update_unsuccessful_toast">There was a problem with updating the routine</string>
     <string name="update_successful_toast">Successfully updated routine</string>
     <string name="new_item_title">New item</string>
@@ -9,6 +10,8 @@
     <string name="edit_item">Edit routine</string>
     <string name="unsaved_changes_dialog_msg">There are unsaved changes. Are you sure you want to continue?</string>
     <string name="optmimize_dialog_msg">This action will optimize your routine. It you don\'t like it, just discard the edits.\n\nDo you want to proceed?</string>
+    <string name="backup_dialog_msg">This will back up the current database and overwrite the last backup, if you didn\'t copied it somewhere. For more information see the Guide.\n\nDo you want to proceed?</string>
+    <string name="restore_dialog_msg">This will try to restore from the backup. This is a possibly destructive action, please consult the Guide before clicking yes.\n\nDo you want to proceed?</string>
     <string name="discard">Discard changes</string>
     <string name="optimize_button_text">Optimize!</string>
     <string name="keep_editing">Keep editing</string>
@@ -113,6 +116,9 @@
     <string name="length_of_routine">Length of routine (Average length):</string>
     <string name="menu_profile_clone_routine_string">Clone routine</string>
     <string name="menu_profile_delete_routine_string">Delete routine</string>
+    <string name="menu_main_backup_string">Backup database</string>
+    <string name="menu_main_restore_string">Restore routines</string>
+    <string name="menu_main_guide_string">Guide</string>
     <string name="menu_profile_reset_statistics_string">Reset statistics</string>
     <string name="menu_profile_edit_routine_string">Edit routine</string>
     <string name="edit_menu_optimize_string">Optimize routine</string>

@@ -7,4 +7,13 @@
         android:icon="@android:drawable/ic_menu_preferences"
         android:title="Preferences"
         android:showAsAction="always" />
+    <item
+        android:id="@+id/menu_main_backup_button"
+        android:title="@string/menu_main_backup_string" />
+    <item
+        android:id="@+id/menu_main_restore_button"
+        android:title="@string/menu_main_restore_string" />
+    <item
+        android:id="@+id/menu_main_guide_button"
+        android:title="@string/menu_main_guide_string" />
 </menu>

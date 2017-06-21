@@ -1,19 +1,26 @@
 package com.sxnwlfkk.dailyroutines.views.mainActivity;
 
+import android.Manifest;
 import android.app.ActionBar;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.ContentUris;
-import android.content.ContentValues;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -22,15 +29,22 @@ import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.sxnwlfkk.dailyroutines.BuildConfig;
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
+import com.sxnwlfkk.dailyroutines.data.RoutineDbHelper;
 import com.sxnwlfkk.dailyroutines.views.clock.ClockActivity;
 import com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity;
 import com.sxnwlfkk.dailyroutines.views.preference.SettingsActivity;
 import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.channels.FileChannel;
 
 public class MainActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -39,6 +53,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
     public static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     private static final String PREFERNCES_APP_VERSION = "app_version";
+    public static final String PACKAGE_NAME = "com.sxnwlfkk.dailyroutines";
 
     private ActionBar mActionBar;
     private ProgressBar mProgressBar;
@@ -128,9 +143,164 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                 Intent intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
                 return true;
+            case R.id.menu_main_backup_button:
+                DialogInterface.OnClickListener backupButtonClickListener =
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                // User clicked "Backup" button
+                                if (isStoragePermissionGranted()) {
+                                    backupRoutines();
+                                }
+                            }
+                        };
+                showBackupDialog(backupButtonClickListener);
+                break;
+            case R.id.menu_main_restore_button:
+                DialogInterface.OnClickListener restoreButtonClickListener =
+                        new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                // User clicked "Restore" button
+                                if (isStoragePermissionGranted()) {
+                                    restoreRoutines();
+                                }
+                            }
+                        };
+                showRestoreDialog(restoreButtonClickListener);
+                break;
+            case R.id.menu_main_guide_button:
+                break;
         }
         return false;
     }
+
+    private void showRestoreDialog(DialogInterface.OnClickListener restoreButtonClickListener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.restore_dialog_msg);
+        builder.setPositiveButton(R.string.yes, restoreButtonClickListener);
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Nope" button, so dismiss the dialog
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+
+            }
+        });
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    private void restoreRoutines() {
+        try {
+            File sd = Environment.getExternalStorageDirectory();
+            File data = Environment.getDataDirectory();
+
+            Log.e(LOG_TAG, "Can write SD: " + sd.canWrite());
+
+            if (sd.canWrite()) {
+                Log.e(LOG_TAG, "Writing data.");
+                String currentDBPath = "//data//"+getPackageName()+"//databases//"+RoutineDbHelper.DATABASE_NAME+"";
+                String backupDBPath = "/daily_routines_backup.drdb";
+                File currentDB = new File(data, currentDBPath);
+                File backupDB = new File(sd, backupDBPath);
+
+                if (currentDB.exists()) {
+                    Log.e(LOG_TAG, "DB exists, overwriting.");
+                    FileChannel src = new FileInputStream(backupDB).getChannel();
+                    FileChannel dst = new FileOutputStream(currentDB).getChannel();
+                    dst.transferFrom(src, 0, src.size());
+                    src.close();
+                    dst.close();
+
+                    Intent i = new Intent(this, MainActivity.class);
+                    startActivity(i);
+                    finish();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public  boolean isStoragePermissionGranted() {
+        if (Build.VERSION.SDK_INT >= 23) {
+            if (checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    == PackageManager.PERMISSION_GRANTED) {
+                Log.e(LOG_TAG,"Permission is granted");
+                return true;
+            } else {
+
+                Log.e(LOG_TAG,"Permission is revoked");
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                return false;
+            }
+        }
+        else { //permission is automatically granted on sdk<23 upon installation
+            Log.e(LOG_TAG,"Permission is granted");
+            return true;
+        }
+    }
+
+    private void showBackupDialog(DialogInterface.OnClickListener backupButtonClickListener) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage(R.string.backup_dialog_msg);
+        builder.setPositiveButton(R.string.yes, backupButtonClickListener);
+        builder.setNegativeButton(R.string.no, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User clicked the "Nope" button, so dismiss the dialog
+                if (dialog != null) {
+                    dialog.dismiss();
+                }
+
+            }
+        });
+        // Create and show the AlertDialog
+        AlertDialog alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(grantResults[0]== PackageManager.PERMISSION_GRANTED){
+            Log.e(LOG_TAG,"Permission: "+permissions[0]+ "was "+grantResults[0]);
+            //resume tasks reseding this permission
+            Toast.makeText(this, "Permission granted, please try again.", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void backupRoutines() {
+        try {
+            File sd = Environment.getExternalStorageDirectory();
+            File data = Environment.getDataDirectory();
+
+            Log.e(LOG_TAG, "Can write SD: " + sd.canWrite());
+
+            if (sd.canWrite()) {
+                Log.e(LOG_TAG, "Writing data.");
+                String currentDBPath = "//data//"+getPackageName()+"//databases//"+RoutineDbHelper.DATABASE_NAME+"";
+                String backupDBPath = "/daily_routines_backup.drdb";
+                File currentDB = new File(data, currentDBPath);
+                File backupDB = new File(sd, backupDBPath);
+
+                if (currentDB.exists()) {
+                    Log.e(LOG_TAG, "DB exists, writing.");
+                    FileChannel src = new FileInputStream(currentDB).getChannel();
+                    FileChannel dst = new FileOutputStream(backupDB).getChannel();
+                    dst.transferFrom(src, 0, src.size());
+                    src.close();
+                    dst.close();
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 
     private void purgeDatabase() {
         getContentResolver().delete(RoutineContract.RoutineEntry.CONTENT_URI, null, null);
