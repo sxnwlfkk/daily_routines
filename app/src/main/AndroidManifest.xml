@@ -44,7 +44,7 @@
         <activity
             android:name=".views.clock.ClockActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:launchMode="singleTask"
+            android:launchMode="singleInstance"
             android:label="@string/title_activity_clock"
             android:parentActivityName=".views.profileActivity.ProfileActivity"
             android:screenOrientation="portrait">

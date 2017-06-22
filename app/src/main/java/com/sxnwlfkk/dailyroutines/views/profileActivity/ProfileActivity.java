@@ -235,6 +235,11 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                 projection,
                 projArgs
         );
+
+        // Restart activity
+        Intent intent = getIntent();
+        finish();
+        startActivity(intent);
     }
 
     private void deleteRoutine() {
