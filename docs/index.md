@@ -1,6 +1,5 @@
 ---
-title: This is my title
-layout: post
+title: Daily Routines
 ---
 
 Daily Routines
