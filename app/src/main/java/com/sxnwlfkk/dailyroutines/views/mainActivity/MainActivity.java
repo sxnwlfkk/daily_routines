@@ -38,6 +38,7 @@ import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.data.RoutineDbHelper;
 import com.sxnwlfkk.dailyroutines.views.clock.ClockActivity;
 import com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity;
+import com.sxnwlfkk.dailyroutines.views.guide.GuideActivity;
 import com.sxnwlfkk.dailyroutines.views.preference.SettingsActivity;
 import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;
 
@@ -170,6 +171,8 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                 showRestoreDialog(restoreButtonClickListener);
                 break;
             case R.id.menu_main_guide_button:
+                Intent i = new Intent(this, GuideActivity.class);
+                startActivity(i);
                 break;
         }
         return false;

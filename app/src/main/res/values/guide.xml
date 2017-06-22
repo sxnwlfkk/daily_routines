@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="github_url">https://github.com/sxnwlfkk/daily_routines</string>
+    <string name="website_url">https://sxnwlfkk.github.io/daily_routines/</string>
+
+    <string name="guide_txt">
+        <![CDATA[
+        <p>Welcome to the Daily Routines Guide. If you have questions about the application, you came to the right place. I\'m happy you have downloaded this program, which is a labor of love, free and open source. I hope you\'ll find some utility for it in your life.</p>
+        <h2 id="basic-usage">Basic Usage</h2>
+<p>The goal of Daily Routines is to let you easily manage your time when building routines. It\'s for those, who have trouble focusing on the task at hand. Those, who are having a hard time getting ready in the mornings. Those, who want to make their lives more fulfilling, with them still holding the reins.</p>
+<p>Daily Routines have two basic modes of operations. First, there is the <strong>regular routine</strong>, which is just that, a routine, you can customise and optimise to your heart\'s content. However, you can use the <strong>deadline routine</strong>, where you set an end time, when you by all means want to be in your clothes, keyes in your hand and ready to go. Daily Routines will take care of achieving that, even if you sleep in a little, or brush your teeth a bit too long.</p>
+<h2 id="leftover-time">Leftover time</h2>
+<p>The concept of the leftover time is one of the main features of Daily Routines. When you finish a routine item early, you get to use those seconds or minutes later. If you spend too much time on a given todo, the program will distribute the time loss among the remaining items proportionally. Either way, you\'ll be able to enjoy your routines, without the risk of being late.</p>
+<p>More, it you set an end time to your routine, Daily Routines will keep your optimal start time in mind, when you begin your routine. If you started a bit late, it will distribute the lost time with the above method. Otherwise, if you start early, you get that time bonus in your leftorver time counter.</p>
+<h2 id="sample-routine">Sample Routine</h2>
+<p>Here is a sample morning routine, to get you started:</p>
+<ol style="list-style-type: decimal">
+<li> Wake up, 5 min</li>
+<li> Wash face, 1 min 30 sec</li>
+<li> Prepare coffee, 4 min</li>
+<li> Read a motivating book, 10 min</li>
+<li> Plan your day, 10 min</li>
+<li> Breakfast, 20 min</li>
+<li> Get dressed, 10 min</li>
+<li> Brush teeth, 3 min</li>
+<li> Free time, 0 sec</li>
+</ol>
+<p>The last item, <strong>Free time</strong> has a 0 second length. If you have leftover time when you finish your last item, you may proceed to free time, without actually finishing the routine before time. This has the benefit, that you statistics will be more accurate, and you\'ll have more information, when the time comes to optimise. However, this is just an option for you to choose, you can put it in the middle or leave it out entirely.</p>
+<p>If you set 7:30 AM as your end time with the above items, Daily Routines will calculate your optimal start time and remind you at 6:26 AM, to begin your routine.</p>
+<h2 id="optimization">Optimization</h2>
+<p>Daily Routines will start gathering information about your routines &#8212 which are private and kept on your device &#8212 when you first start to use them, in the form of runtime averages. When you finished a routine at least two times, you can start to optimise it in the editor (options menu, Optimize Routine). It will update the items of your routine to their current averages. However, it\'s not saved immediately, so you can customise the values to your liking before clicking the Save button.</p>
+<h2 id="backup-and-restore">Backup and Restore</h2>
+<p><strong>Backup and Restore functionality is still experimental, please use it with caution.</strong> Daily Routines will try to put the backup file in the root of the user drive as <code>daily_routines_backup.drdb</code>. Also, this is the file it will try to restore, if you select that option.</p>
+<p>Keep in mind, backup will overwrite the last backup file with the same name, so it you want versioning, at the moment your best option is to copy it someplace safe and rename it. Later, if you want to restore it, just copy it back to the root of the directory and rename it to <code>daily_routines_backup.drdb</code>.</p>
+<h2 id="feedback-requests-and-bugs">Feedback, Requests and Bugs</h2>
+<p>If you have feedback, feature requests or bugs to report, head to the project\'s Github page, or send an email to <i>sxnwlfkk@gmail.com</i>.</p>
+]]>
+    </string>
+</resources>

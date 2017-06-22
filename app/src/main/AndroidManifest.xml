@@ -24,12 +24,12 @@
         </activity>
         <activity
             android:name=".views.editActivity.EditActivity"
-            android:windowSoftInputMode="stateHidden"
-            android:launchMode="singleTask"
             android:configChanges="keyboardHidden|orientation|screenSize"
+            android:launchMode="singleTask"
             android:parentActivityName=".views.mainActivity.MainActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/AppTheme" />
+            android:theme="@style/AppTheme"
+            android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".views.profileActivity.ProfileActivity"
             android:launchMode="singleTask"
@@ -44,25 +44,34 @@
         <activity
             android:name=".views.clock.ClockActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
-            android:launchMode="singleInstance"
             android:label="@string/title_activity_clock"
+            android:launchMode="singleInstance"
             android:parentActivityName=".views.profileActivity.ProfileActivity"
             android:screenOrientation="portrait">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity" />
         </activity>
-        <activity android:name=".views.preference.SettingsActivity"></activity>
+        <activity android:name=".views.preference.SettingsActivity" />
 
         <receiver android:name=".backend.AlarmNotificationReceiver">
             <intent-filter>
-                <action
-                    android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-        <receiver android:name=".backend.VibrationNotificationReceiver"></receiver>
-        <receiver android:name=".backend.ScreenOnOffReceiver"></receiver>
+        <receiver android:name=".backend.VibrationNotificationReceiver" />
+        <receiver android:name=".backend.ScreenOnOffReceiver" />
+
         <service android:name=".views.clock.ClockService" />
+
+        <activity
+            android:name=".views.guide.GuideActivity"
+            android:label="@string/title_activity_guide"
+            android:parentActivityName=".views.mainActivity.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.sxnwlfkk.dailyroutines.views.mainActivity.MainActivity" />
+        </activity>
     </application>
 
 </manifest>
