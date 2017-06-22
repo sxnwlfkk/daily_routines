@@ -1,0 +1,1 @@
+Welcome to the Daily Routines Guide. If you have questions about the application, you came to the right place. I'm happy you have downloaded this program, which is a labor of love, free and open source. I hope you'll find some utility for it in your life.

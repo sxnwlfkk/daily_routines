@@ -1,7 +1,16 @@
-theme: jekyll-theme-merlot
-repository: sxnwflkk/daily_routines
+# theme: jekyll-theme-merlot
+theme: jekyll-theme-minimal
 
-github: [metadata]
+repository: sxnwlfkk/daily_routines
+title: Daily Routines
+description: Android app for maintaining everyday and time sensitive routines
+author: sxnwlfkk
+author_email: sxnwlfkk@gmail.com
+
+github:
+  repository_name: daily_routines
+  owner_name: sxnwlfkk
+  owner_url: https://github.com/sxnwlfkk
 kramdown:
    input: GFM
    hard_wrap: false
@@ -9,6 +18,8 @@ gems:
    - jekyll-coffeescript
    - jekyll-paginate
 
+footer-links:
+  github: sxnwlfkk/daily_routines
 
 lsi: false
 safe: true
@@ -19,3 +30,7 @@ gist:
  noscript: false
 kramdown:
  math_engine: mathjax
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
