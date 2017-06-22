@@ -36,3 +36,7 @@ gradle/
 gradlew
 gradlew.bat
 settings.gradle
+
+docs/Gemfile
+
+docs/Gemfile\.lock
