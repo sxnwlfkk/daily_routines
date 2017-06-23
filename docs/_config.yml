@@ -7,6 +7,8 @@ description: Android app for maintaining everyday and time sensitive routines
 author: sxnwlfkk
 author_email: sxnwlfkk@gmail.com
 
+baseurl: /daily_routines
+
 github:
   repository_name: daily_routines
   owner_name: sxnwlfkk
