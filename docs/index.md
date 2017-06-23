@@ -31,7 +31,7 @@ Here is a sample morning routine, to get you started:
 2. Wash face, 1 min 30 sec
 3. Prepare coffee, 4 min
 4. Read a motivating book, 10 min
-5. Plan your day, 10 min
+5. Plan my day, 10 min
 6. Breakfast, 20 min
 7. Get dressed, 10 min
 8. Brush teeth, 3 min
@@ -44,7 +44,7 @@ If you set 7:30 AM as your end time with the above items, Daily Routines will ca
 Optimisation
 ------------
 
-Daily Routines will start gathering information about your routines -- which are private and kept on your device -- when you first start to use them, in the form of runtime averages. When you finished a routine at least two times, you can start to optimise it in the editor (options menu, Optimize Routine). It will update the items of your routine to their current averages. However, it's not saved immediately, so you can customise the values to your liking before clicking the Save button. 
+Daily Routines will start gathering information about your routines -- which are private and kept on your device -- when you first start to use them, in the form of runtime averages. When you finished a routine at least two times, you can start to optimise it in the editor (options menu, Optimize Routine). It will update the items of your routine to their current averages. However, it's not saved immediately, so you can customise the values to your liking before clicking the Save button.
 
 Backup and Restore
 ------------------
@@ -54,4 +54,4 @@ __Backup and Restore functionality is still experimental, please use it with cau
 Feedback, Requests and Bugs
 ---------------------------
 
-If you have feedback, feature requests or bugs to report, head to the project's [Github page](https://github.com/sxnwlfkk/daily_routines]), or send an email to `sxnwlfkk@gmail.com`.
+If you have feedback, feature requests or bugs to report, head to the project's [Github page](https://github.com/sxnwlfkk/daily_routines), or send an email to `sxnwlfkk@gmail.com`.
