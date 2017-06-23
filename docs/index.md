@@ -8,8 +8,8 @@ layout: modified
 Thank you for visiting the Daily Routines website. Here you can find useful information about the Daily Routines Android app, which is a labor of love, free and open source.
 
 
-Basic Usage
------------
+Who is it for and what does it do?
+----------------------------------
 
 The goal of Daily Routines is to let you easily manage your time when building routines. It's for those, who have trouble focusing on the task at hand. Those, who are having a hard time getting ready in the mornings. Those, who want to make their lives more fulfilling, with them still holding the reins.
 
@@ -49,9 +49,7 @@ Daily Routines will start gatherin information about your routines -- which are 
 Backup and Restore
 ------------------
 
-__Backup and Restore functionality is still experimental, please use it with caution.__ Daily Routines will try to put the backup file in the root of the user drive as `daily_routines_backup.drdb`. Also, this is the file it will try to restore, if you select that option.
-
-Keep in mind, backup will overwrite the last backup file with the same name, so it you want versioning, at the moment your best option is to copy it someplace safe and rename it. Later, if you want to restore it, just copy it back to the root of the directory and rename it to `daily_routines_backup.drdb`.
+__Backup and Restore functionality is still experimental, please use it with caution.__ Check out the [Backup and Restore]({{ site.baseurl }}{% link _posts/2017-6-23-Backup-and-restore.md %}) page to learn more.
 
 Feedback, Requests and Bugs
 ---------------------------
