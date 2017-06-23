@@ -6,7 +6,8 @@ permalink: :title.html
 date: 2017-06-23
 ---
 
-__Backup and Restore__
+Backup and Restore
+------------------
 
 __Backup and Restore functionality is still experimental, please use it with caution.__ Daily Routines will try to put the backup file in the root of the user drive as `daily_routines_backup.drdb`. Also, this is the file it will try to restore, if you select that option.
 
