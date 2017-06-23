@@ -44,7 +44,7 @@ If you set 7:30 AM as your end time with the above items, Daily Routines will ca
 Optimisation
 ------------
 
-Daily Routines will start gathering information about your routines -- which are private and kept on your device -- when you first start to use them, in the form of runtime averages. When you finished a routine at least two times, you can start to optimise it in the editor (options menu, Optimize Routine). It will update the items of your routine to their current averages. However, it's not saved immediately, so you can customise the values to your liking before clicking the Save button.
+Daily Routines will start gathering information about your routines -- which are private and kept on your device -- when you first start to use them, in the form of runtime averages. When you finished a routine at least two times, you can start to optimise it in the editor (options menu, Optimize Routine). It will update the items of your routine to their current averages. However, it's not saved immediately, so you can customise the values to your liking before clicking the Save button. 
 
 Backup and Restore
 ------------------
