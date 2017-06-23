@@ -42,3 +42,5 @@ docs/Gemfile
 docs/Gemfile\.lock
 
 docs/_site/
+
+*.apk

@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.sxnwlfkk.dailyroutines">
+    package="com.sxnwlfkk.dailyroutines"
+    android:versionCode="34"
+    android:versionName="0.8.1"
+    >
 
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -8,7 +11,9 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <uses-sdk android:minSdkVersion="21"
-        android:targetSdkVersion="26" />
+        android:targetSdkVersion="25" />
+
+
 
     <application
         android:allowBackup="true"
