@@ -131,17 +131,12 @@ public class ClockActivity extends Activity {
             // Sanity check
             if (mCurrentItem - 1 < 0) return;
 
-            if (mCurrentItem - 1 == 0) {
-                mPreviousButton.setVisibility(View.GONE);
-            }
-            if (mCurrentItem == mSumOfItems - 1) {
-                mNextButton.setText(R.string.routine_next_button);
-                mNextButton.setOnClickListener(nextButtonClickListener);
-            }
+            previousButtonCheck();
             sendPrevItemMessage();
             waitingForScreenRefresh = true;
         }
     };
+
 
     DialogInterface.OnClickListener finishListener = new DialogInterface.OnClickListener() {
                             @Override
@@ -261,33 +256,48 @@ public class ClockActivity extends Activity {
     }
 
     // Graphical methods
+    private void buttonChecks() {
+        previousButtonCheck();
+        nextButtonCheck();
+        if (mCurrentItem != 0 && mCurrentItem == 1) {
+            mPreviousButton.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void nextButtonCheck() {
+        if (mCurrentItem == mSumOfItems - 1) {
+            mNextButton.setText(R.string.routine_finish_button);
+            mNextButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    DialogInterface.OnClickListener fListener = finishListener;
+                    showFinishWithTimeRemainingDialog(fListener);
+                }
+            });
+        }
+    }
+
+    private void previousButtonCheck() {
+        // If we are on the 0th item, make back button invisible
+        if (mCurrentItem == 0) {
+            mPreviousButton.setVisibility(View.GONE);
+        }
+        // If we are on the second to last item, switch finish button to next button
+        if (mCurrentItem == mSumOfItems - 2) {
+            mNextButton.setText(R.string.routine_next_button);
+            mNextButton.setOnClickListener(nextButtonClickListener);
+        }
+    }
     private void refreshScreen() {
         updateClocks();
 
-        if (mCurrentItem != 0) {
-            mPreviousButton.setVisibility(View.VISIBLE);
-        }
-
-        if (mCurrentItem == mSumOfItems - 1) {
-                mNextButton.setText(R.string.routine_finish_button);
-                mNextButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        DialogInterface.OnClickListener fListener = finishListener;
-                        showFinishWithTimeRemainingDialog(fListener);
-                    }
-                });
-        }
+        buttonChecks();
 
         mItemNameText.setText(mItemName);
         mItemCounterText.setText("[" + (mCurrentItem + 1) + "/"
                 + mSumOfItems + "]");
         mCarryClockText.setText(renderTime(mCarryTime, true));
         getActionBar().setTitle(mRoutineName);
-
-        if (mCurrentItem == 1) {
-            mPreviousButton.setVisibility(View.VISIBLE);
-        }
     }
 
     private void updateClocks() {
@@ -346,11 +356,11 @@ public class ClockActivity extends Activity {
         discardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                sendStopTalkingMessage();
                 sendCancelRoutineMessage();
                 Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
                 intent.setData(mCurrentUri);
                 startActivity(intent);
-                sendStopTalkingMessage();
                 finish();
             }
         });
@@ -358,11 +368,11 @@ public class ClockActivity extends Activity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                sendStopTalkingMessage();
                 sendFinishRoutineMessage();
                 Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
                 intent.setData(mCurrentUri);
                 startActivity(intent);
-                sendStopTalkingMessage();
                 finish();
             }
         });
@@ -383,6 +393,7 @@ public class ClockActivity extends Activity {
                 DialogInterface.OnClickListener dismissListener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        sendStopTalkingMessage();
                         sendCancelRoutineMessage();
                         Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
                         intent.setData(mCurrentUri);
@@ -397,6 +408,7 @@ public class ClockActivity extends Activity {
                 DialogInterface.OnClickListener finishListener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
+                        sendStopTalkingMessage();
                         sendFinishRoutineMessage();
                         Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
                         intent.setData(mCurrentUri);
@@ -415,6 +427,7 @@ public class ClockActivity extends Activity {
         DialogInterface.OnClickListener dismissListener = new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                sendStopTalkingMessage();
                 sendCancelRoutineMessage();
                 Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
                 intent.setData(mCurrentUri);

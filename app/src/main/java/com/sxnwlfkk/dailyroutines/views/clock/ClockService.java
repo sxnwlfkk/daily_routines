@@ -96,6 +96,7 @@ private static final long STEP_CORRECTION_CONST = 500;
     RoutineClock mRoutineClock;
     RoutineItem mCurrentItem;
     CountDownTimer mCountdownTimer;
+    Timer mRepeatEndMessageTimer;
     Uri mCurrentUri;
     NotificationManager mNotificationManager;
     NotificationCompat.Builder mBuilder;
@@ -125,6 +126,7 @@ private static final long STEP_CORRECTION_CONST = 500;
         super.onCreate();
         // Initialise variables
         mRoutineClock = new RoutineClock();
+        mRepeatEndMessageTimer = null;
         timerIsInitialised = false;
         shouldSpeak = true;
         routineIsSetUp = false;
@@ -392,6 +394,9 @@ private static final long STEP_CORRECTION_CONST = 500;
         mNotificationManager.cancel((int)mRoutineClock.getmId());
         mRoutineClock = new RoutineClock();
         timerIsInitialised = false;
+        if (mRepeatEndMessageTimer != null) {
+            mRepeatEndMessageTimer.cancel();
+        }
         shouldSpeak = true;
         routineIsSetUp = false;
         routineFinished = false;
@@ -409,6 +414,9 @@ private static final long STEP_CORRECTION_CONST = 500;
         stopForeground(true);
         mNotificationManager.cancel((int)mRoutineClock.getmId());
         timerIsInitialised = false;
+        if (mRepeatEndMessageTimer != null) {
+            mRepeatEndMessageTimer.cancel();
+        }
         shouldSpeak = true;
         routineIsSetUp = false;
         routineFinished = false;
@@ -839,19 +847,19 @@ private static final long STEP_CORRECTION_CONST = 500;
                 vibrateInService(inServiceVibrationPattern);
             }
 
-            final Timer finishTimer = new Timer();
+            mRepeatEndMessageTimer = new Timer();
             TimerTask timerTask = new TimerTask() {
                 @Override
                 public void run() {
                     if (shouldSpeak) {
                         sendMessage(-1);
                     } else {
-                        finishTimer.cancel();
+                        mRepeatEndMessageTimer.cancel();
                     }
 
                 }
             };
-            finishTimer.schedule(timerTask, 1000, 1000);
+            mRepeatEndMessageTimer.schedule(timerTask, 1000, 1000);
         }
     }
 
