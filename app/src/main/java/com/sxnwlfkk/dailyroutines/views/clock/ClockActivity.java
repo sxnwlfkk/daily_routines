@@ -259,7 +259,7 @@ public class ClockActivity extends Activity {
     private void buttonChecks() {
         previousButtonCheck();
         nextButtonCheck();
-        if (mCurrentItem != 0 && mCurrentItem == 1) {
+        if (mCurrentItem != 0 || mCurrentItem == 1) {
             mPreviousButton.setVisibility(View.VISIBLE);
         }
     }
