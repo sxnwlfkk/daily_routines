@@ -82,6 +82,7 @@ public class ClockService extends Service {
 
     // Namestring of preference in the service
     public static final String SERVICE_PREFERENCE_LENGTH_WHEN_STARTED = "length_when_started";
+    public static final String SERVICE_PREFERENCE_INTERRUPT_TIME = "interrupt_time";
 
     // Countdown interval constant
     public static final long COUNTDOWN_INTERVAL_CONST = 1000;
@@ -243,7 +244,6 @@ private static final long STEP_CORRECTION_CONST = 500;
          int rCurrItem = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM));
          int rItemsNumber = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER));
          int rTimesUsed = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED));
-         int rInterruptTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_INTERRUPT_TIME));
 
          // Set first start sentry
          if (rCurrItem == -1) {
@@ -261,13 +261,16 @@ private static final long STEP_CORRECTION_CONST = 500;
          mRoutineClock.setmCarryTime(rCarryTime);
          mRoutineClock.setmRoutineItemsNum(rItemsNumber);
          mRoutineClock.setmTimesUsed(rTimesUsed);
-         mRoutineClock.setmInterruptTime(rInterruptTime);
+         mRoutineClock.setmInterruptTime(readInterruptTime());
 
          // Check diff time
          long rDiffTime = 0;
          if (rCurrItem > -1) {
              long currTime = System.currentTimeMillis();
-             rDiffTime = currTime - rInterruptTime;
+             Log.d(LOG_TAG, "Current time in millis: " + currTime);
+             Log.d(LOG_TAG, "Interrupt time in millis: " + mRoutineClock.getmInterruptTime());
+             rDiffTime = currTime - mRoutineClock.getmInterruptTime();
+             Log.d(LOG_TAG, "Diff time in millis: " + rDiffTime);
          }
          mRoutineClock.setmDiffTime(rDiffTime);
      }
@@ -304,6 +307,7 @@ private static final long STEP_CORRECTION_CONST = 500;
 
              RoutineItem newItem = new RoutineItem(itemName, itemTime, itemAvgTime);
              newItem.setmId(itemId);
+             Log.d(LOG_TAG, "Read this value for elapsed item time from db:" + itemElapsedTime);
              newItem.setmCurrentTime(itemRemTime);
              newItem.setmElapsedTime(itemElapsedTime);
              newItem.setStartTime(itemStartTime);
@@ -334,6 +338,9 @@ private static final long STEP_CORRECTION_CONST = 500;
         // Get data from DB
         queryDB();
         Log.e(LOG_TAG, "After db query in startup method.");
+
+        // Kill all previous item vibrations
+        cancelItemVibrations();
 
         // First start of the routine
         if (!routineHasBeenStarted) {
@@ -367,8 +374,10 @@ private static final long STEP_CORRECTION_CONST = 500;
         if (!timerIsInitialised) {
             Log.e(LOG_TAG, "Setting countdown in the future: " + mRoutineClock.getmLength());
             startCountdownTimer(mRoutineClock.getmLength(), COUNTDOWN_INTERVAL_CONST);
-            mRoutineLengthWhenStarted = mRoutineClock.getmLength();
-            updateLengthPref(mRoutineLengthWhenStarted);
+            if (mRoutineLengthWhenStarted == 0) {
+                mRoutineLengthWhenStarted = mRoutineClock.getmLength();
+                updateLengthPref(mRoutineLengthWhenStarted);
+            }
             mRoutineClock.calculateElapsedTime();
             timerIsInitialised = true;
         }
@@ -510,6 +519,8 @@ private static final long STEP_CORRECTION_CONST = 500;
         message.putExtra(SERVICE_CARRY_FIELD, RoutineUtils.msecToSec(mRoutineClock.getmCarryTime()));
         message.putExtra(SERVICE_ROUTINE_LENGTH, mRoutineLengthWhenStarted);
         message.putExtra(SERVICE_ELAPSED_TIME, mRoutineClock.getmElapsedTime());
+        Log.d(LOG_TAG, "Routine length: " + mRoutineLengthWhenStarted);
+        Log.d(LOG_TAG, "Elapsed time: " + mRoutineClock.getmElapsedTime());
 
         return message;
     }
@@ -604,10 +615,12 @@ private static final long STEP_CORRECTION_CONST = 500;
     private void writeRoutineToDB() {
         // Update routine
         ContentValues values = new ContentValues();
+
+        updateInterruptTime(System.currentTimeMillis());
+
         values.put(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM, mRoutineClock.getmCurrentItemIndex());
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_CARRY, mRoutineClock.getmCarryTime());
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED, mRoutineClock.getmTimesUsed());
-        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_INTERRUPT_TIME, System.currentTimeMillis());
         getContentResolver().update(mCurrentUri, values, null, null);
 
         long updatedRoutineId = mRoutineClock.getmId();
@@ -632,6 +645,16 @@ private static final long STEP_CORRECTION_CONST = 500;
         SharedPreferences.Editor editor = mPrefs.edit();
         editor.putLong(SERVICE_PREFERENCE_LENGTH_WHEN_STARTED, length);
         editor.commit();
+    }
+
+    private void updateInterruptTime(long time) {
+        SharedPreferences.Editor editor = mPrefs.edit();
+        editor.putLong(SERVICE_PREFERENCE_INTERRUPT_TIME, time);
+        editor.commit();
+    }
+
+    private long readInterruptTime() {
+        return mPrefs.getLong(SERVICE_PREFERENCE_INTERRUPT_TIME, 0);
     }
 
     // VIBRATIONS
@@ -811,10 +834,10 @@ private static final long STEP_CORRECTION_CONST = 500;
                 // Send broadcast intent to Activity
                 sendMessage();
                 makeNotification();
+                mRoutineClock.setmInterruptTime(System.currentTimeMillis());
                 writeRoutineToDB();
                 // Update clocks
                 mCurrentItem.incrementElapsedTime();
-                mRoutineClock.setmInterruptTime(System.currentTimeMillis());
             }
             wl.release();
         }

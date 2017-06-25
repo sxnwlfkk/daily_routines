@@ -155,11 +155,15 @@ public class RoutineClock {
             long currTime = mItemsList.get(mCurrentItemIndex).getmCurrentTime();
             long itemsElapsedTime = mItemsList.get(mCurrentItemIndex).getmElapsedTime();
             if (mLength < mDiffTime) {
+                Log.d(LOG_TAG, "Item's elapsed time before diff assign (diff longer than length): " + itemsElapsedTime);
                 mItemsList.get(mCurrentItemIndex).setmElapsedTime(itemsElapsedTime + mLength);
+                Log.d(LOG_TAG, "Item's elapsed time after diff assign (diff longer than length): " + mItemsList.get(mCurrentItemIndex).getmElapsedTime());
                 mLength = 0;
                 return;
             }
+            Log.d(LOG_TAG, "Item's elapsed time before diff assign: " + itemsElapsedTime);
             mItemsList.get(mCurrentItemIndex).setmElapsedTime(itemsElapsedTime + mDiffTime);
+            Log.d(LOG_TAG, "Item's elapsed time after diff assign: " + mItemsList.get(mCurrentItemIndex).getmElapsedTime());
             if (mDiffTime > currTime) {
                 mItemsList.get(mCurrentItemIndex).setmCurrentTime(0);
                 mCarryTime -= (mDiffTime - currTime);
@@ -167,7 +171,7 @@ public class RoutineClock {
                 mItemsList.get(mCurrentItemIndex).setmCurrentTime(currTime - mDiffTime);
             }
             calculateRemainingRoutineTime();
-            Log.e(LOG_TAG, "The updated time is: " + getCurrentItem().getmCurrentTime());
+            Log.d(LOG_TAG, "The updated time is: " + getCurrentItem().getmCurrentTime());
         }
     }
 
@@ -185,6 +189,7 @@ public class RoutineClock {
     public void calculateElapsedTime() {
         long elapsedTime = 0;
         for (int i = 0; i < mRoutineItemsNum; i++) {
+            Log.d(LOG_TAG, i + ". item's elapsed time: " + mItemsList.get(i).getmElapsedTime());
             elapsedTime += mItemsList.get(i).getmElapsedTime();
         }
         mElapsedTime = elapsedTime;
