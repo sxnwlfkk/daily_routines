@@ -20,7 +20,7 @@
     <string name="no">No</string>
     <string name="reset_statistics_dialog">Are you sure, you want to reset all statistical data on this routine?</string>
     <string name="update_button">Update routine</string>
-    <string name="title_activity_clock">ClockActivity</string>
+    <string name="title_activity_clock">Daily Routines Clock</string>
     <string name="save_without_item_message">Can\'t save routine without at least one item. Try adding one.</string>
     <string name="save_routine_have_no_name_message">Please write in the routine\'s name.</string>
     <string name="clone_routine_started_cloning">Started cloning. Please stand by.</string>

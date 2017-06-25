@@ -4,6 +4,8 @@ apply plugin: 'com.android.application'
 // keystore.properties file, in the rootProject folder.
 def keystorePropertiesFile = rootProject.file("keystore.properties")
 
+//println "Keyfile path: " + keystorePropertiesFile
+
 // Initialize a new Properties() object called keystoreProperties.
 def keystoreProperties = new Properties()
 
@@ -12,7 +14,7 @@ keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
 
 android {
     signingConfigs {
-        debug {
+        config {
             keyAlias keystoreProperties['keyAlias']
             keyPassword keystoreProperties['keyPassword']
             storeFile file(keystoreProperties['storeFile'])
@@ -25,14 +27,18 @@ android {
         applicationId "com.sxnwlfkk.dailyroutines"
         minSdkVersion 21
         targetSdkVersion 25
-        versionCode 34
-        versionName "0.8.1"
+        versionCode 35
+        versionName "0.8.2"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
             minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.config
+        }
+        debug {
+            signingConfig signingConfigs.config
         }
     }
 }
