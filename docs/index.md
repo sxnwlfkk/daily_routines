@@ -54,4 +54,4 @@ __Backup and Restore functionality is still experimental, please use it with cau
 Feedback, Requests and Bugs
 ---------------------------
 
-If you have feedback, feature requests or bugs to report, head to the project's [Github page](https://github.com/sxnwlfkk/daily_routines), or send an email to `sxnwlfkk@gmail.com`.
+If you have feedback, feature requests or bugs to report, head to the project's [Github page](https://github.com/sxnwlfkk/daily_routines), or send an email to `sxnwlfkk@gmail.com`. You can also check out [my website](https://sxnwlfkk.github.io/).
