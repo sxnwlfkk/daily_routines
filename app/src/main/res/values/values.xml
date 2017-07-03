@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="recurrence_picker_height_custom">250dp</dimen>
+    <dimen name="recurrence_picker_width_custom">300dp</dimen>
+</resources>

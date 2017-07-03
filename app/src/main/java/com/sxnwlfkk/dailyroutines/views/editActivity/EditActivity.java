@@ -42,6 +42,7 @@ import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
 import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
 import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
+import com.sxnwlfkk.dailyroutines.util.RoutineRecurrencePickerFragment;
 import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;
 
 import java.util.ArrayList;
@@ -255,9 +256,10 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                 Bundle bundle = new Bundle();
                 Time time = new Time();
                 time.setToNow();
+                String mRrule = "FREQ=WEEKLY;WKST=MO;BYDAY=MO;";
                 bundle.putLong(RecurrencePickerDialogFragment.BUNDLE_START_TIME_MILLIS, time.toMillis(false));
                 bundle.putString(RecurrencePickerDialogFragment.BUNDLE_TIME_ZONE, time.timezone);
-                bundle.putString(RecurrencePickerDialogFragment.BUNDLE_RRULE, null);
+                bundle.putString(RecurrencePickerDialogFragment.BUNDLE_RRULE, mRrule);
                 bundle.putBoolean(RecurrencePickerDialogFragment.BUNDLE_HIDE_SWITCH_BUTTON, true);
 
                 RecurrencePickerDialogFragment rpd = (RecurrencePickerDialogFragment) fm.findFragmentByTag(
@@ -265,7 +267,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                 if (rpd != null) {
                     rpd.dismiss();
                 }
-                rpd = new RecurrencePickerDialogFragment();
+                rpd = new RoutineRecurrencePickerFragment();
                 rpd.setArguments(bundle);
                 rpd.setOnRecurrenceSetListener(EditActivity.this);
                 rpd.show(fm, FRAG_TAG_RECUR_PICKER);
@@ -397,6 +399,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
     // Recurrence set listener
     @Override
     public void onRecurrenceSet(String rrule) {
+        Log.d(LOG_TAG, "Recurrence rule: " + rrule);
 
     }
 
