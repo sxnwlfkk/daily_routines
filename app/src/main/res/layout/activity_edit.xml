@@ -20,46 +20,103 @@
         android:inputType="text|textCapSentences"
         android:paddingTop="16dp" />
 
-    <Switch
-        android:id="@+id/edit_end_time_switch"
-        android:layout_width="238dp"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="8dp"
-        android:layout_weight="0"
-        android:text="@string/end_time_switch_text"
-        tools:text="Needs ending time" />
-
     <LinearLayout
-        android:id="@+id/edit_routine_end_time_box"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="8dp"
-        android:layout_marginRight="8dp"
         android:layout_weight="0"
-        android:visibility="gone"
         android:orientation="horizontal">
 
         <TextView
-            android:id="@+id/edit_routine_end_time_textview"
+            android:id="@+id/textView2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="0 h 0 m"
-            android:textSize="18sp"
-            tools:text="0 h 0 m" />
+            android:text="Show time options"
+            android:paddingLeft="18dp"
+            android:paddingRight="26dp"
+            android:textAlignment="textStart"
+            android:textStyle="bold" />
 
         <Button
+            android:id="@+id/edit_show_time_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             style="@style/Widget.AppCompat.Button.Colored"
             android:theme="@style/AppButtonTheme"
             android:textColor="@color/material_grey_darken4"
-            android:id="@+id/edit_routine_end_time_change_button"
-            android:layout_width="wrap_content"
+            android:text="More" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/edit_time_box"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <Switch
+            android:id="@+id/edit_end_time_switch"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginRight="8dp"
             android:layout_weight="1"
-            android:text="Change" />
+            android:paddingBottom="8dp"
+            android:paddingTop="16dp"
+            android:text="@string/end_time_switch_text"
+            tools:text="Needs ending time" />
+
+        <LinearLayout
+            android:id="@+id/edit_routine_end_time_box"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:id="@+id/d"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="8dp"
+                android:layout_marginRight="8dp"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:visibility="visible">
+
+                <TextView
+                    android:id="@+id/edit_routine_end_time_textview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="0 h 0 m"
+                    android:textSize="18sp"
+                    tools:text="0 h 0 m" />
+
+                <Button
+                    android:id="@+id/edit_routine_end_time_change_button"
+                    style="@style/Widget.AppCompat.Button.Colored"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Change"
+                    android:textColor="@color/material_grey_darken4"
+                    android:theme="@style/AppButtonTheme" />
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/edit_change_recurrence_button"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Change recurrence"
+                android:textColor="@color/material_grey_darken4"
+                android:theme="@style/AppButtonTheme" />
+
+        </LinearLayout>
 
     </LinearLayout>
 

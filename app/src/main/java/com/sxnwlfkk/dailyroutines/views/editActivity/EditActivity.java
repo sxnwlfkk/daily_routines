@@ -1,6 +1,5 @@
 package com.sxnwlfkk.dailyroutines.views.editActivity;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
@@ -15,9 +14,12 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NavUtils;
+import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
+import android.text.format.Time;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -34,6 +36,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment;
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
 import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
@@ -48,7 +51,8 @@ import java.util.Calendar;
  * Created by cs on 2017.04.05..
  */
 
-public class EditActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
+public class EditActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor>,
+        RecurrencePickerDialogFragment.OnRecurrenceSetListener {
 
     // VARS
 
@@ -57,6 +61,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
     private static final int EDIT_ROUTINE_LOADER = 31;
     private static final int EDIT_ITEMS_LOADER = 32;
     public static final int DAY_IN_MILISECONDS = 24 * 60 * 60 * 1000;
+    private static final String FRAG_TAG_RECUR_PICKER = "fragment_recurrence_picker";
 
     private ArrayList<RoutineItem> mItemsList;
     private ArrayList<Long> mDeletedItems;
@@ -65,6 +70,7 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
     private int mRoutineItemSumLength = 0;
     private long mRoutineEndTime = 0;
     private int mTimesUsed;
+    private boolean mShowMoreClicked;
 
     // Views
     private ListView mListView;
@@ -80,6 +86,9 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
     private Button mDelItem;
     private Button mUpItem;
     private Button mDownItem;
+    private Button mShowMoreButton;
+    private Button mRecurrenceButton;
+    private LinearLayout mTimeLayout;
 
     private TextView mItemNameTextView;
     private TextView mItemNumber;
@@ -217,6 +226,52 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         mAdapter = new EditListAdapter(this, mItemsList);
         mListView.setAdapter(mAdapter);
 
+        // Show more button
+        mShowMoreButton = (Button) findViewById(R.id.edit_show_time_button);
+        mShowMoreClicked = false;
+        mTimeLayout = (LinearLayout) findViewById(R.id.edit_time_box);
+        mShowMoreButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mShowMoreClicked) {
+                    mTimeLayout.setVisibility(View.GONE);
+                    mShowMoreButton.setText("more");
+                    mShowMoreClicked = false;
+                } else {
+                    mTimeLayout.setVisibility(View.VISIBLE);
+                    mShowMoreButton.setText("less");
+                    mShowMoreClicked = true;
+                }
+
+            }
+        });
+
+        // Recurrence button
+        mRecurrenceButton = (Button) findViewById(R.id.edit_change_recurrence_button);
+        mRecurrenceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentManager fm = getSupportFragmentManager();
+                Bundle bundle = new Bundle();
+                Time time = new Time();
+                time.setToNow();
+                bundle.putLong(RecurrencePickerDialogFragment.BUNDLE_START_TIME_MILLIS, time.toMillis(false));
+                bundle.putString(RecurrencePickerDialogFragment.BUNDLE_TIME_ZONE, time.timezone);
+                bundle.putString(RecurrencePickerDialogFragment.BUNDLE_RRULE, null);
+                bundle.putBoolean(RecurrencePickerDialogFragment.BUNDLE_HIDE_SWITCH_BUTTON, true);
+
+                RecurrencePickerDialogFragment rpd = (RecurrencePickerDialogFragment) fm.findFragmentByTag(
+                        FRAG_TAG_RECUR_PICKER);
+                if (rpd != null) {
+                    rpd.dismiss();
+                }
+                rpd = new RecurrencePickerDialogFragment();
+                rpd.setArguments(bundle);
+                rpd.setOnRecurrenceSetListener(EditActivity.this);
+                rpd.show(fm, FRAG_TAG_RECUR_PICKER);
+            }
+        });
+
         // Setting up Item editor
         mNewItemName = (EditText) findViewById(R.id.edit_textbox_item_name);
         mNewItemLengthMinutes = (EditText) findViewById(R.id.edit_item_length_minutes);
@@ -266,11 +321,11 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         if (mCurrentUri == null) {
             // New item
             // TODO
-            getActionBar().setTitle(R.string.new_item);
+            getSupportActionBar().setTitle(R.string.new_item);
         } else {
             getLoaderManager().initLoader(EDIT_ROUTINE_LOADER, null, this);
             getLoaderManager().initLoader(EDIT_ITEMS_LOADER, null, this);
-            getActionBar().setTitle(R.string.edit_item);
+            getSupportActionBar().setTitle(R.string.edit_item);
         }
         mDeletedItems = new ArrayList<>();
     }
@@ -337,6 +392,12 @@ public class EditActivity extends Activity implements LoaderManager.LoaderCallba
         // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
+
+    // Recurrence set listener
+    @Override
+    public void onRecurrenceSet(String rrule) {
+
     }
 
     // Options

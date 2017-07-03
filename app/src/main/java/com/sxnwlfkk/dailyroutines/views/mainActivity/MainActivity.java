@@ -220,7 +220,9 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                             public void onClick(DialogInterface dialogInterface, int i) {
                                 // User clicked "Restore" button
                                 if (isStoragePermissionGranted()) {
+                                    AlarmNotificationReceiver.cancelAlarms(getApplicationContext());
                                     restoreRoutines();
+                                    AlarmNotificationReceiver.scheduleAlarms(getApplicationContext());
                                     Toast.makeText(getApplicationContext(), "Your routines have been restored.", Toast.LENGTH_SHORT).show();
                                 }
                             }

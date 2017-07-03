@@ -32,7 +32,6 @@ public class RoutineCloner {
 
     public long cloneRoutine(Context context, Uri uri) {
 
-        // TODO initialize uri
         mUri = uri;
         mId = ContentUris.parseId(mUri);
 
@@ -67,10 +66,8 @@ public class RoutineCloner {
         rEndTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
         rEndTimeReq = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END)) == 1;
         rCarryTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_CARRY));
-        rCurrItem = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM));
         rItemsNumber = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER));
         rTimesUsed = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED));
-        rInterruptTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_INTERRUPT_TIME));
         rRoutineLength = cursor.getLong(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH));
     }
 
@@ -80,10 +77,7 @@ public class RoutineCloner {
                 RoutineContract.ItemEntry.COLUMN_ITEM_NAME,
                 RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH,
                 RoutineContract.ItemEntry.COLUMN_ITEM_NO,
-                RoutineContract.ItemEntry.COLUMN_REMAINING_TIME,
                 RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME,
-                RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME,
-                RoutineContract.ItemEntry.COLUMN_START_TIME,
         };
 
         String selection = RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE + "=?";
@@ -101,14 +95,11 @@ public class RoutineCloner {
             String itemName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_NAME));
             int itemLength = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH));
             int itemAvg = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
-            int itemRemainingTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME));
-            int itemElapsedTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME));
-            int itemStartTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_START_TIME));
 
             RoutineItem newRoutine = new RoutineItem(itemName, itemLength, itemAvg);
-            newRoutine.setmElapsedTime(itemElapsedTime);
-            newRoutine.setStartTime(itemStartTime);
-            newRoutine.setmRemainingTime(itemRemainingTime);
+            newRoutine.setmElapsedTime(0);
+            newRoutine.setStartTime(0);
+            newRoutine.setmRemainingTime(0);
             newRoutine.setmId(id);
             itemsList.add(newRoutine);
             if (!cursor.moveToNext()) break;
@@ -124,8 +115,8 @@ public class RoutineCloner {
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH, rRoutineLength);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME, rEndTime);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_CARRY, rCarryTime);
-        values.put(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM, rCurrItem);
-        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_INTERRUPT_TIME, rInterruptTime);
+        values.put(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM, -1);
+        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_INTERRUPT_TIME, 0);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED, rTimesUsed);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END, rEndTimeReq);
 
@@ -144,8 +135,8 @@ public class RoutineCloner {
                 itemValues.put(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME, mRoutineItems.get(i).getmTime());
                 itemValues.put(RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE, newRoutineId);
                 itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME, mRoutineItems.get(i).getmAverageTime());
-                itemValues.put(RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME, mRoutineItems.get(i).getmElapsedTime());
-                itemValues.put(RoutineContract.ItemEntry.COLUMN_START_TIME, mRoutineItems.get(i).getStartTime());
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME, 0);
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_START_TIME, 0);
 
 
                 context.getContentResolver().insert(RoutineContract.ItemEntry.CONTENT_URI, itemValues);

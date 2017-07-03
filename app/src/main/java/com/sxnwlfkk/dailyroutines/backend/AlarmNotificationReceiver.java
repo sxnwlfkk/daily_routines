@@ -157,6 +157,29 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
         mgr.cancel(pi);
     }
 
+    public static void cancelAlarms(Context ctx) {
+        String[] projection = {
+                RoutineContract.RoutineEntry._ID,
+                RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME,
+                RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH,
+                RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME,
+                RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END,
+        };
+
+        Cursor cursor = ctx.getContentResolver().query(RoutineContract.RoutineEntry.CONTENT_URI, projection, null, null, null);
+        if (cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            do {
+                int reqEnd = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END));
+                if (reqEnd == 1) {
+                    Log.e("Receiver", "Requires notification.");
+                    int id = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry._ID));
+                    cancelAlarm(ctx, ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, id));
+                }
+            } while (cursor.moveToNext());
+        }
+    }
+
     public static void scheduleAlarms(Context ctx) {
         Log.e("BReceiver", "Scheduling alarms.");
         String[] projection = {

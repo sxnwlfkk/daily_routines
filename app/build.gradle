@@ -27,8 +27,8 @@ android {
         applicationId "com.sxnwlfkk.dailyroutines"
         minSdkVersion 21
         targetSdkVersion 25
-        versionCode 35
-        versionName "0.8.2"
+        versionCode 36
+        versionName "0.8.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -53,6 +53,7 @@ dependencies {
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
     compile 'com.google.firebase:firebase-crash:10.0.1'
     compile 'com.android.support:support-v4:25.3.1'
+    compile 'com.code-troopers.betterpickers:library:3.1.0'
     testCompile 'junit:junit:4.12'
 }
 
