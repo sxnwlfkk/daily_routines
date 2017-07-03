@@ -72,6 +72,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
     private long mRoutineEndTime = 0;
     private int mTimesUsed;
     private boolean mShowMoreClicked;
+    private String mRrule;
 
     // Views
     private ListView mListView;
@@ -256,7 +257,9 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                 Bundle bundle = new Bundle();
                 Time time = new Time();
                 time.setToNow();
-                String mRrule = "FREQ=WEEKLY;WKST=MO;BYDAY=MO;";
+                if (mRrule == null || mRrule == "") {
+                    mRrule = "FREQ=WEEKLY;WKST=MO;BYDAY=MO;";
+                }
                 bundle.putLong(RecurrencePickerDialogFragment.BUNDLE_START_TIME_MILLIS, time.toMillis(false));
                 bundle.putString(RecurrencePickerDialogFragment.BUNDLE_TIME_ZONE, time.timezone);
                 bundle.putString(RecurrencePickerDialogFragment.BUNDLE_RRULE, mRrule);
@@ -401,6 +404,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
     public void onRecurrenceSet(String rrule) {
         Log.d(LOG_TAG, "Recurrence rule: " + rrule);
 
+        mRrule = rrule;
     }
 
     // Options
@@ -525,6 +529,11 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
             return true;
         }
 
+        // Set recurrence rule if not set otherwise
+        if (mRrule == null || mRrule == "") {
+            mRrule = "FREQ=WEEKLY;WKST=MO;BYDAY=MO;";
+        }
+
         // Make CV
         ContentValues values = new ContentValues();
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME, routineName);
@@ -532,6 +541,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH, mRoutineItemSumLength);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME, mRoutineEndTime);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END, (mEndTimeSwitch.isChecked()) ? 1 : 0);
+        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_WEEKDAYS_CONFIG, mRrule);
         // Insert new routine
         mCurrentUri = getContentResolver().insert(RoutineContract.RoutineEntry.CONTENT_URI, values);
         // Get info for items
@@ -552,7 +562,8 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
             AlarmNotificationReceiver.registerNextAlarm(this, mCurrentUri,
                     RoutineUtils.calculateIdealStartTime(RoutineUtils.msecToSec(mRoutineEndTime),
                             RoutineUtils.msecToSec(mRoutineItemSumLength)),
-                    routineName);
+                    routineName,
+                    mRrule);
         }
         Toast.makeText(this, "Your routine is saved", Toast.LENGTH_LONG).show();
 
@@ -592,6 +603,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH, mRoutineItemSumLength);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME, mRoutineEndTime);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END, (mEndTimeSwitch.isChecked()) ? 1 : 0);
+        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_WEEKDAYS_CONFIG, mRrule);
 
         getContentResolver().update(mCurrentUri, values, null, null);
         long updatedRoutineId = ContentUris.parseId(mCurrentUri);
@@ -624,7 +636,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         if (mEndTimeSwitch.isChecked()) {
             AlarmNotificationReceiver.registerNextAlarm(this, mCurrentUri,
                     RoutineUtils.calculateIdealStartTime(RoutineUtils.msecToSec(mRoutineEndTime),
-                            RoutineUtils.msecToSec(mRoutineItemSumLength)), routineName);
+                            RoutineUtils.msecToSec(mRoutineItemSumLength)), routineName, mRrule);
         } else {
             AlarmNotificationReceiver.cancelAlarm(this, mCurrentUri);
         }
@@ -656,6 +668,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                     RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME,
                     RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END,
                     RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED,
+                    RoutineContract.RoutineEntry.COLUMN_ROUTINE_WEEKDAYS_CONFIG,
             };
 
             return new CursorLoader(this,
@@ -699,6 +712,9 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                 int rEndTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
                 int rRequireEnd = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END));
                 mTimesUsed = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED));
+                mRrule = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_WEEKDAYS_CONFIG));
+
+                boolean[] valami = RoutineUtils.parseAlarmDay(mRrule);
 
 
                 mRoutineName.setText(rName);

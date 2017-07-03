@@ -43,6 +43,12 @@ public class RoutineContract {
         public static final String COLUMN_ROUTINE_INTERRUPT_TIME = "interrupt_time";
         // Number of routine in the main order
         public static final String COLUMN_ROUTINE_ORDER_NUMBER = "order_number";
+        // Weekdays config string for notifications
+        public static final String COLUMN_ROUTINE_WEEKDAYS_CONFIG = "weekdays_config";
+        // Extra text column in the DB for posterity
+        public static final String COLUMN_ROUTINE_EXTRA_TEXT = "extra_text";
+        // Extra long column in the DB for posterity
+        public static final String COLUMN_ROUTINE_EXTRA_LONG = "extra_long";
 
         // Creating this table
         public static final String CREATE_RITUAL_TABLE = "CREATE TABLE " +
@@ -57,6 +63,9 @@ public class RoutineContract {
                 + COLUMN_ROUTINE_ITEMS_NUMBER + " INTEGER NOT NULL, "
                 + COLUMN_ROUTINE_INTERRUPT_TIME + " INTEGER NOT NULL DEFAULT 0, "
                 + COLUMN_ROUTINE_ORDER_NUMBER + " INTEGER NOT NULL DEFAULT 0, "
+                + COLUMN_ROUTINE_WEEKDAYS_CONFIG + " TEXT NOT NULL DEFAULT '', "
+                + COLUMN_ROUTINE_EXTRA_TEXT + " TEXT NOT NULL DEFAULT '', "
+                + COLUMN_ROUTINE_EXTRA_LONG + " INTEGER NOT NULL DEFAULT 0, "
                 + COLUMN_ROUTINE_TIMES_USED + " INTEGER NOT NULL DEFAULT 0);";
 
         // Deleting table

@@ -35,6 +35,7 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
     public static String ALARM_INTENT_LENGTH = "alarm_intent_length";
     public static String ALARM_INTENT_NAME = "alarm_intent_name";
     public static String ALARM_SETUP_WAS_DONE = "alarm_setup_was_done";
+    public static String ALARM_RRULE = "alarm_rrule";
 
     public static int DAY_IN_SECONDS = 24 * 60 * 60;
 
@@ -54,7 +55,11 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
         boolean notificationSet = prefs.getBoolean(SettingsActivity.NOTIFICATION_PREF_NAME, true);
         Uri currentUri = intent.getData();
         String routineName = intent.getStringExtra(ALARM_INTENT_NAME);
-        if (notificationSet) {
+        String rrule = intent.getStringExtra(ALARM_RRULE);
+
+        boolean isTodaySet = checkIfTodayIsSet(rrule);
+
+        if (notificationSet && isTodaySet) {
             // Make the notification
             NotificationCompat.Builder mBuilder =
                     new NotificationCompat.Builder(ctx.getApplicationContext())
@@ -92,18 +97,26 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
         int startTime = intent.getIntExtra(ALARM_INTENT_LENGTH, -1);
         if (startTime == -1) return;
 
-        registerTomorrowsAlarm(ctx, currentUri, startTime, routineName);
+        registerTomorrowsAlarm(ctx, currentUri, startTime, routineName, rrule);
+    }
+
+    private boolean checkIfTodayIsSet(String rrule) {
+        boolean[] daysSet = RoutineUtils.parseAlarmDay(rrule);
+        Calendar c = Calendar.getInstance();
+        int dayOfTheWeek = c.get(Calendar.DAY_OF_WEEK);
+        return daysSet[dayOfTheWeek-1];
     }
 
     // Registers an alarm for tomorrow or today. It's to be used on the first run of the alarm
     // scheduling.
-    public static void registerNextAlarm(Context ctx, Uri uri, int optimalTime, String name) {
+    public static void registerNextAlarm(Context ctx, Uri uri, int optimalTime, String name, String rrule) {
         AlarmManager mgr = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
 
         Intent i = new Intent(ctx, AlarmNotificationReceiver.class);
         i.setData(uri);
         i.putExtra(ALARM_INTENT_LENGTH, optimalTime);
         i.putExtra(ALARM_INTENT_NAME, name);
+        i.putExtra(ALARM_RRULE, rrule);
         int id = (int) ContentUris.parseId(uri);
         PendingIntent pi = PendingIntent.getBroadcast(ctx, id, i, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -126,13 +139,14 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
 
     // Registers an alarm strictly for tomorrow. It's to be used, when there is an existing
     // notification to be extended
-    private void registerTomorrowsAlarm(Context ctx, Uri uri, int optimalTime, String name) {
+    private void registerTomorrowsAlarm(Context ctx, Uri uri, int optimalTime, String name, String rrule) {
         AlarmManager mgr = (AlarmManager) ctx.getSystemService(Context.ALARM_SERVICE);
 
         Intent i = new Intent(ctx, AlarmNotificationReceiver.class);
         i.setData(uri);
         i.putExtra(ALARM_INTENT_LENGTH, optimalTime);
         i.putExtra(ALARM_INTENT_NAME, name);
+        i.putExtra(ALARM_RRULE, rrule);
         int id = (int) ContentUris.parseId(uri);
         PendingIntent pi = PendingIntent.getBroadcast(ctx, id, i, PendingIntent.FLAG_UPDATE_CURRENT);
 
@@ -188,6 +202,7 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH,
                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME,
                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END,
+                RoutineContract.RoutineEntry.COLUMN_ROUTINE_WEEKDAYS_CONFIG,
             };
 
         Cursor cursor = ctx.getContentResolver().query(RoutineContract.RoutineEntry.CONTENT_URI, projection, null, null, null);
@@ -201,12 +216,14 @@ public class AlarmNotificationReceiver extends BroadcastReceiver {
                     String routineName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME));
                     long endTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
                     long length = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH));
+                    String rrule = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_WEEKDAYS_CONFIG));
 
                     registerNextAlarm(ctx, ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, id),
                             RoutineUtils.calculateIdealStartTime(
                                     RoutineUtils.msecToSec(endTime),
                                     RoutineUtils.msecToSec(length)),
-                            routineName);
+                            routineName,
+                            rrule);
                 }
             } while (cursor.moveToNext());
         }

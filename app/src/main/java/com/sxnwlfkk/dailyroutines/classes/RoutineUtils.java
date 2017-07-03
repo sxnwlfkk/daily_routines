@@ -3,6 +3,7 @@ package com.sxnwlfkk.dailyroutines.classes;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 import com.sxnwlfkk.dailyroutines.views.clock.ClockService;
 
@@ -116,9 +117,58 @@ public class RoutineUtils {
         return currTime;
     }
 
+    // Reads from shared preferences the id of the currently running routine
     public static long readCurrentRoutine(Context ctx) {
         SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
         final long currentRoutine = mPrefs.getLong(ClockService.CLOCK_ROUTINE_IN_PROGRESS, -1);
         return currentRoutine;
+    }
+
+    // Parses weekdays from the day picker rrule
+    public static boolean[] parseAlarmDay(String rrule) {
+        String[] options = rrule.split(";");
+        boolean[] daysSet = {false, false, false, false, false, false, false};
+        Calendar c = Calendar.getInstance();
+        int h = c.get(Calendar.DAY_OF_WEEK);
+        int firstDayOfWeek = c.getFirstDayOfWeek();
+        Log.d("Utils", "The first day of the week is: " + firstDayOfWeek);
+        Log.d("Utils", "Today is the " + h + "th day.");
+        c.setFirstDayOfWeek(Calendar.MONDAY);
+        firstDayOfWeek = c.getFirstDayOfWeek();
+        Log.d("Utils", "The first day of the week is: " + firstDayOfWeek);
+        h = c.get(Calendar.DAY_OF_WEEK);
+        Log.d("Utils", "Today is the " + h + "th day.");
+        for (int i = 0; i < options.length; i++) {
+            String[] kvs = options[i].split("=");
+            if (kvs[0].equals("BYDAY")) {
+                String[] days = kvs[1].split(",");
+                if (days.length == 0) return daysSet;
+                for (int j = 0; j < days.length; j++) {
+                    daysSet[parseDayToNumber(days[j])] = true;
+                }
+            }
+        }
+        return daysSet;
+    }
+
+    private static int parseDayToNumber(String day) {
+        switch (day) {
+            case "MO":
+                return 1;
+            case "SU":
+                return 0;
+            case "TU":
+                return 2;
+            case "WE":
+                return 3;
+            case "TH":
+                return 4;
+            case "FR":
+                return 5;
+            case "SA":
+                return 6;
+            default:
+                return -1;
+        }
     }
 }

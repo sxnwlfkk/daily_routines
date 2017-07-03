@@ -412,12 +412,18 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
 //            } while (cursor.moveToNext());
 //        }
             mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
-            mProgressBar.setVisibility(View.GONE);
-            if (cursor.getCount() == 0) {
-                mEmptyStateTextView.setText(R.string.main_empty_view_text);
+            if (mProgressBar != null) {
+                mProgressBar.setVisibility(View.GONE);
             }
-            mainRoutineCursorAdapter.swapCursor(cursor);
         }
+        if (cursor.getCount() == 0) {
+            mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+            if (mProgressBar != null) {
+                mProgressBar.setVisibility(View.GONE);
+            }
+            mEmptyStateTextView.setText(R.string.main_empty_view_text);
+        }
+        mainRoutineCursorAdapter.swapCursor(cursor);
     }
 
     @Override
