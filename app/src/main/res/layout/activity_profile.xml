@@ -99,6 +99,7 @@
         android:id="@+id/profile_start_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:padding="25dp"
         android:text="Start routine" />
 
 </LinearLayout>

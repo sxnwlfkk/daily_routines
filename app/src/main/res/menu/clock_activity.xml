@@ -5,4 +5,8 @@
     <item
         android:id="@+id/clock_menu_finish"
         android:title="Finish" />
+
+    <item
+        android:id="@+id/clock_menu_cancel"
+        android:title="Cancel" />
 </menu>

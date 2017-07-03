@@ -1,5 +1,11 @@
 package com.sxnwlfkk.dailyroutines.classes;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
+
+import com.sxnwlfkk.dailyroutines.views.clock.ClockService;
+
 import java.util.Calendar;
 
 /**
@@ -108,5 +114,11 @@ public class RoutineUtils {
         int currTime = (hours * 3600) + (minutes * 60) + seconds;
 
         return currTime;
+    }
+
+    public static long readCurrentRoutine(Context ctx) {
+        SharedPreferences mPrefs = PreferenceManager.getDefaultSharedPreferences(ctx);
+        final long currentRoutine = mPrefs.getLong(ClockService.CLOCK_ROUTINE_IN_PROGRESS, -1);
+        return currentRoutine;
     }
 }

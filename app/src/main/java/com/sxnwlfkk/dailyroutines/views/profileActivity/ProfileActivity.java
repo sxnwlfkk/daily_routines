@@ -55,6 +55,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
     private ProfileCursorAdapter mCursorAdapter;
     private long mAvgTime;
     private long mLength;
+    private long mRoutineId;
 
     // Button click listener
     private View.OnClickListener mStartButtonClickListener = new View.OnClickListener() {
@@ -98,6 +99,30 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
         // Initialize variables
         mLength = -1;
         mAvgTime = -1;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Button startButton = (Button) findViewById(R.id.profile_start_button);
+        long currentRoutine = RoutineUtils.readCurrentRoutine(this);
+        if (currentRoutine == mRoutineId) {
+            startButton.setText("Continue routine");
+            startButton.setOnClickListener(mStartButtonClickListener);
+        } else if (currentRoutine == -1) {
+            startButton.setText("Start routine");
+            startButton.setOnClickListener(mStartButtonClickListener);
+        } else {
+            startButton.setText("Another routine in progress");
+            startButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    return;
+                }
+            });
+        }
+
     }
 
     // Dialog
@@ -171,17 +196,30 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        long currentRoutine = RoutineUtils.readCurrentRoutine(this);
         switch (item.getItemId()) {
             case R.id.menu_profile_edit_routine:
-                Intent intent = new Intent(ProfileActivity.this, EditActivity.class);
-                intent.setData(mCurrentUri);
-                startActivity(intent);
+                if (currentRoutine != mRoutineId) {
+                    Intent intent = new Intent(ProfileActivity.this, EditActivity.class);
+                    intent.setData(mCurrentUri);
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(this, "Can't modify running routine. Please stop it first and try again.", Toast.LENGTH_SHORT).show();
+                }
                 break;
             case R.id.menu_profile_delete_routine:
-                showDeleteRoutineDialog();
+                if (currentRoutine != mRoutineId) {
+                    showDeleteRoutineDialog();
+                } else {
+                    Toast.makeText(this, "Can't delete running routine. Please stop it first and try again.", Toast.LENGTH_SHORT).show();
+                }
                 break;
             case R.id.menu_profile_reset_statistics:
-                showResetStatisticsDialog();
+                if (currentRoutine != mRoutineId) {
+                    showResetStatisticsDialog();
+                } else {
+                    Toast.makeText(this, "Can't modify running routine. Please stop it first and try again.", Toast.LENGTH_SHORT).show();
+                }
                 break;
             case R.id.menu_profile_clone_routine:
                 cloneCurrentRoutine();
@@ -322,15 +360,11 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                 int itemNum = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER));
                 int endTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
                 boolean requireEnd = (cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END)) == 1);
+                mRoutineId = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry._ID));
 
                 // Check if routine started when coming form notification
                 int itemStarted = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM));
                 long id = cursor.getLong(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry._ID));
-                if (itemStarted > -1) {
-                    Intent intent = new Intent(this, ClockActivity.class);
-                    intent.setData(ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, id));
-                    startActivity(intent);
-                }
 
                 mRoutineLength.setText(RoutineUtils.formatLengthString(
                         RoutineUtils.msecToSec(mLength)));

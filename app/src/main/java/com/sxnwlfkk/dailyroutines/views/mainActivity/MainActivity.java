@@ -6,6 +6,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.ContentUris;
+import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -26,6 +27,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -37,6 +39,7 @@ import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.data.RoutineDbHelper;
 import com.sxnwlfkk.dailyroutines.views.clock.ClockActivity;
+import com.sxnwlfkk.dailyroutines.views.clock.ClockService;
 import com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity;
 import com.sxnwlfkk.dailyroutines.views.guide.GuideActivity;
 import com.sxnwlfkk.dailyroutines.views.preference.SettingsActivity;
@@ -46,6 +49,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.channels.FileChannel;
+
+import static com.sxnwlfkk.dailyroutines.classes.RoutineUtils.readCurrentRoutine;
+import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_PREFERENCE_LENGTH_WHEN_STARTED;
 
 public class MainActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -58,7 +64,9 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
 
     private ActionBar mActionBar;
     private ProgressBar mProgressBar;
-    TextView mEmptyStateTextView;
+    private TextView mEmptyStateTextView;
+    private Button mGotoButton;
+    private long mId;
 
     // ID of background loader
     private static final int ROUTINE_LOADER = 20;
@@ -105,6 +113,8 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         mRoutineListView = (ListView) findViewById(R.id.main_list);
         mEmptyStateTextView = (TextView) findViewById(R.id.empty_view);
         mRoutineListView.setEmptyView(mEmptyStateTextView);
+        mGotoButton = (Button) findViewById(R.id.main_menu_goto_button);
+        mGotoButton.setVisibility(View.GONE);
 
         // Initialize cursor adapter
         mainRoutineCursorAdapter = new MainRoutineCursorAdapter(this, null);
@@ -132,6 +142,51 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+
+        long currentRoutine = readCurrentRoutine(this);
+        if (currentRoutine > -1) {
+            mGotoButton.setVisibility(View.VISIBLE);
+
+            // Get name
+            String[] projection = {
+                    RoutineContract.RoutineEntry._ID,
+                    RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME,
+            };
+
+            Uri currUri = ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, currentRoutine);
+
+            Cursor cursor = getContentResolver().query(
+                    currUri,
+                    projection,
+                    null,
+                    null,
+                    null);
+
+            if (cursor != null) {
+                cursor.moveToFirst();
+                String name = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME));
+                mGotoButton.setText("Continue routine in progress \n(" + name + ")");
+            } else {
+                mGotoButton.setText("Continue routine in progress");
+            }
+
+            mGotoButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                            Intent i = new Intent(getApplicationContext(), ClockActivity.class);
+                            long currentRoutine = readCurrentRoutine(getApplicationContext());
+                            i.setData(ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, currentRoutine));
+                            startActivity(i);
+                }
+            });
+        } else {
+            mGotoButton.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main_activity, menu);
         return super.onCreateOptionsMenu(menu);
@@ -152,6 +207,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                                 // User clicked "Backup" button
                                 if (isStoragePermissionGranted()) {
                                     backupRoutines();
+                                    Toast.makeText(getApplicationContext(), "Your routines are backed up.", Toast.LENGTH_SHORT).show();
                                 }
                             }
                         };
@@ -165,6 +221,7 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                                 // User clicked "Restore" button
                                 if (isStoragePermissionGranted()) {
                                     restoreRoutines();
+                                    Toast.makeText(getApplicationContext(), "Your routines have been restored.", Toast.LENGTH_SHORT).show();
                                 }
                             }
                         };
@@ -334,24 +391,31 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         if (cursor.getCount() > 0) {
-            cursor.moveToFirst();
-            do {
-                int itemStarted = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM));
-                Log.e(LOG_TAG, "Main onloadFinished. Routine's current item is: " + itemStarted);
-                long id = cursor.getLong(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry._ID));
-                if (itemStarted > -1) {
-                    Intent intent = new Intent(this, ClockActivity.class);
-                    intent.setData(ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, id));
-                    startActivity(intent);
-                }
-            } while (cursor.moveToNext());
+//            cursor.moveToFirst();
+//            do {
+//                int itemStarted = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM));
+//                Log.e(LOG_TAG, "Main onloadFinished. Routine's current item is: " + itemStarted);
+//                mId = cursor.getLong(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry._ID));
+//                if (itemStarted > -1) {
+//                    mGotoButton.setOnClickListener(new View.OnClickListener() {
+//                        @Override
+//                        public void onClick(View v) {
+//                            Intent i = new Intent(getApplicationContext(), ClockActivity.class);
+//                            i.setData(ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, mId));
+//                            startActivity(i);
+//                        }
+//                    });
+//                    mGotoButton.setVisibility(View.VISIBLE);
+//                }
+//            } while (cursor.moveToNext());
+//        }
+            mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+            mProgressBar.setVisibility(View.GONE);
+            if (cursor.getCount() == 0) {
+                mEmptyStateTextView.setText(R.string.main_empty_view_text);
+            }
+            mainRoutineCursorAdapter.swapCursor(cursor);
         }
-        mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
-        mProgressBar.setVisibility(View.GONE);
-        if (cursor.getCount() == 0) {
-            mEmptyStateTextView.setText(R.string.main_empty_view_text);
-        }
-        mainRoutineCursorAdapter.swapCursor(cursor);
     }
 
     @Override

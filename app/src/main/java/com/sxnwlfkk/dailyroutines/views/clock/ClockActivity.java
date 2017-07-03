@@ -24,6 +24,7 @@ import android.widget.TextView;
 
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
+import com.sxnwlfkk.dailyroutines.views.mainActivity.MainActivity;
 import com.sxnwlfkk.dailyroutines.views.preference.SettingsActivity;
 import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;
 
@@ -389,6 +390,10 @@ public class ClockActivity extends Activity {
         Intent intent;
         switch (item.getItemId()) {
             case android.R.id.home:
+                Intent i = new Intent(this, MainActivity.class);
+                navigateUpTo(i);
+                return true;
+            case R.id.clock_menu_cancel:
                 DialogInterface.OnClickListener dismissListener = new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -423,19 +428,8 @@ public class ClockActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        DialogInterface.OnClickListener dismissListener = new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                sendStopTalkingMessage();
-                sendCancelRoutineMessage();
-                Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
-                intent.setData(mCurrentUri);
-                startActivity(intent);
-                finish();
-            }
-        };
-
-        showUnsavedChangesDialog(dismissListener);
+        Intent i = new Intent(this, MainActivity.class);
+        navigateUpTo(i);
     }
 
     // Service communication

@@ -14,13 +14,32 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
-    <ListView
-        android:id="@+id/main_list"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:divider="@color/material_indigo_accent1"
-        android:drawSelectorOnTop="true"
-        android:visibility="visible"></ListView>
+        android:orientation="vertical">
+
+        <Button
+            android:id="@+id/main_menu_goto_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:text="Continue routine in progress"
+            android:padding="25dp"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:textColor="@color/material_grey_darken4"
+            android:theme="@style/AppButtonTheme"
+            android:visibility="visible" />
+
+        <ListView
+            android:id="@+id/main_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="7"
+            android:divider="@color/material_indigo_accent1"
+            android:drawSelectorOnTop="true"
+            android:visibility="visible"></ListView>
+    </LinearLayout>
 
     <TextView
         android:id="@+id/empty_view"

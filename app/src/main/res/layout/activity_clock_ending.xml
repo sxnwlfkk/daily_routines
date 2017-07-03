@@ -23,16 +23,24 @@
 
         <Button
             android:id="@+id/clock_finished_discard_button"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:textColor="@color/material_grey_darken4"
+            android:theme="@style/AppButtonTheme"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:padding="25dp"
             android:text="Discard" />
 
         <Button
             android:id="@+id/clock_finished_save_button"
+            style="@style/Widget.AppCompat.Button.Colored"
+            android:textColor="@color/material_grey_darken4"
+            android:theme="@style/AppButtonTheme"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:padding="25dp"
             android:text="Save and finish" />
 
     </LinearLayout>

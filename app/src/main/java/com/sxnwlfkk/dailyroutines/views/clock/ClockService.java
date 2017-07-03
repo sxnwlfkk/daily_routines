@@ -83,6 +83,7 @@ public class ClockService extends Service {
     // Namestring of preference in the service
     public static final String SERVICE_PREFERENCE_LENGTH_WHEN_STARTED = "length_when_started";
     public static final String SERVICE_PREFERENCE_INTERRUPT_TIME = "interrupt_time";
+    public static final String CLOCK_ROUTINE_IN_PROGRESS = "routine_in_progress";
 
     // Countdown interval constant
     public static final long COUNTDOWN_INTERVAL_CONST = 1000;
@@ -392,6 +393,8 @@ private static final long STEP_CORRECTION_CONST = 500;
 
         // Send back confirmation and basic data message
         sendMessage();
+
+        setStartedRoutine();
     }
 
     private void cancelRoutine() {
@@ -417,6 +420,7 @@ private static final long STEP_CORRECTION_CONST = 500;
         cancelItemVibrations();
         cancelEndVibration();
         updateLengthPref(0);
+        setFinishedRoutine();
         stopSelf();
     }
 
@@ -441,6 +445,7 @@ private static final long STEP_CORRECTION_CONST = 500;
         cancelItemVibrations();
         cancelEndVibration();
         updateLengthPref(0);
+        setFinishedRoutine();
         stopSelf();
     }
 
@@ -665,6 +670,18 @@ private static final long STEP_CORRECTION_CONST = 500;
 
     private long readInterruptTime() {
         return mPrefs.getLong(SERVICE_PREFERENCE_INTERRUPT_TIME, 0);
+    }
+
+    private void setStartedRoutine() {
+        SharedPreferences.Editor editor = mPrefs.edit();
+        editor.putLong(CLOCK_ROUTINE_IN_PROGRESS, mRoutineClock.getmId());
+        editor.commit();
+    }
+
+    private void setFinishedRoutine() {
+        SharedPreferences.Editor editor = mPrefs.edit();
+        editor.putLong(CLOCK_ROUTINE_IN_PROGRESS, -1);
+        editor.commit();
     }
 
     // VIBRATIONS
