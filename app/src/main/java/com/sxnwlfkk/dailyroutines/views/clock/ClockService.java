@@ -395,8 +395,11 @@ private static final long STEP_CORRECTION_CONST = 500;
     }
 
     private void cancelRoutine() {
-        Log.e(LOG_TAG, "In cancel routinte service.");
-        mCountdownTimer.cancel();
+        Log.e(LOG_TAG, "In cancel routine service.");
+        if (mCountdownTimer != null) {
+            mCountdownTimer.cancel();
+            mCountdownTimer = null;
+        }
         mRoutineClock.resetRoutine();
         writeRoutineToDB();
         stopForeground(true);
@@ -405,6 +408,7 @@ private static final long STEP_CORRECTION_CONST = 500;
         timerIsInitialised = false;
         if (mRepeatEndMessageTimer != null) {
             mRepeatEndMessageTimer.cancel();
+            mRepeatEndMessageTimer = null;
         }
         shouldSpeak = true;
         routineIsSetUp = false;
@@ -417,7 +421,10 @@ private static final long STEP_CORRECTION_CONST = 500;
     }
 
     private void finishRoutine() {
-        mCountdownTimer.cancel();
+        if (mCountdownTimer != null) {
+            mCountdownTimer.cancel();
+            mCountdownTimer = null;
+        }
         mRoutineClock.finishRoutine();
         writeRoutineToDB();
         stopForeground(true);
@@ -425,6 +432,7 @@ private static final long STEP_CORRECTION_CONST = 500;
         timerIsInitialised = false;
         if (mRepeatEndMessageTimer != null) {
             mRepeatEndMessageTimer.cancel();
+            mRepeatEndMessageTimer = null;
         }
         shouldSpeak = true;
         routineIsSetUp = false;
@@ -506,7 +514,9 @@ private static final long STEP_CORRECTION_CONST = 500;
     }
 
     private void stopTalking() {
-        mCountdownTimer.cancel();
+        if (mCountdownTimer != null) {
+            mCountdownTimer.cancel();
+        }
         shouldSpeak = false;
     }
 
@@ -877,7 +887,10 @@ private static final long STEP_CORRECTION_CONST = 500;
                     if (shouldSpeak) {
                         sendMessage(-1);
                     } else {
-                        mRepeatEndMessageTimer.cancel();
+                        if (mRepeatEndMessageTimer != null) {
+                            mRepeatEndMessageTimer.cancel();
+                            mRepeatEndMessageTimer = null;
+                        }
                     }
 
                 }

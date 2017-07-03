@@ -349,6 +349,7 @@ public class ClockActivity extends Activity {
     // On finishing routine
     private void onFinish() {
         setContentView(R.layout.activity_clock_ending);
+        sendStopTalkingMessage();
 
         Button discardButton = (Button) findViewById(R.id.clock_finished_discard_button);
         Button saveButton = (Button) findViewById(R.id.clock_finished_save_button);
@@ -356,7 +357,6 @@ public class ClockActivity extends Activity {
         discardButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendStopTalkingMessage();
                 sendCancelRoutineMessage();
                 Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
                 intent.setData(mCurrentUri);
@@ -368,7 +368,6 @@ public class ClockActivity extends Activity {
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendStopTalkingMessage();
                 sendFinishRoutineMessage();
                 Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
                 intent.setData(mCurrentUri);
