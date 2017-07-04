@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.sxnwlfkk.dailyroutines"
-    android:versionCode="38"
-    android:versionName="0.8.4"
+    android:versionCode="39"
+    android:versionName="0.8.5"
     >
 
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -36,7 +36,7 @@
             android:launchMode="singleTask"
             android:parentActivityName=".views.mainActivity.MainActivity"
             android:screenOrientation="portrait"
-            android:theme="@style/Theme.AppCompat.Light"
+            android:theme="@style/Theme.AppCompat.DayNight.DarkActionBar"
             android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".views.profileActivity.ProfileActivity"

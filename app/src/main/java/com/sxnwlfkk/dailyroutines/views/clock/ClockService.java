@@ -407,7 +407,7 @@ private static final long STEP_CORRECTION_CONST = 500;
         writeRoutineToDB();
         stopForeground(true);
         mNotificationManager.cancel((int)mRoutineClock.getmId());
-        mRoutineClock = new RoutineClock();
+        mRoutineClock = null;
         timerIsInitialised = false;
         if (mRepeatEndMessageTimer != null) {
             mRepeatEndMessageTimer.cancel();
@@ -433,6 +433,7 @@ private static final long STEP_CORRECTION_CONST = 500;
         writeRoutineToDB();
         stopForeground(true);
         mNotificationManager.cancel((int)mRoutineClock.getmId());
+        mRoutineClock = null;
         timerIsInitialised = false;
         if (mRepeatEndMessageTimer != null) {
             mRepeatEndMessageTimer.cancel();
@@ -507,10 +508,8 @@ private static final long STEP_CORRECTION_CONST = 500;
         if (mRoutineClock.getmInterruptTime() != 0) {
             long rDiffTime = System.currentTimeMillis() - mRoutineClock.getmInterruptTime();
             Log.e(LOG_TAG, "Diff time: " + rDiffTime);
-            if (rDiffTime > 1010) {
-                mRoutineClock.setmDiffTime(rDiffTime);
-                mRoutineClock.sortDiffTime();
-            }
+            mRoutineClock.setmDiffTime(rDiffTime);
+            mRoutineClock.sortDiffTime();
         }
     }
 
@@ -575,6 +574,7 @@ private static final long STEP_CORRECTION_CONST = 500;
             }
         } else {
             notificationText = "Time is up!";
+            mBuilder = null;
         }
 
 
@@ -597,9 +597,13 @@ private static final long STEP_CORRECTION_CONST = 500;
 //                            .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher))
                             .setPriority(2)
                             .setContentTitle(mCurrentItem.getmItemName())
-                            .addAction(R.drawable.ic_arrow_left_bold_circle_outline_grey600_36dp, "Prev", pPrevIntent)
-                            .addAction(R.drawable.ic_arrow_right_bold_circle_outline_grey600_36dp, "Next", pNextIntent)
                             .setContentText(notificationText);
+
+            if (!routineFinished) {
+                mBuilder.addAction(R.drawable.ic_arrow_left_bold_circle_outline_grey600_36dp, "Prev", pPrevIntent);
+                mBuilder.addAction(R.drawable.ic_arrow_right_bold_circle_outline_grey600_36dp, "Next", pNextIntent);
+
+            }
         }
         mBuilder.setContentTitle(mCurrentItem.getmItemName())
                 .setContentText(notificationText);

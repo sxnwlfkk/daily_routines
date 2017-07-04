@@ -12,6 +12,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
@@ -72,6 +74,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
     private long mRoutineEndTime = 0;
     private int mTimesUsed;
     private boolean mShowMoreClicked;
+    private boolean itemsListLoaded;
     private String mRrule;
 
     // Views
@@ -228,6 +231,9 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         mAdapter = new EditListAdapter(this, mItemsList);
         mListView.setAdapter(mAdapter);
 
+        // Boolean setup
+        itemsListLoaded = false;
+
         // Show more button
         mShowMoreButton = (Button) findViewById(R.id.edit_show_time_button);
         mShowMoreClicked = false;
@@ -327,10 +333,12 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
             // New item
             // TODO
             getSupportActionBar().setTitle(R.string.new_item);
+            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.material_indigo_darken3)));
         } else {
             getLoaderManager().initLoader(EDIT_ROUTINE_LOADER, null, this);
             getLoaderManager().initLoader(EDIT_ITEMS_LOADER, null, this);
             getSupportActionBar().setTitle(R.string.edit_item);
+            getSupportActionBar().setBackgroundDrawable(new ColorDrawable(getResources().getColor(R.color.material_indigo_darken3)));
         }
         mDeletedItems = new ArrayList<>();
     }
@@ -701,6 +709,8 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         return null;
     }
 
+
+
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
         int loaderId = loader.getId();
@@ -727,18 +737,21 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                 }
                 break;
             case EDIT_ITEMS_LOADER:
-                for (int i = 0; i < cursor.getCount(); i++) {
-                    long id = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry._ID));
-                    String itemName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_NAME));
-                    int itemTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH));
-                    int itemAvg = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
+                if (!itemsListLoaded) {
+                    for (int i = 0; i < cursor.getCount(); i++) {
+                        long id = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry._ID));
+                        String itemName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_NAME));
+                        int itemTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH));
+                        int itemAvg = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
 
-                    RoutineItem newRoutine = new RoutineItem(itemName, itemTime, itemAvg);
-                    newRoutine.setmId(id);
-                    mItemsList.add(newRoutine);
-                    if (!cursor.moveToNext()) break;
+                        RoutineItem newRoutine = new RoutineItem(itemName, itemTime, itemAvg);
+                        newRoutine.setmId(id);
+                        mItemsList.add(newRoutine);
+                        if (!cursor.moveToNext()) break;
+                    }
+                    updateListView();
+                    itemsListLoaded = true;
                 }
-                updateListView();
                 break;
         }
 

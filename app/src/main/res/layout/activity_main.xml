@@ -28,7 +28,7 @@
             android:padding="25dp"
             style="@style/Widget.AppCompat.Button.Colored"
             android:textColor="@color/material_grey_darken4"
-            android:theme="@style/AppButtonTheme"
+            android:theme="@style/AppButtonThemeRed"
             android:visibility="visible" />
 
         <ListView

@@ -2,6 +2,8 @@ package com.sxnwlfkk.dailyroutines.views.mainActivity;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.text.Html;
+import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,9 +40,13 @@ public class MainRoutineCursorAdapter extends CursorAdapter {
         String name = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME));
         int length = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH));
         boolean endRequired = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END)) == 1;
+        String rrule = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_WEEKDAYS_CONFIG));
         if (endRequired) {
             int endTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
-            tvStartTime.setText(RoutineUtils.formatClockTimeString(RoutineUtils.calculateIdealStartTime(endTime, length) / 1000));
+
+            Spanned startTimeText = Html.fromHtml(RoutineUtils.formatClockTimeString(RoutineUtils.calculateIdealStartTime(endTime, length) / 1000)
+                    + "   <i>" + RoutineUtils.getDaysInPretty(rrule) + "</i>");
+            tvStartTime.setText(startTimeText);
         } else {
             tvStartTime.setVisibility(View.INVISIBLE);
         }

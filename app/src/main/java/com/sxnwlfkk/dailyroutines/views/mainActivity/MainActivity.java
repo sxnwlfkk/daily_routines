@@ -379,7 +379,8 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH,
                 RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM,
                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END,
-                RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME
+                RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME,
+                RoutineContract.RoutineEntry.COLUMN_ROUTINE_WEEKDAYS_CONFIG,
         };
 
         return new CursorLoader(this,

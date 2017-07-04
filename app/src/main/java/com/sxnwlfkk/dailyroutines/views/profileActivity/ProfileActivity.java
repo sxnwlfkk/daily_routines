@@ -16,6 +16,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.support.v4.app.NavUtils;
+import android.text.Html;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -313,6 +315,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                     RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME,
                     RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END,
                     RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM,
+                    RoutineContract.RoutineEntry.COLUMN_ROUTINE_WEEKDAYS_CONFIG,
             };
 
             return new CursorLoader(this,
@@ -361,6 +364,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                 int endTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
                 boolean requireEnd = (cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END)) == 1);
                 mRoutineId = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry._ID));
+                String rrule = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_WEEKDAYS_CONFIG));
 
                 // Check if routine started when coming form notification
                 int itemStarted = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM));
@@ -373,8 +377,10 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                 if (requireEnd) {
                     TextView numOfItems = (TextView) findViewById(R.id.profile_num_of_items_text);
                     numOfItems.setText(R.string.optimal_start_text);
-                    mRoutineItemNum.setText(RoutineUtils.formatClockTimeString(
-                            RoutineUtils.calculateIdealStartTime(RoutineUtils.msecToSec(endTime), RoutineUtils.msecToSec(mLength))));
+                    Spanned startTimeText = Html.fromHtml(RoutineUtils.formatClockTimeString(
+                            RoutineUtils.calculateIdealStartTime(endTime, (int) mLength) / 1000)
+                            + "   <i>" + RoutineUtils.getDaysInPretty(rrule) + "</i>");
+                    mRoutineItemNum.setText(startTimeText);
                 } else {
                     TextView numOfItems = (TextView) findViewById(R.id.profile_num_of_items_text);
                     numOfItems.setText(R.string.number_of_items_text);

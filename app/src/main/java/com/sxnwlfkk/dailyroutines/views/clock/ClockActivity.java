@@ -67,6 +67,7 @@ public class ClockActivity extends Activity {
     long mRoutineLength;
     String mItemName;
     String mRoutineName;
+    boolean routineEnded;
 
     // If screen refresh needed
     boolean waitingForScreenRefresh = true;
@@ -161,6 +162,7 @@ public class ClockActivity extends Activity {
         serviceIntent.setData(mCurrentUri);
         serviceIntent.putExtra(SERVICE_COMMAND_FIELD, CLOCK_SERVICE_ROUTINE_START);
         startService(serviceIntent);
+        routineEnded = false;
 
         // Check settings
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
@@ -349,6 +351,7 @@ public class ClockActivity extends Activity {
 
     // On finishing routine
     private void onFinish() {
+        routineEnded = true;
         setContentView(R.layout.activity_clock_ending);
         sendStopTalkingMessage();
 
@@ -387,25 +390,28 @@ public class ClockActivity extends Activity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        DialogInterface.OnClickListener dismissListener = new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                sendStopTalkingMessage();
+                sendCancelRoutineMessage();
+                Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
+                intent.setData(mCurrentUri);
+                startActivity(intent);
+                finish();
+            }
+        };
         Intent intent;
         switch (item.getItemId()) {
             case android.R.id.home:
-                Intent i = new Intent(this, MainActivity.class);
-                navigateUpTo(i);
+                if (!routineEnded) {
+                    Intent i = new Intent(this, MainActivity.class);
+                    navigateUpTo(i);
+                } else {
+                    showUnsavedChangesDialog(dismissListener);
+                }
                 return true;
             case R.id.clock_menu_cancel:
-                DialogInterface.OnClickListener dismissListener = new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        sendStopTalkingMessage();
-                        sendCancelRoutineMessage();
-                        Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
-                        intent.setData(mCurrentUri);
-                        startActivity(intent);
-                        finish();
-                    }
-                };
-
                 showUnsavedChangesDialog(dismissListener);
                 return true;
             case R.id.clock_menu_finish:
@@ -428,8 +434,24 @@ public class ClockActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        Intent i = new Intent(this, MainActivity.class);
-        navigateUpTo(i);
+        if (!routineEnded) {
+            Intent i = new Intent(this, MainActivity.class);
+            navigateUpTo(i);
+        } else {
+            DialogInterface.OnClickListener dismissListener = new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    sendStopTalkingMessage();
+                    sendCancelRoutineMessage();
+                    Intent intent = new Intent(ClockActivity.this, ProfileActivity.class);
+                    intent.setData(mCurrentUri);
+                    startActivity(intent);
+                    finish();
+                }
+            };
+
+            showUnsavedChangesDialog(dismissListener);
+        }
     }
 
     // Service communication

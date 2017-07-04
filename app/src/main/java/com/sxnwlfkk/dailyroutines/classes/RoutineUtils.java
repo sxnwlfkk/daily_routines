@@ -127,9 +127,34 @@ public class RoutineUtils {
     // Parses weekdays from the day picker rrule
     public static boolean[] parseAlarmDay(String rrule) {
         boolean[] daysSet = {false, false, false, false, false, false, false};
-        if (rrule == null) {
+
+        if (rrule == null || rrule.equals("")) {
             return daysSet;
         }
+
+        String[] days = getDaysString(rrule);
+        for (int j = 0; j < days.length; j++) {
+            daysSet[parseDayToNumber(days[j])] = true;
+        }
+        return daysSet;
+    }
+
+    public static String getDaysInPretty(String rrule) {
+        if (rrule == null || rrule.equals("")) {
+            return "";
+        }
+
+        String[] days = getDaysString(rrule);
+
+        String prettyString = "";
+        for (int i = 0; i < days.length; i++) {
+            prettyString += days[i];
+            if (i < days.length - 1) prettyString += " ";
+        }
+        return prettyString;
+    }
+
+    private static String[] getDaysString(String rrule) {
         String[] options = rrule.split(";");
         Calendar c = Calendar.getInstance();
         int h = c.get(Calendar.DAY_OF_WEEK);
@@ -145,13 +170,10 @@ public class RoutineUtils {
             String[] kvs = options[i].split("=");
             if (kvs[0].equals("BYDAY")) {
                 String[] days = kvs[1].split(",");
-                if (days.length == 0) return daysSet;
-                for (int j = 0; j < days.length; j++) {
-                    daysSet[parseDayToNumber(days[j])] = true;
-                }
+                return days;
             }
         }
-        return daysSet;
+        return null;
     }
 
     private static int parseDayToNumber(String day) {
