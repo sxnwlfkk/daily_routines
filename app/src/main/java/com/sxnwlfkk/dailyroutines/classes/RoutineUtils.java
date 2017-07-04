@@ -126,8 +126,11 @@ public class RoutineUtils {
 
     // Parses weekdays from the day picker rrule
     public static boolean[] parseAlarmDay(String rrule) {
-        String[] options = rrule.split(";");
         boolean[] daysSet = {false, false, false, false, false, false, false};
+        if (rrule == null) {
+            return daysSet;
+        }
+        String[] options = rrule.split(";");
         Calendar c = Calendar.getInstance();
         int h = c.get(Calendar.DAY_OF_WEEK);
         int firstDayOfWeek = c.getFirstDayOfWeek();
