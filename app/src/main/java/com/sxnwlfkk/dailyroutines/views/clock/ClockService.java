@@ -35,6 +35,8 @@ import com.sxnwlfkk.dailyroutines.views.preference.SettingsActivity;
 import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -349,6 +351,7 @@ private static final long STEP_CORRECTION_CONST = 0;
         // First start of the routine
         if (!routineHasBeenStarted) {
             if (mRoutineClock.ismEndTimeRequired()) {
+                updateInterrupt(System.currentTimeMillis());
                 int currTime = RoutineUtils.getCurrentTimeInSec();
                 Log.e(LOG_TAG, "Current time is: " + currTime);
                 int optimalTime = RoutineUtils.calculateIdealStartTime(
@@ -365,10 +368,11 @@ private static final long STEP_CORRECTION_CONST = 0;
                     mRoutineClock.setmCarryTime(carry);
                     mRoutineClock.setmLength(mRoutineClock.getmLength() + carry);
                 }
+            } else {
+                mRoutineClock.setmEndTime(calculateEndTime());
             }
             mRoutineClock.setStartTime();
             routineHasBeenStarted = true;
-            updateInterrupt(System.currentTimeMillis());
         // Routine was started but the service was killed after
         } else {
             mRoutineClock.sortDiffTime();
@@ -494,8 +498,9 @@ private static final long STEP_CORRECTION_CONST = 0;
     private void clockScreenOn() {
         if (routineHasBeenStarted) {
             checkDiffTime();
-            mRoutineClock.setmInterruptTime(System.currentTimeMillis());
             mScreenIsOn = true;
+            long interrupt = System.currentTimeMillis();
+            updateInterrupt(interrupt);
         }
     }
 
@@ -505,7 +510,7 @@ private static final long STEP_CORRECTION_CONST = 0;
         if (routineHasBeenStarted) {
             mScreenIsOn = false;
             writeRoutineToDB();
-            mRoutineClock.setmInterruptTime(System.currentTimeMillis());
+//            updateInterrupt(System.currentTimeMillis());
         }
         wl.release();
     }
@@ -663,6 +668,17 @@ private static final long STEP_CORRECTION_CONST = 0;
         }
     }
 
+    // Helper methods
+    private long calculateEndTime() {
+        Date d = new Date(System.currentTimeMillis() + mRoutineClock.getmLength());
+        Calendar c = Calendar.getInstance();
+        c.setTime(d);
+        long endTime = c.get(Calendar.HOUR_OF_DAY) * 60 * 60 * 1000;
+        endTime += c.get(Calendar.MINUTE) * 60 * 1000;
+
+        return endTime;
+    }
+
     // Writes to shared preferences
 
     private void updateLengthPref(long length) {
@@ -805,15 +821,19 @@ private static final long STEP_CORRECTION_CONST = 0;
         }
     }
 
+
     // Just a helper method encapsulating this common pattern
     private void startCountdownTimer(long millisInFuture, long countdownInterval) {
         mCountdownTimer = new ClockCountdownTimer(millisInFuture, countdownInterval);
         mCountdownTimer.start();
     }
 
-
-
     private class ClockCountdownTimer extends CountDownTimer {
+
+        private long seconds;
+        private int counter;
+        private long avgDiff;
+        private static final int COUNTER_PERIOD = 30;
 
         /**
          * @param millisInFuture    The number of millis in the future from the call
@@ -824,12 +844,48 @@ private static final long STEP_CORRECTION_CONST = 0;
          */
         public ClockCountdownTimer(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.YEAR, 2017);
+            cal.set(Calendar.MONTH, Calendar.JULY);
+            cal.set(Calendar.DAY_OF_MONTH, 6);
+            cal.set(Calendar.HOUR_OF_DAY, (int) (mRoutineClock.getmEndTime()/1000)/3600);
+            cal.set(Calendar.MINUTE, (int) (mRoutineClock.getmEndTime()/1000)/60 % 60);
+            cal.set(Calendar.SECOND, 0);
+            seconds = cal.getTimeInMillis();
+
+            counter = -1;
+        }
+
+        private void balanceDifference(long currentDiff) {
+            Log.e(LOG_TAG, "Balance counter: " + counter);
+            if (counter == -1) {
+                avgDiff = currentDiff;
+            } else {
+                avgDiff = (avgDiff + currentDiff) / 2;
+            }
+
+            if (counter == COUNTER_PERIOD) {
+                long newInterrupt = mRoutineClock.getmInterruptTime() + avgDiff;
+                updateInterrupt(newInterrupt);
+
+                counter = 0;
+            }
+            counter++;
         }
 
         @Override
         public void onTick(long millisUntilFinished) {
             PowerManager.WakeLock wl = getWakeLock();
             wl.acquire();
+
+            long length = 0;
+            for (int i = mRoutineClock.getmCurrentItemIndex(); i < mRoutineClock.getmRoutineItemsNum(); i ++) {
+                length += mRoutineClock.getmItemsList().get(i).getmCurrentTime();
+            }
+
+            long endDifference = seconds - (System.currentTimeMillis() + length + mRoutineClock.getmCarryTime());
+            balanceDifference(endDifference);
+            Log.e(LOG_TAG, "----------- End difference in ms: " + endDifference + "------------------");
 
             if (previouslyVibrated && justVibrated) {
                 justVibrated = false;
