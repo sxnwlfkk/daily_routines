@@ -29,6 +29,7 @@ public class RoutineCloner {
     private int rInterruptTime;
     private long rRoutineLength;
     private ArrayList<RoutineItem> mRoutineItems;
+    private String rRule;
 
     public long cloneRoutine(Context context, Uri uri) {
 
@@ -56,6 +57,7 @@ public class RoutineCloner {
                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER,
                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED,
                 RoutineContract.RoutineEntry.COLUMN_ROUTINE_INTERRUPT_TIME,
+                RoutineContract.RoutineEntry.COLUMN_ROUTINE_WEEKDAYS_CONFIG,
         };
 
         Cursor cursor = context.getContentResolver().query(mUri, projection, null, null, null);
@@ -69,6 +71,7 @@ public class RoutineCloner {
         rItemsNumber = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER));
         rTimesUsed = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED));
         rRoutineLength = cursor.getLong(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH));
+        rRule = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_WEEKDAYS_CONFIG));
     }
 
     private void loadItemsData(Context context) {
@@ -119,6 +122,7 @@ public class RoutineCloner {
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_INTERRUPT_TIME, 0);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED, rTimesUsed);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END, rEndTimeReq);
+        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_WEEKDAYS_CONFIG, rRule);
 
         // Insert new routine
         Uri newUri = context.getContentResolver().insert(RoutineContract.RoutineEntry.CONTENT_URI, values);

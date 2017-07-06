@@ -12,7 +12,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.CountDownTimer;
 import android.os.IBinder;
@@ -369,6 +368,7 @@ private static final long STEP_CORRECTION_CONST = 0;
             }
             mRoutineClock.setStartTime();
             routineHasBeenStarted = true;
+            updateInterrupt(System.currentTimeMillis());
         // Routine was started but the service was killed after
         } else {
             mRoutineClock.sortDiffTime();
@@ -421,6 +421,7 @@ private static final long STEP_CORRECTION_CONST = 0;
         routineIsSetUp = false;
         routineFinished = false;
         mBuilder = null;
+        updateLengthPref(0);
         cancelItemVibrations();
         cancelEndVibration();
         updateLengthPref(0);
@@ -449,6 +450,7 @@ private static final long STEP_CORRECTION_CONST = 0;
         mBuilder = null;
         cancelItemVibrations();
         cancelEndVibration();
+        updateLengthPref(0);
         updateLengthPref(0);
         setFinishedRoutine();
         stopSelf();
@@ -640,8 +642,6 @@ private static final long STEP_CORRECTION_CONST = 0;
         // Update routine
         ContentValues values = new ContentValues();
 
-        updateInterruptTime(System.currentTimeMillis());
-
         values.put(RoutineContract.RoutineEntry.COLUMN_CURRENT_ITEM, mRoutineClock.getmCurrentItemIndex());
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_CARRY, mRoutineClock.getmCarryTime());
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_TIMES_USED, mRoutineClock.getmTimesUsed());
@@ -668,13 +668,13 @@ private static final long STEP_CORRECTION_CONST = 0;
     private void updateLengthPref(long length) {
         SharedPreferences.Editor editor = mPrefs.edit();
         editor.putLong(SERVICE_PREFERENCE_LENGTH_WHEN_STARTED, length);
-        editor.commit();
+        editor.apply();
     }
 
-    private void updateInterruptTime(long time) {
+    private void updateInterruptPref(long time) {
         SharedPreferences.Editor editor = mPrefs.edit();
         editor.putLong(SERVICE_PREFERENCE_INTERRUPT_TIME, time);
-        editor.commit();
+        editor.apply();
     }
 
     private long readInterruptTime() {
@@ -684,13 +684,18 @@ private static final long STEP_CORRECTION_CONST = 0;
     private void setStartedRoutine() {
         SharedPreferences.Editor editor = mPrefs.edit();
         editor.putLong(CLOCK_ROUTINE_IN_PROGRESS, mRoutineClock.getmId());
-        editor.commit();
+        editor.apply();
     }
 
     private void setFinishedRoutine() {
         SharedPreferences.Editor editor = mPrefs.edit();
         editor.putLong(CLOCK_ROUTINE_IN_PROGRESS, -1);
-        editor.commit();
+        editor.apply();
+    }
+
+    private void updateInterrupt(long time) {
+        updateInterruptPref(time);
+        mRoutineClock.setmInterruptTime(time);
     }
 
     // VIBRATIONS
@@ -867,7 +872,7 @@ private static final long STEP_CORRECTION_CONST = 0;
                         diffTime = System.currentTimeMillis() - mRoutineClock.getmInterruptTime();
                         mCurrentItem.setmCurrentTime(currentItemTime - diffTime);
                         Log.e(LOG_TAG, "Current interval: " + diffTime);
-                        mRoutineClock.setmInterruptTime(System.currentTimeMillis());
+                        updateInterrupt(System.currentTimeMillis());
                     }
                 } else {
                     long carry = mRoutineClock.getmCarryTime();
@@ -878,7 +883,7 @@ private static final long STEP_CORRECTION_CONST = 0;
                     diffTime = System.currentTimeMillis() - mRoutineClock.getmInterruptTime();
                     mRoutineClock.setmCarryTime(carry - diffTime);
                     Log.e(LOG_TAG, "Current interval: " + diffTime);
-                    mRoutineClock.setmInterruptTime(System.currentTimeMillis());
+                    updateInterrupt(System.currentTimeMillis());
                 }
 
                 // Check if routine ended. Interrupt if timer would continue with no time left.
