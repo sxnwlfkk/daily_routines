@@ -88,7 +88,7 @@ public class ClockService extends Service {
     // Countdown interval constant
     public static final long COUNTDOWN_INTERVAL_CONST = 1000;
     // Step correction constant
-private static final long STEP_CORRECTION_CONST = 500;
+private static final long STEP_CORRECTION_CONST = 0;
 
     public static final String LOG_TAG = ClockService.class.getSimpleName();
 
@@ -117,6 +117,8 @@ private static final long STEP_CORRECTION_CONST = 500;
     private boolean routineFinished;
     private boolean routineHasBeenStarted;
     private boolean mScreenIsOn;
+    private boolean justVibrated;
+    private boolean previouslyVibrated;
 
     // Settings
     private boolean sVibrateOn;
@@ -136,6 +138,8 @@ private static final long STEP_CORRECTION_CONST = 500;
         mBuilder = null;
         mScreenIsOn = true;
         shouldVibrateInServiceNext = false;
+        justVibrated = false;
+        previouslyVibrated = false;
         inServiceVibrationPattern = NO_PATTERN;
 
         // Get settings
@@ -488,6 +492,7 @@ private static final long STEP_CORRECTION_CONST = 500;
     private void clockScreenOn() {
         if (routineHasBeenStarted) {
             checkDiffTime();
+            mRoutineClock.setmInterruptTime(System.currentTimeMillis());
             mScreenIsOn = true;
         }
     }
@@ -496,8 +501,8 @@ private static final long STEP_CORRECTION_CONST = 500;
         PowerManager.WakeLock wl = getWakeLock();
         wl.acquire();
         if (routineHasBeenStarted) {
-            writeRoutineToDB();
             mScreenIsOn = false;
+            writeRoutineToDB();
             mRoutineClock.setmInterruptTime(System.currentTimeMillis());
         }
         wl.release();
@@ -820,36 +825,60 @@ private static final long STEP_CORRECTION_CONST = 500;
         public void onTick(long millisUntilFinished) {
             PowerManager.WakeLock wl = getWakeLock();
             wl.acquire();
+
+            if (previouslyVibrated && justVibrated) {
+                justVibrated = false;
+                previouslyVibrated = false;
+            }
+            if (!previouslyVibrated && justVibrated) {
+                previouslyVibrated = true;
+            }
+
+            long diffTime = 0;
+
             if (mScreenIsOn) {
                 long currentItemTime = mCurrentItem.getmCurrentTime();
                 if (currentItemTime <= (mCurrentItem.getStartTime() / 2) + 500
                         && currentItemTime > (mCurrentItem.getStartTime() / 2) - 500
-                        && currentItemTime != 0 && sVibrateOn) {
+                        && currentItemTime != 0 && sVibrateOn
+                        && !justVibrated) {
                     vibrateInService(inServiceVibrationPattern);
+                    justVibrated = true;
                 } else if (currentItemTime <= (mCurrentItem.getStartTime() / 3) + 500
                         && currentItemTime > (mCurrentItem.getStartTime() / 3) - 500
-                        && currentItemTime != 0 && sVibrateOn) {
+                        && currentItemTime != 0 && sVibrateOn
+                        && !justVibrated) {
                     vibrateInService(inServiceVibrationPattern);
+                    justVibrated = true;
                 }
 
                 if (currentItemTime > 0) {
                     if (currentItemTime <= 1500
                             && currentItemTime > 500
-                            && sVibrateOn) {
+                            && sVibrateOn
+                            && !justVibrated) {
                         vibrateInService(inServiceVibrationPattern);
+                        justVibrated = true;
                     }
                     // Subtract one second or zero the counter
                     if (currentItemTime - 1000 <= 0) {
                         mCurrentItem.setmCurrentTime(0);
                     } else {
-                        mCurrentItem.setmCurrentTime(currentItemTime - 1000);
+                        diffTime = System.currentTimeMillis() - mRoutineClock.getmInterruptTime();
+                        mCurrentItem.setmCurrentTime(currentItemTime - diffTime);
+                        Log.e(LOG_TAG, "Current interval: " + diffTime);
+                        mRoutineClock.setmInterruptTime(System.currentTimeMillis());
                     }
                 } else {
                     long carry = mRoutineClock.getmCarryTime();
-                    if (carry <= 1500 && carry > 500 && sVibrateOn) {
+                    if (carry <= 1500 && carry > 500 && sVibrateOn && !justVibrated) {
                         vibrateInService(inServiceVibrationPattern);
+                        justVibrated = true;
                     }
-                    mRoutineClock.setmCarryTime(carry - 1000);
+                    diffTime = System.currentTimeMillis() - mRoutineClock.getmInterruptTime();
+                    mRoutineClock.setmCarryTime(carry - diffTime);
+                    Log.e(LOG_TAG, "Current interval: " + diffTime);
+                    mRoutineClock.setmInterruptTime(System.currentTimeMillis());
                 }
 
                 // Check if routine ended. Interrupt if timer would continue with no time left.
@@ -865,10 +894,9 @@ private static final long STEP_CORRECTION_CONST = 500;
                 // Send broadcast intent to Activity
                 sendMessage();
                 makeNotification();
-                mRoutineClock.setmInterruptTime(System.currentTimeMillis());
                 writeRoutineToDB();
                 // Update clocks
-                mCurrentItem.incrementElapsedTime();
+                mCurrentItem.incrementElapsedTime(diffTime);
             }
             wl.release();
         }
@@ -876,7 +904,7 @@ private static final long STEP_CORRECTION_CONST = 500;
         @Override
         public void onFinish() {
 
-            mCurrentItem.incrementElapsedTime();
+            mCurrentItem.incrementElapsedTime(1000);
 
             // When the internal countdown reaches zero, but the visual counter still has
             // some time left, restart the countdown with that much time
