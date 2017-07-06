@@ -44,9 +44,9 @@ public class MainRoutineCursorAdapter extends CursorAdapter {
         if (endRequired) {
             int endTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME));
 
-            Spanned startTimeText = Html.fromHtml(RoutineUtils.formatClockTimeString(RoutineUtils.calculateIdealStartTime(endTime, length) / 1000)
-                    + "   <i>" + RoutineUtils.getDaysInPretty(rrule) + "</i>");
+            Spanned startTimeText = RoutineUtils.getOptimalStartText(endTime, length, rrule);
             tvStartTime.setText(startTimeText);
+            tvStartTime.setVisibility(View.VISIBLE);
         } else {
             tvStartTime.setVisibility(View.INVISIBLE);
         }

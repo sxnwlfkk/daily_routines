@@ -3,6 +3,8 @@ package com.sxnwlfkk.dailyroutines.classes;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.text.Html;
+import android.text.Spanned;
 import android.util.Log;
 
 import com.sxnwlfkk.dailyroutines.views.clock.ClockService;
@@ -195,5 +197,12 @@ public class RoutineUtils {
             default:
                 return -1;
         }
+    }
+
+    public static Spanned getOptimalStartText(long endTime, long length, String rrule) {
+
+        return Html.fromHtml(RoutineUtils.formatClockTimeString(
+                RoutineUtils.calculateIdealStartTime((int) endTime / 1000, (int) length / 1000))
+                + "   <i>" + RoutineUtils.getDaysInPretty(rrule) + "</i>");
     }
 }
