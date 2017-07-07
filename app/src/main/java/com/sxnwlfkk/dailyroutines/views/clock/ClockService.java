@@ -373,6 +373,7 @@ private static final long STEP_CORRECTION_CONST = 0;
             }
             mRoutineClock.setStartTime();
             routineHasBeenStarted = true;
+            updateInterrupt(System.currentTimeMillis());
         // Routine was started but the service was killed after
         } else {
             mRoutineClock.sortDiffTime();
@@ -411,6 +412,7 @@ private static final long STEP_CORRECTION_CONST = 0;
             mCountdownTimer.cancel();
             mCountdownTimer = null;
         }
+        updateInterrupt(0);
         mRoutineClock.resetRoutine();
         writeRoutineToDB();
         stopForeground(true);
@@ -438,6 +440,7 @@ private static final long STEP_CORRECTION_CONST = 0;
             mCountdownTimer.cancel();
             mCountdownTimer = null;
         }
+        updateInterrupt(0);
         mRoutineClock.finishRoutine();
         writeRoutineToDB();
         stopForeground(true);
@@ -454,7 +457,6 @@ private static final long STEP_CORRECTION_CONST = 0;
         mBuilder = null;
         cancelItemVibrations();
         cancelEndVibration();
-        updateLengthPref(0);
         updateLengthPref(0);
         setFinishedRoutine();
         stopSelf();
@@ -673,8 +675,12 @@ private static final long STEP_CORRECTION_CONST = 0;
         Date d = new Date(System.currentTimeMillis() + mRoutineClock.getmLength());
         Calendar c = Calendar.getInstance();
         c.setTime(d);
+        Log.e(LOG_TAG, "Hour of the day = " + Calendar.HOUR_OF_DAY);
         long endTime = c.get(Calendar.HOUR_OF_DAY) * 60 * 60 * 1000;
+        Log.e(LOG_TAG, "Minute of the day = " + Calendar.HOUR_OF_DAY);
         endTime += c.get(Calendar.MINUTE) * 60 * 1000;
+        Log.e(LOG_TAG, "Second of the day = " + Calendar.SECOND);
+        endTime += c.get(Calendar.SECOND) * 1000;
 
         return endTime;
     }
@@ -833,7 +839,7 @@ private static final long STEP_CORRECTION_CONST = 0;
         private long seconds;
         private int counter;
         private long avgDiff;
-        private static final int COUNTER_PERIOD = 30;
+        private static final int COUNTER_PERIOD = 10;
 
         /**
          * @param millisInFuture    The number of millis in the future from the call
@@ -844,14 +850,8 @@ private static final long STEP_CORRECTION_CONST = 0;
          */
         public ClockCountdownTimer(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
-            Calendar cal = Calendar.getInstance();
-            cal.set(Calendar.YEAR, 2017);
-            cal.set(Calendar.MONTH, Calendar.JULY);
-            cal.set(Calendar.DAY_OF_MONTH, 6);
-            cal.set(Calendar.HOUR_OF_DAY, (int) (mRoutineClock.getmEndTime()/1000)/3600);
-            cal.set(Calendar.MINUTE, (int) (mRoutineClock.getmEndTime()/1000)/60 % 60);
-            cal.set(Calendar.SECOND, 0);
-            seconds = cal.getTimeInMillis();
+            seconds = System.currentTimeMillis() + mRoutineClock.getmLength();
+            Log.e(LOG_TAG, "End time: " + new Date(seconds).toString());
 
             counter = -1;
         }
@@ -884,7 +884,7 @@ private static final long STEP_CORRECTION_CONST = 0;
             }
 
             long endDifference = seconds - (System.currentTimeMillis() + length + mRoutineClock.getmCarryTime());
-            balanceDifference(endDifference);
+            Log.e(LOG_TAG, "Remaining time ends on: " + new Date(System.currentTimeMillis() + length + mRoutineClock.getmCarryTime()));
             Log.e(LOG_TAG, "----------- End difference in ms: " + endDifference + "------------------");
 
             if (previouslyVibrated && justVibrated) {
@@ -898,6 +898,7 @@ private static final long STEP_CORRECTION_CONST = 0;
             long diffTime = 0;
 
             if (mScreenIsOn) {
+                balanceDifference(endDifference);
                 long currentItemTime = mCurrentItem.getmCurrentTime();
                 if (currentItemTime <= (mCurrentItem.getStartTime() / 2) + 500
                         && currentItemTime > (mCurrentItem.getStartTime() / 2) - 500
