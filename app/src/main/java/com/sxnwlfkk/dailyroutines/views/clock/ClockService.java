@@ -836,7 +836,7 @@ private static final long STEP_CORRECTION_CONST = 0;
 
     private class ClockCountdownTimer extends CountDownTimer {
 
-        private long seconds;
+        private long preciseEndTimestamp;
         private int counter;
         private long avgDiff;
         private static final int COUNTER_PERIOD = 10;
@@ -850,8 +850,8 @@ private static final long STEP_CORRECTION_CONST = 0;
          */
         public ClockCountdownTimer(long millisInFuture, long countDownInterval) {
             super(millisInFuture, countDownInterval);
-            seconds = System.currentTimeMillis() + mRoutineClock.getmLength();
-            Log.e(LOG_TAG, "End time: " + new Date(seconds).toString());
+            preciseEndTimestamp = System.currentTimeMillis() + mRoutineClock.getmLength();
+            Log.e(LOG_TAG, "End time: " + new Date(preciseEndTimestamp).toString());
 
             counter = -1;
         }
@@ -883,7 +883,7 @@ private static final long STEP_CORRECTION_CONST = 0;
                 length += mRoutineClock.getmItemsList().get(i).getmCurrentTime();
             }
 
-            long endDifference = seconds - (System.currentTimeMillis() + length + mRoutineClock.getmCarryTime());
+            long endDifference = preciseEndTimestamp - (System.currentTimeMillis() + length + mRoutineClock.getmCarryTime());
             Log.e(LOG_TAG, "Remaining time ends on: " + new Date(System.currentTimeMillis() + length + mRoutineClock.getmCarryTime()));
             Log.e(LOG_TAG, "----------- End difference in ms: " + endDifference + "------------------");
 
@@ -948,7 +948,7 @@ private static final long STEP_CORRECTION_CONST = 0;
                         && mRoutineClock.getmCarryTime() <= 0
                         && mCurrentItem.getmCurrentTime() == 0)
                         ||
-                        (RoutineUtils.getCurrentTimeInSec() >= mRoutineClock.getmEndTime() / 1000
+                        (System.currentTimeMillis() >= preciseEndTimestamp
                                 && mRoutineClock.ismEndTimeRequired())) {
                     onFinish();
                 }
