@@ -121,7 +121,7 @@ public class RoutineItem {
         this.mElapsedTime = mElapsedTime;
     }
 
-    public void incrementElapsedTime() { mElapsedTime += 1000; }
+    public void incrementElapsedTime(long i) { mElapsedTime += i; }
 
     public void setStartTime(long startTime) {
         this.startTime = startTime;

@@ -27,8 +27,8 @@ android {
         applicationId "com.sxnwlfkk.dailyroutines"
         minSdkVersion 21
         targetSdkVersion 25
-        versionCode 39
-        versionName "0.8.5"
+        versionCode 43
+        versionName "0.8.7"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
