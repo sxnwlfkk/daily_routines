@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -334,6 +335,19 @@ public class ClockActivity extends Activity {
         if (mRoutineLength != 0) {
             perc = (int) (((double) mElapsedTime / mRoutineLength) * 100);
             mProgressBar.setProgress(perc);
+            if (perc <= 50) {
+                mProgressBar.getProgressDrawable().setColorFilter(
+                        getResources().getColor(R.color.material_indigo_darken3),
+                        PorterDuff.Mode.SRC_IN);
+            } else if (perc < 90 && perc > 50) {
+                mProgressBar.getProgressDrawable().setColorFilter(
+                    getResources().getColor(R.color.material_teal_lighten3),
+                    PorterDuff.Mode.SRC_IN);
+            } else {
+                mProgressBar.getProgressDrawable().setColorFilter(
+                        getResources().getColor(R.color.material_red_lighten1),
+                        PorterDuff.Mode.SRC_IN);
+            }
         } else {
             mProgressBar.setProgress(perc);
         }

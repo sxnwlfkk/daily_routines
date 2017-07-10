@@ -11,7 +11,8 @@
         android:id="@+id/clock_progressbar"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        />
 
     <TextView
         android:id="@+id/clock_routine_item_counter_text"
