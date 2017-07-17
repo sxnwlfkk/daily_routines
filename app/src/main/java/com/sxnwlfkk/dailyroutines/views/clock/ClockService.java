@@ -29,7 +29,7 @@ import com.sxnwlfkk.dailyroutines.backend.ScreenOnOffReceiver;
 import com.sxnwlfkk.dailyroutines.backend.VibrationNotificationReceiver;
 import com.sxnwlfkk.dailyroutines.classes.RoutineClock;
 import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
-import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
+import com.sxnwlfkk.dailyroutines.util.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.views.preference.SettingsActivity;
 import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;

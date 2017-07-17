@@ -213,5 +213,6 @@
         "when a user tries to pick up one of cards.\n\n"
     </string>
     <string name="edit_menu_compose_string">Compose</string>
+    <string name="edit_menu_compose_dialog_title">Add an existing routine:</string>
 
 </resources>

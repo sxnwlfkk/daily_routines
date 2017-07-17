@@ -1,4 +1,4 @@
-package com.sxnwlfkk.dailyroutines.classes;
+package com.sxnwlfkk.dailyroutines.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -161,13 +161,9 @@ public class RoutineUtils {
         Calendar c = Calendar.getInstance();
         int h = c.get(Calendar.DAY_OF_WEEK);
         int firstDayOfWeek = c.getFirstDayOfWeek();
-        Log.d("Utils", "The first day of the week is: " + firstDayOfWeek);
-        Log.d("Utils", "Today is the " + h + "th day.");
         c.setFirstDayOfWeek(Calendar.MONDAY);
         firstDayOfWeek = c.getFirstDayOfWeek();
-        Log.d("Utils", "The first day of the week is: " + firstDayOfWeek);
         h = c.get(Calendar.DAY_OF_WEEK);
-        Log.d("Utils", "Today is the " + h + "th day.");
         for (int i = 0; i < options.length; i++) {
             String[] kvs = options[i].split("=");
             if (kvs[0].equals("BYDAY")) {

@@ -12,7 +12,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
@@ -28,6 +27,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -42,7 +42,8 @@ import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFra
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
 import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
-import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
+import com.sxnwlfkk.dailyroutines.util.CompositionUtils;
+import com.sxnwlfkk.dailyroutines.util.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.util.RoutineRecurrencePickerFragment;
 import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;
@@ -407,6 +408,43 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         alertDialog.show();
     }
 
+    private void showComposeDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.edit_menu_compose_dialog_title);
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_singlechoice);
+        arrayAdapter.add("Hardik");
+        arrayAdapter.add("Archit");
+        arrayAdapter.add("Jignesh");
+        arrayAdapter.add("Umang");
+        arrayAdapter.add("Gatti");
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        builder.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String strName = arrayAdapter.getItem(which);
+                AlertDialog.Builder builderInner = new AlertDialog.Builder(EditActivity.this);
+                builderInner.setMessage(strName);
+                builderInner.setTitle("Your Selected Item is");
+                builderInner.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog,int which) {
+                        dialog.dismiss();
+                    }
+                });
+                builderInner.show();
+            }
+        });
+
+        builder.show();
+    }
+
     // Recurrence set listener
     @Override
     public void onRecurrenceSet(String rrule) {
@@ -476,6 +514,9 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                     showOptimizeDialog(optimizeButtonClickListener);
                 }
                 break;
+            case R.id.edit_menu_compose_button:
+                showComposeDialog();
+
         }
 
         return super.onOptionsItemSelected(item);

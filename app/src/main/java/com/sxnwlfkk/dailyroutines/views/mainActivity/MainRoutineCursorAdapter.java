@@ -2,7 +2,6 @@ package com.sxnwlfkk.dailyroutines.views.mainActivity;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.text.Html;
 import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,7 +10,7 @@ import android.widget.CursorAdapter;
 import android.widget.TextView;
 
 import com.sxnwlfkk.dailyroutines.R;
-import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
+import com.sxnwlfkk.dailyroutines.util.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 
 /**

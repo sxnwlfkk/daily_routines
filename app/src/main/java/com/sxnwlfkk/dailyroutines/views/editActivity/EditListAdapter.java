@@ -11,9 +11,7 @@ import android.widget.TextView;
 
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
-import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
-
-import org.w3c.dom.Text;
+import com.sxnwlfkk.dailyroutines.util.RoutineUtils;
 
 import java.util.List;
 

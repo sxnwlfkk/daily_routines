@@ -24,12 +24,11 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.sxnwlfkk.dailyroutines.R;
-import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
+import com.sxnwlfkk.dailyroutines.util.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.views.mainActivity.MainActivity;
 import com.sxnwlfkk.dailyroutines.views.preference.SettingsActivity;
 import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;
 
-import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.CLOCK_SERVICE_SCREEN_OFF;
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.CLOCK_SERVICE_NEXT_ITEM;
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.CLOCK_SERVICE_PREV_ITEM;
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.CLOCK_SERVICE_ROUTINE_CANCEL;
