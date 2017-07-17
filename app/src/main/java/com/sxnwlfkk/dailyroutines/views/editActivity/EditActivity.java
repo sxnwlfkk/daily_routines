@@ -120,6 +120,8 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                 mNewItemName.setEnabled(true);
                 mNewItemLengthMinutes.setEnabled(true);
                 mNewItemLengthSeconds.setEnabled(true);
+                LinearLayout editorView = (LinearLayout) findViewById(R.id.edit_item_editor_layout);
+                editorView.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.bpTransparent));
             }
         }
         private void addNewItemToList() {
@@ -191,6 +193,14 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
             }
             mNewItemName.setText("");
             mNewItemLengthMinutes.setText("");
+            mNewItemLengthSeconds.setText("");
+
+            // Resetting editability
+            mNewItemName.setEnabled(true);
+            mNewItemLengthMinutes.setEnabled(true);
+            mNewItemLengthSeconds.setEnabled(true);
+            LinearLayout editorView = (LinearLayout) findViewById(R.id.edit_item_editor_layout);
+            editorView.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.bpTransparent));
         }
     };
 
@@ -579,11 +589,14 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                 mNewItemLengthMinutes.setText(lengthMin);
                 mNewItemLengthSeconds.setText(lengthSec);
 
+                LinearLayout editorView = (LinearLayout) findViewById(R.id.edit_item_editor_layout);
                 if (mItemsList.get(mCurrentItemIndex).getmAverageTime() == -1) {
+                    editorView.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.material_indigo_lighten5));
                     mNewItemName.setEnabled(false);
                     mNewItemLengthMinutes.setEnabled(false);
                     mNewItemLengthSeconds.setEnabled(false);
                 } else {
+                    editorView.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.bpTransparent));
                     mNewItemName.setEnabled(true);
                     mNewItemLengthMinutes.setEnabled(true);
                     mNewItemLengthSeconds.setEnabled(true);
