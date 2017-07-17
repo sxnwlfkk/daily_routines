@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.sxnwlfkk.dailyroutines.R;
@@ -44,21 +45,30 @@ public class EditListAdapter extends ArrayAdapter<RoutineItem> {
         lengthView.setText(RoutineUtils.formatLengthString(RoutineUtils.msecToSec(rItem.getmTime())));
 
         TextView avgView = (TextView) listItemView.findViewById(R.id.profile_list_item_avg);
-        avgView.setText(RoutineUtils.formatLengthString(RoutineUtils.msecToSec((long) rItem.getmAverageTime())));
+        if (rItem.getmAverageTime() == -1) {
+            avgView.setText(R.string.edit_list_view_composite_avg_field);
+        } else {
+            avgView.setText(RoutineUtils.formatLengthString(RoutineUtils.msecToSec((long) rItem.getmAverageTime())));
+        }
 
         TextView itemNo = (TextView) listItemView.findViewById(R.id.profile_list_number);
         itemNo.setText((position + 1) + ".");
 
         // Setting average cell background for visual information conveying
-        int relation = RoutineUtils.decideAvgColor(rItem.getmTime(), (int) rItem.getmAverageTime());
-        switch (relation) {
-            case RoutineUtils.AVERAGE_NIL_OR_EQ:
-                break;
-            case RoutineUtils.AVERAGE_BIGGER:
-                avgView.setBackgroundColor(getContext().getResources().getColor(R.color.material_red_lighten1));
-                break;
-            case RoutineUtils.AVERAGE_SMALLER:
-                avgView.setBackgroundColor(getContext().getResources().getColor(R.color.material_teal_lighten3));
+        if (rItem.getmAverageTime() == -1) {
+            LinearLayout ll = (LinearLayout) listItemView.findViewById(R.id.edit_list_item_background);
+            ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_indigo_lighten5));
+        } else {
+            int relation = RoutineUtils.decideAvgColor(rItem.getmTime(), (int) rItem.getmAverageTime());
+            switch (relation) {
+                case RoutineUtils.AVERAGE_NIL_OR_EQ:
+                    break;
+                case RoutineUtils.AVERAGE_BIGGER:
+                    avgView.setBackgroundColor(getContext().getResources().getColor(R.color.material_red_lighten1));
+                    break;
+                case RoutineUtils.AVERAGE_SMALLER:
+                    avgView.setBackgroundColor(getContext().getResources().getColor(R.color.material_teal_lighten3));
+            }
         }
 
         return listItemView;

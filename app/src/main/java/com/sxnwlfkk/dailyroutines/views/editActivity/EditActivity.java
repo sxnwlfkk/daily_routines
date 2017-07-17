@@ -21,6 +21,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.text.format.Time;
+import android.text.method.KeyListener;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -41,6 +42,7 @@ import android.widget.Toast;
 import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment;
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
+import com.sxnwlfkk.dailyroutines.classes.CompositionDialogRoutine;
 import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
 import com.sxnwlfkk.dailyroutines.util.CompositionUtils;
 import com.sxnwlfkk.dailyroutines.util.RoutineUtils;
@@ -77,6 +79,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
     private boolean mShowMoreClicked;
     private boolean itemsListLoaded;
     private String mRrule;
+    ArrayList<CompositionDialogRoutine> composableRoutines;
 
     // Views
     private ListView mListView;
@@ -112,6 +115,11 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                 mCurrentItemIndex = -1;
                 mRoutineHasChanged = true;
                 mItemNumber.setVisibility(View.GONE);
+
+                // Resetting editability
+                mNewItemName.setEnabled(true);
+                mNewItemLengthMinutes.setEnabled(true);
+                mNewItemLengthSeconds.setEnabled(true);
             }
         }
         private void addNewItemToList() {
@@ -128,12 +136,8 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                 itemLength = 60 * Integer.parseInt(lengthValMin) + Integer.parseInt(lengthValSec);
             }
 
-            if (mCurrentItemIndex == -1) {
-                mItemsList.add(new RoutineItem(itemName, RoutineUtils.secToMsec(itemLength)));
-            } else {
-                mItemsList.get(mCurrentItemIndex).setmItemName(itemName);
-                mItemsList.get(mCurrentItemIndex).setmTime(RoutineUtils.secToMsec(itemLength));
-            }
+            addItemToList(itemName, RoutineUtils.secToMsec(itemLength));
+
         }
         private boolean checkInputFields() {
             String itemName = mNewItemName.getText().toString().trim();
@@ -161,6 +165,16 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
             return true;
         }
     };
+
+    private void addItemToList(String name, long length) {
+        if (mCurrentItemIndex == -1) {
+            mItemsList.add(new RoutineItem(name, length));
+        } else {
+            mItemsList.get(mCurrentItemIndex).setmItemName(name);
+            mItemsList.get(mCurrentItemIndex).setmTime(length);
+        }
+
+    }
     private View.OnClickListener itemDeleteButtonClickListener = new View.OnClickListener() {
 
         @Override
@@ -231,6 +245,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         mListView = (ListView) findViewById(R.id.edit_list);
         mAdapter = new EditListAdapter(this, mItemsList);
         mListView.setAdapter(mAdapter);
+        composableRoutines = null;
 
         // Boolean setup
         itemsListLoaded = false;
@@ -400,7 +415,6 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                 if (dialog != null) {
                     dialog.dismiss();
                 }
-
             }
         });
         // Create and show the AlertDialog
@@ -411,12 +425,32 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
     private void showComposeDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.edit_menu_compose_dialog_title);
-        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_singlechoice);
-        arrayAdapter.add("Hardik");
-        arrayAdapter.add("Archit");
-        arrayAdapter.add("Jignesh");
-        arrayAdapter.add("Umang");
-        arrayAdapter.add("Gatti");
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_item);
+        if (mCurrentUri != null) {
+            composableRoutines = CompositionUtils.loadRoutinesForDialog(this, ContentUris.parseId(mCurrentUri));
+        } else {
+            composableRoutines = CompositionUtils.loadRoutinesForDialog(this, (long) 0);
+        }
+
+
+        ArrayList<String> composableRoutinesStrings = new ArrayList<>();
+
+        if (composableRoutines.size() == 0) {
+            composableRoutinesStrings.add(getResources().getString(R.string.no_composable_routines_text));
+        } else {
+            for (int i = 0; i < composableRoutines.size(); i++) {
+                CompositionDialogRoutine cdr = composableRoutines.get(i);
+                String itemStr = cdr.getName()
+                        + " ("
+                        + RoutineUtils.formatLengthString(RoutineUtils.msecToSec(cdr.getLength()) )
+                        + ")";
+
+                composableRoutinesStrings.add(itemStr);
+            }
+
+        }
+
+        arrayAdapter.addAll(composableRoutinesStrings);
 
         builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
             @Override
@@ -428,21 +462,18 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         builder.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                String strName = arrayAdapter.getItem(which);
-                AlertDialog.Builder builderInner = new AlertDialog.Builder(EditActivity.this);
-                builderInner.setMessage(strName);
-                builderInner.setTitle("Your Selected Item is");
-                builderInner.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog,int which) {
-                        dialog.dismiss();
-                    }
-                });
-                builderInner.show();
+                // nothing
+                addCompositeRoutine(composableRoutines.get(which));
+                mRoutineHasChanged = true;
             }
         });
 
         builder.show();
+    }
+
+    private void addCompositeRoutine(CompositionDialogRoutine cdr) {
+        mItemsList.add(new RoutineItem(cdr.getName(), cdr.getLength(), -1));
+        updateListView();
     }
 
     // Recurrence set listener
@@ -516,6 +547,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                 break;
             case R.id.edit_menu_compose_button:
                 showComposeDialog();
+                break;
 
         }
 
@@ -546,6 +578,16 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                 mNewItemName.setText(name);
                 mNewItemLengthMinutes.setText(lengthMin);
                 mNewItemLengthSeconds.setText(lengthSec);
+
+                if (mItemsList.get(mCurrentItemIndex).getmAverageTime() == -1) {
+                    mNewItemName.setEnabled(false);
+                    mNewItemLengthMinutes.setEnabled(false);
+                    mNewItemLengthSeconds.setEnabled(false);
+                } else {
+                    mNewItemName.setEnabled(true);
+                    mNewItemLengthMinutes.setEnabled(true);
+                    mNewItemLengthSeconds.setEnabled(true);
+                }
 
                 mItemNumber.setVisibility(View.VISIBLE);
                 setItemNumberText(mCurrentItemIndex);
