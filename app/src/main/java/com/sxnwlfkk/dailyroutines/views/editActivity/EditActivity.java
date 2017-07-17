@@ -79,6 +79,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
     private boolean mShowMoreClicked;
     private boolean itemsListLoaded;
     private String mRrule;
+    private ArrayList<Long> dependencies;
     ArrayList<CompositionDialogRoutine> composableRoutines;
 
     // Views
@@ -256,6 +257,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         mAdapter = new EditListAdapter(this, mItemsList);
         mListView.setAdapter(mAdapter);
         composableRoutines = null;
+        dependencies = new ArrayList<>();
 
         // Boolean setup
         itemsListLoaded = false;
@@ -482,8 +484,9 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
     }
 
     private void addCompositeRoutine(CompositionDialogRoutine cdr) {
-        mItemsList.add(new RoutineItem(cdr.getName(), cdr.getLength(), -1));
+        mItemsList.add(new RoutineItem(cdr.getName(), cdr.getLength(), -1 * cdr.getId()));
         updateListView();
+        dependencies.add(cdr.getId());
     }
 
     // Recurrence set listener
@@ -590,7 +593,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                 mNewItemLengthSeconds.setText(lengthSec);
 
                 LinearLayout editorView = (LinearLayout) findViewById(R.id.edit_item_editor_layout);
-                if (mItemsList.get(mCurrentItemIndex).getmAverageTime() == -1) {
+                if (mItemsList.get(mCurrentItemIndex).getmAverageTime() < 0) {
                     editorView.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.material_indigo_lighten5));
                     mNewItemName.setEnabled(false);
                     mNewItemLengthMinutes.setEnabled(false);
@@ -646,6 +649,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME, mRoutineEndTime);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END, (mEndTimeSwitch.isChecked()) ? 1 : 0);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_WEEKDAYS_CONFIG, mRrule);
+        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_EXTRA_TEXT, CompositionUtils.writeDependenciesString(dependencies));
         // Insert new routine
         mCurrentUri = getContentResolver().insert(RoutineContract.RoutineEntry.CONTENT_URI, values);
         // Get info for items
@@ -653,11 +657,16 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         // Insert items
         for (int i = 0; i < mItemsList.size(); i++) {
             ContentValues itemValues = new ContentValues();
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NAME, mItemsList.get(i).getmItemName());
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NO, i);
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH, mItemsList.get(i).getmTime());
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME, mItemsList.get(i).getmTime());
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE, newRoutineId);
+            if (mItemsList.get(i).getmAverageTime() < 0) {
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME,
+                        mItemsList.get(i).getmAverageTime());
+            } else {
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NAME, mItemsList.get(i).getmItemName());
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NO, i);
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH, mItemsList.get(i).getmTime());
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME, mItemsList.get(i).getmTime());
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE, newRoutineId);
+            }
 
             getContentResolver().insert(RoutineContract.ItemEntry.CONTENT_URI, itemValues);
         }
@@ -708,6 +717,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME, mRoutineEndTime);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END, (mEndTimeSwitch.isChecked()) ? 1 : 0);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_WEEKDAYS_CONFIG, mRrule);
+        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_EXTRA_TEXT, CompositionUtils.writeDependenciesString(dependencies));
 
         getContentResolver().update(mCurrentUri, values, null, null);
         long updatedRoutineId = ContentUris.parseId(mCurrentUri);
@@ -725,11 +735,16 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         for (int i = 0; i < mItemsList.size(); i++) {
             Uri updateUri = ContentUris.withAppendedId(RoutineContract.ItemEntry.CONTENT_URI, mItemsList.get(i).getmId());
             ContentValues itemValues = new ContentValues();
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NAME, mItemsList.get(i).getmItemName());
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NO, i);
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH, mItemsList.get(i).getmTime());
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE, updatedRoutineId);
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME, mItemsList.get(i).getmTime());
+            if (mItemsList.get(i).getmAverageTime() < 0) {
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME,
+                        mItemsList.get(i).getmAverageTime());
+            } else {
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NAME, mItemsList.get(i).getmItemName());
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NO, i);
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH, mItemsList.get(i).getmTime());
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE, updatedRoutineId);
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME, mItemsList.get(i).getmTime());
+            }
 
             int rowsAffected = getContentResolver().update(updateUri, itemValues, null, null);
             if (rowsAffected == 0) {

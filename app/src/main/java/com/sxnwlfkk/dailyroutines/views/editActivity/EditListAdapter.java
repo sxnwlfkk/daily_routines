@@ -45,7 +45,7 @@ public class EditListAdapter extends ArrayAdapter<RoutineItem> {
         lengthView.setText(RoutineUtils.formatLengthString(RoutineUtils.msecToSec(rItem.getmTime())));
 
         TextView avgView = (TextView) listItemView.findViewById(R.id.profile_list_item_avg);
-        if (rItem.getmAverageTime() == -1) {
+        if (rItem.getmAverageTime() < 0) {
             avgView.setText(R.string.edit_list_view_composite_avg_field);
         } else {
             avgView.setText(RoutineUtils.formatLengthString(RoutineUtils.msecToSec((long) rItem.getmAverageTime())));
@@ -55,7 +55,7 @@ public class EditListAdapter extends ArrayAdapter<RoutineItem> {
         itemNo.setText((position + 1) + ".");
 
         // Setting average cell background for visual information conveying
-        if (rItem.getmAverageTime() == -1) {
+        if (rItem.getmAverageTime() < 0) {
             LinearLayout ll = (LinearLayout) listItemView.findViewById(R.id.edit_list_item_background);
             ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_indigo_lighten5));
         } else {
