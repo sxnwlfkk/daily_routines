@@ -176,6 +176,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
             }
             mNewItemName.setText("");
             mNewItemLengthMinutes.setText("");
+            mNewItemLengthSeconds.setText("");
         }
     };
 
