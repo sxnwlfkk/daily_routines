@@ -660,6 +660,9 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
             if (mItemsList.get(i).getmAverageTime() < 0) {
                 itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME,
                         mItemsList.get(i).getmAverageTime());
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NO, i);
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE, newRoutineId);
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NAME, mItemsList.get(i).getmItemName());
             } else {
                 itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NAME, mItemsList.get(i).getmItemName());
                 itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NO, i);
@@ -738,6 +741,9 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
             if (mItemsList.get(i).getmAverageTime() < 0) {
                 itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME,
                         mItemsList.get(i).getmAverageTime());
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NO, i);
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE, updatedRoutineId);
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NAME, mItemsList.get(i).getmItemName());
             } else {
                 itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NAME, mItemsList.get(i).getmItemName());
                 itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NO, i);
@@ -850,13 +856,39 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
             case EDIT_ITEMS_LOADER:
                 if (!itemsListLoaded) {
                     for (int i = 0; i < cursor.getCount(); i++) {
-                        long id = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry._ID));
-                        String itemName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_NAME));
-                        int itemTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH));
-                        int itemAvg = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
+                        RoutineItem newRoutine = null;
+                        long avg = cursor.getLong(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
+                        if (avg < 0) {
+                            newRoutine = new RoutineItem(null, 0, avg);
+                            String[] projection = {
+                                    RoutineContract.RoutineEntry._ID,
+                                    RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME,
+                                    RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH,
+                            };
 
-                        RoutineItem newRoutine = new RoutineItem(itemName, itemTime, itemAvg);
-                        newRoutine.setmId(id);
+                            Cursor itemCursor = getContentResolver().query(
+                                    ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, -1 * avg),
+                                    projection,
+                                    null,
+                                    null,
+                                    null);
+
+                            itemCursor.moveToFirst();
+                            String name = itemCursor.getString(itemCursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_NAME));
+                            long length = itemCursor.getLong(itemCursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH));
+                            long id = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry._ID));
+
+                            newRoutine = new RoutineItem(name, length, avg);
+                            newRoutine.setmId(id);
+                        } else {
+                            long id = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry._ID));
+                            String itemName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_NAME));
+                            int itemTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH));
+                            int itemAvg = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
+                            newRoutine = new RoutineItem(itemName, itemTime, itemAvg);
+                            newRoutine.setmId(id);
+                        }
+
                         mItemsList.add(newRoutine);
                         if (!cursor.moveToNext()) break;
                     }
