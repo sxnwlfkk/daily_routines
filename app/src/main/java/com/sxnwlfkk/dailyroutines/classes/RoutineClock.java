@@ -183,7 +183,7 @@ public class RoutineClock {
         for (int i = mCurrentItemIndex; i < mRoutineItemsNum; i++) {
             newLength += mItemsList.get(i).getmCurrentTime();
         }
-        mLength = newLength;
+        mLength = newLength + mCarryTime;
         calculateElapsedTime();
     }
 

@@ -540,11 +540,19 @@ private static final long STEP_CORRECTION_CONST = 0;
 
     private Intent getBasicMessageIntent() {
         Intent message = new Intent(BROADCAST_ACTION);
+
+        if (mRoutineClock.getmCurrentItemIndex() + 1 == mRoutineClock.getmRoutineItemsNum()
+                && mCurrentItem.getmCurrentTime() == 0
+                && mRoutineClock.getmCarryTime() <= 0) {
+            message.putExtra(SERVICE_CARRY_FIELD, 0);
+        } else {
+            message.putExtra(SERVICE_CARRY_FIELD, RoutineUtils.msecToSec(mRoutineClock.getmCarryTime()));
+        }
+
         message.putExtra(SERVICE_ROUTINE_NAME_FIELD, mRoutineClock.getmName());
         message.putExtra(SERVICE_ITEM_NAME_FIELD, mCurrentItem.getmItemName());
         message.putExtra(SERVICE_SUM_ITEMS_FIELD, mRoutineClock.getmRoutineItemsNum());
         message.putExtra(SERVICE_CURR_TIME_FIELD, RoutineUtils.msecToSec(mCurrentItem.getmCurrentTime()));
-        message.putExtra(SERVICE_CARRY_FIELD, RoutineUtils.msecToSec(mRoutineClock.getmCarryTime()));
         message.putExtra(SERVICE_ROUTINE_LENGTH, mRoutineLengthWhenStarted);
         message.putExtra(SERVICE_ELAPSED_TIME, mRoutineClock.getmElapsedTime());
         Log.d(LOG_TAG, "Routine length: " + mRoutineLengthWhenStarted);
