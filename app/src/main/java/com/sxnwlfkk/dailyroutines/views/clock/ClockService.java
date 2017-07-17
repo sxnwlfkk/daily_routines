@@ -340,10 +340,8 @@ private static final long STEP_CORRECTION_CONST = 0;
 
     // Load from DB and return first intent
     private void startRoutine() {
-        Log.e(LOG_TAG, "Starting up or resuming routine service.");
         // Get data from DB
         queryDB();
-        Log.e(LOG_TAG, "After db query in startup method.");
 
         // Kill all previous item vibrations
         cancelItemVibrations();
