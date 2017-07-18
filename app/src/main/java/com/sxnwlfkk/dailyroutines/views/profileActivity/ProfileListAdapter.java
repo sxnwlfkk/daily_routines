@@ -101,6 +101,7 @@ public class ProfileListAdapter extends ArrayAdapter<RoutineItem> {
         tvName.setText(name);
         tvLength.setText(RoutineUtils.formatLengthString(RoutineUtils.msecToSec(length)));
         tvAvg.setText(RoutineUtils.formatLengthString(RoutineUtils.msecToSec(avg)));
+
         return view;
     }
 }

@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -403,6 +404,18 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                 mItemsList = CompositionUtils.composeRoutine(this.getBaseContext(), cursor);
                 mProfileListAdapter = new ProfileListAdapter(this.getBaseContext(), mItemsList);
                 mListView.setAdapter(mProfileListAdapter);
+                mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                        long parentId = mItemsList.get((int) id).getmParent();
+                        Intent intent = new Intent(ProfileActivity.this, ProfileActivity.class);
+
+                        Uri currentUri = ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, parentId);
+                        intent.setData(currentUri);
+
+                        startActivity(intent);
+                    }
+                });
                 // TODO Rewrite this with ArrayLists
                 calculateAvgTime(cursor);
                 break;
