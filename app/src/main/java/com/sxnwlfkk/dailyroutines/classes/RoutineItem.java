@@ -24,6 +24,8 @@ public class RoutineItem {
 
     private long mId;
 
+    private int mItemNumber;
+
     private long startTime;
 
     /**
@@ -107,6 +109,10 @@ public class RoutineItem {
         return mParent;
     }
 
+    public int getmItemNumber() {
+        return mItemNumber;
+    }
+
     /* SETTERS */
     public void setmCurrentTime(long currentTime) {
         mCurrentTime = currentTime;
@@ -152,6 +158,10 @@ public class RoutineItem {
 
     public void setmParent(long mParent) {
         this.mParent = mParent;
+    }
+
+    public void setmItemNumber(int mItemNumber) {
+        this.mItemNumber = mItemNumber;
     }
 
 }

@@ -21,6 +21,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -28,12 +29,16 @@ import android.widget.Toast;
 
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
+import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
+import com.sxnwlfkk.dailyroutines.util.CompositionUtils;
 import com.sxnwlfkk.dailyroutines.util.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.data.RoutineCloner;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.views.clock.ClockActivity;
 import com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity;
 import com.sxnwlfkk.dailyroutines.views.mainActivity.MainActivity;
+
+import java.util.ArrayList;
 
 public class ProfileActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -51,8 +56,10 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
     private TextView mRoutineLength;
     private TextView mRoutineItemNum;
     private TextView mAvgRoutineLength;
+    private ListView mListView;
 
-    private ProfileCursorAdapter mCursorAdapter;
+    private ProfileListAdapter mProfileListAdapter;
+    private ArrayList<RoutineItem> mItemsList;
     private long mAvgTime;
     private long mLength;
     private long mRoutineId;
@@ -89,9 +96,10 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
         mRoutineItemNum = (TextView) findViewById(R.id.profile_item_number);
         mAvgRoutineLength = (TextView) findViewById(R.id.profile_routine_avg_length);
 
-        ListView listView = (ListView) findViewById(R.id.profile_list_view);
-        mCursorAdapter = new ProfileCursorAdapter(this, null);
-        listView.setAdapter(mCursorAdapter);
+        mListView = (ListView) findViewById(R.id.profile_list_view);
+        mItemsList = new ArrayList<>();
+        mProfileListAdapter = new ProfileListAdapter(getApplicationContext(), mItemsList);
+        mListView.setAdapter(mProfileListAdapter);
 
         getLoaderManager().initLoader(PROFILE_ROUTINE_LOADER, null, this);
         getLoaderManager().initLoader(PROFILE_ITEMS_LOADER, null, this);
@@ -328,8 +336,12 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                     RoutineContract.ItemEntry._ID,
                     RoutineContract.ItemEntry.COLUMN_ITEM_NAME,
                     RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH,
-                    RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME,
                     RoutineContract.ItemEntry.COLUMN_ITEM_NO,
+                    RoutineContract.ItemEntry.COLUMN_REMAINING_TIME,
+                    RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME,
+                    RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME,
+                    RoutineContract.ItemEntry.COLUMN_START_TIME,
+                    RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE,
             };
 
             String selection = RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE + "=?";
@@ -388,8 +400,11 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
 
                 break;
             case PROFILE_ITEMS_LOADER:
+                mItemsList = CompositionUtils.composeRoutine(this.getBaseContext(), cursor);
+                mProfileListAdapter = new ProfileListAdapter(this.getBaseContext(), mItemsList);
+                mListView.setAdapter(mProfileListAdapter);
+                // TODO Rewrite this with ArrayLists
                 calculateAvgTime(cursor);
-                mCursorAdapter.swapCursor(cursor);
                 break;
         }
 
@@ -429,7 +444,8 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                 mRoutineLength.setText("");
                 break;
             case PROFILE_ITEMS_LOADER:
-                mCursorAdapter.swapCursor(null);
+                mItemsList = new ArrayList<>();
+                mProfileListAdapter = new ProfileListAdapter(getApplicationContext(), mItemsList);
                 break;
             default:
                 break;

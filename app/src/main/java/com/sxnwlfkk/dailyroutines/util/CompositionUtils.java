@@ -1,5 +1,6 @@
 package com.sxnwlfkk.dailyroutines.util;
 
+import android.content.ClipData;
 import android.content.Context;
 import android.database.Cursor;
 
@@ -145,7 +146,9 @@ public class CompositionUtils {
             if (avg < 0) {
                 Cursor subRoutine = getRoutineCursor(c, -1 * avg);
                 ArrayList<RoutineItem> subRoutineItems = composeRoutine(c, subRoutine, tier + 1);
+                subRoutine.close();
                 finalArray.addAll(subRoutineItems);
+                baseRoutineCursor.moveToNext();
 
             // It's an original item
             } else {
@@ -156,6 +159,7 @@ public class CompositionUtils {
                 int itemElapsedTime = baseRoutineCursor.getInt(baseRoutineCursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME));
                 int itemStartTime = baseRoutineCursor.getInt(baseRoutineCursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_START_TIME));
                 long itemParent = baseRoutineCursor.getLong(baseRoutineCursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE));
+                int itemNo = baseRoutineCursor.getInt(baseRoutineCursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_NO));
 
                 RoutineItem newItem = new RoutineItem(name, length, avg);
                 newItem.setmId(id);
@@ -164,8 +168,10 @@ public class CompositionUtils {
                 newItem.setStartTime(itemStartTime);
                 newItem.setmParent(itemParent);
                 newItem.setmTier(tier);
+                newItem.setmItemNumber(finalArray.size());
 
                 finalArray.add(newItem);
+                baseRoutineCursor.moveToNext();
             }
         }
         return finalArray;

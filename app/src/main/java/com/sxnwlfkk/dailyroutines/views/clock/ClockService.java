@@ -279,6 +279,7 @@ private static final long STEP_CORRECTION_CONST = 0;
              Log.d(LOG_TAG, "Diff time in millis: " + rDiffTime);
          }
          mRoutineClock.setmDiffTime(rDiffTime);
+         cursor.close();
      }
 
      private void getItemsData(long id) {
@@ -321,6 +322,7 @@ private static final long STEP_CORRECTION_CONST = 0;
              if (!cursor.moveToNext()) break;
          }
          mRoutineClock.setmItemsList(itemsList);
+         cursor.close();
      }
 
     // Read from DB
