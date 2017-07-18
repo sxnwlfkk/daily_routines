@@ -126,9 +126,71 @@ public class CompositionUtils {
 
     // This will read recursively the routines and returns a list with the final items
     // Used on ProfileView and ClockView
-    public ArrayList<RoutineItem> composeRoutine() {
+    public static ArrayList<RoutineItem> composeRoutine(Context c, Cursor baseRoutineCursor) {
+        int tierZero = 0;
+        return composeRoutine(c, baseRoutineCursor, tierZero);
+    }
 
-        return null;
+    private static ArrayList<RoutineItem> composeRoutine(Context c, Cursor baseRoutineCursor, int tier) {
+        ArrayList<RoutineItem> finalArray = new ArrayList<>();
+
+        if (baseRoutineCursor == null) return null;
+
+        baseRoutineCursor.moveToFirst();
+
+        for (int i = 0; i < baseRoutineCursor.getCount(); i++) {
+            long avg = baseRoutineCursor.getLong(baseRoutineCursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
+
+            // It it's a composite item
+            if (avg < 0) {
+                Cursor subRoutine = getRoutineCursor(c, -1 * avg);
+                ArrayList<RoutineItem> subRoutineItems = composeRoutine(c, subRoutine, tier + 1);
+                finalArray.addAll(subRoutineItems);
+
+            // It's an original item
+            } else {
+                long id = baseRoutineCursor.getLong(baseRoutineCursor.getColumnIndexOrThrow(RoutineContract.ItemEntry._ID));
+                String name = baseRoutineCursor.getString(baseRoutineCursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_NAME));
+                long length = baseRoutineCursor.getLong(baseRoutineCursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH));
+                int itemRemTime = baseRoutineCursor.getInt(baseRoutineCursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME));
+                int itemElapsedTime = baseRoutineCursor.getInt(baseRoutineCursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME));
+                int itemStartTime = baseRoutineCursor.getInt(baseRoutineCursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_START_TIME));
+                long itemParent = baseRoutineCursor.getLong(baseRoutineCursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE));
+
+                RoutineItem newItem = new RoutineItem(name, length, avg);
+                newItem.setmId(id);
+                newItem.setmCurrentTime(itemRemTime);
+                newItem.setmElapsedTime(itemElapsedTime);
+                newItem.setStartTime(itemStartTime);
+                newItem.setmParent(itemParent);
+                newItem.setmTier(tier);
+
+                finalArray.add(newItem);
+            }
+        }
+        return finalArray;
+    }
+
+    private static Cursor getRoutineCursor(Context c, long id) {
+        String[] projectionItems = new String[] {
+                RoutineContract.ItemEntry._ID,
+                RoutineContract.ItemEntry.COLUMN_ITEM_NAME,
+                RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH,
+                RoutineContract.ItemEntry.COLUMN_ITEM_NO,
+                RoutineContract.ItemEntry.COLUMN_REMAINING_TIME,
+                RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME,
+                RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME,
+                RoutineContract.ItemEntry.COLUMN_START_TIME,
+                RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE,
+        };
+
+        String selection = RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE + "=?";
+        String[] selectionArgs = new String[] { String.valueOf(id) };
+        Cursor cursor = c.getContentResolver().query(RoutineContract.ItemEntry.CONTENT_URI,
+                projectionItems, selection, selectionArgs,
+                RoutineContract.ItemEntry.COLUMN_ITEM_NO + " ASC");
+
+        return cursor;
     }
 
 
