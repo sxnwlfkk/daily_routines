@@ -10,11 +10,13 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -44,6 +46,7 @@ import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_CURR_I
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_CURR_TIME_FIELD;
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_ELAPSED_TIME;
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_ITEM_NAME_FIELD;
+import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_ITEM_TIER;
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_ROUTINE_LENGTH;
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_ROUTINE_NAME_FIELD;
 import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_SUM_ITEMS_FIELD;
@@ -63,6 +66,7 @@ public class ClockActivity extends Activity {
     int mSumOfItems;
     int mCarryTime;
     int mCurrentTime;
+    int mItemTier;
     long mElapsedTime;
     long mRoutineLength;
     String mItemName;
@@ -102,6 +106,7 @@ public class ClockActivity extends Activity {
             mSumOfItems = ((c = intent.getIntExtra(SERVICE_SUM_ITEMS_FIELD, -1)) != -1) ? c : mSumOfItems;
             mElapsedTime = intent.getLongExtra(SERVICE_ELAPSED_TIME, 0);
             mRoutineLength = intent.getLongExtra(SERVICE_ROUTINE_LENGTH, 0);
+            mItemTier = intent.getIntExtra(SERVICE_ITEM_TIER, 0);
             boolean forceRefresh = intent.getBooleanExtra(SERVICE_CLOCK_FORCE_REFRESH, false);
 
             if (mCurrentItem == -1) {
@@ -327,6 +332,50 @@ public class ClockActivity extends Activity {
             mCarryClockText.setTextColor(textColor);
         }
         updateProgressBar();
+        setItemTierBackground();
+    }
+
+    private void setItemTierBackground() {
+        int tier = mItemTier % 8;
+        if (mItemTier == 0) {
+            TypedValue a = new TypedValue();
+            getTheme().resolveAttribute(android.R.attr.windowBackground, a, true);
+            if (a.type >= TypedValue.TYPE_FIRST_COLOR_INT && a.type <= TypedValue.TYPE_LAST_COLOR_INT) {
+                // windowBackground is a color
+                int color = a.data;
+                mItemNameText.setBackgroundColor(color);
+            } else {
+                // windowBackground is not a color, probably a drawable
+                Drawable d = this.getResources().getDrawable(a.resourceId);
+            }
+        } else {
+            switch (tier) {
+                case 0:
+                    mItemNameText.setBackgroundColor(this.getResources().getColor(R.color.material_tier1));
+                    break;
+                case 1:
+                    mItemNameText.setBackgroundColor(this.getResources().getColor(R.color.material_tier2));
+                    break;
+                case 2:
+                    mItemNameText.setBackgroundColor(this.getResources().getColor(R.color.material_tier3));
+                    break;
+                case 3:
+                    mItemNameText.setBackgroundColor(this.getResources().getColor(R.color.material_tier4));
+                    break;
+                case 4:
+                    mItemNameText.setBackgroundColor(this.getResources().getColor(R.color.material_tier5));
+                    break;
+                case 5:
+                    mItemNameText.setBackgroundColor(this.getResources().getColor(R.color.material_tier6));
+                    break;
+                case 6:
+                    mItemNameText.setBackgroundColor(this.getResources().getColor(R.color.material_tier7));
+                    break;
+                case 7:
+                    mItemNameText.setBackgroundColor(this.getResources().getColor(R.color.material_tier8));
+                    break;
+            }
+        }
     }
 
     private void updateProgressBar() {

@@ -37,6 +37,7 @@ import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.data.RoutineDbHelper;
+import com.sxnwlfkk.dailyroutines.util.CompositionUtils;
 import com.sxnwlfkk.dailyroutines.views.clock.ClockActivity;
 import com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity;
 import com.sxnwlfkk.dailyroutines.views.guide.GuideActivity;
@@ -134,6 +135,8 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         boolean alarmsWereSetUp = preferences.getBoolean(AlarmNotificationReceiver.ALARM_SETUP_WAS_DONE, false);
         Log.e(LOG_TAG, "alarmsWereSetUp = " + Boolean.toString(alarmsWereSetUp));
         if (!alarmsWereSetUp) AlarmNotificationReceiver.scheduleAlarms(this);
+
+        CompositionUtils.updateDatabase(this.getBaseContext());
 
         getLoaderManager().initLoader(ROUTINE_LOADER, null, this);
     }

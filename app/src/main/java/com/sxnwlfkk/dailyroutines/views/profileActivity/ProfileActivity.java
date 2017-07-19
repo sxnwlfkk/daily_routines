@@ -10,11 +10,13 @@ import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
 import android.text.Spanned;
 import android.util.Log;
@@ -48,6 +50,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
 
     private static final int PROFILE_ROUTINE_LOADER = 21;
     private static final int PROFILE_ITEMS_LOADER = 22;
+    public static final String PROFILE_DELETED_ITEMS_PREFERENCE = "deleted_items";
 
     // Uri of the item
     private Uri mCurrentUri;
@@ -276,18 +279,23 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
     }
 
     private void resetStatistics() {
-        ContentValues values = new ContentValues();
-        values.put(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME, 0);
+        for (int i = 0; i < mItemsList.size(); i ++) {
+            if (mItemsList.get(i).getmAverageTime() >= 0) {
+                ContentValues values = new ContentValues();
+                values.put(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME, 0);
 
-        String projection = RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE + "=?";
-        String[] projArgs = new String[] { String.valueOf(ContentUris.parseId(mCurrentUri)) };
+                String projection = RoutineContract.ItemEntry._ID + "=?";
+                String[] projArgs = new String[] { String.valueOf(mItemsList.get(i).getmId()) };
 
-        getContentResolver().update(
-                RoutineContract.ItemEntry.CONTENT_URI,
-                values,
-                projection,
-                projArgs
-        );
+                getContentResolver().update(
+                        RoutineContract.ItemEntry.CONTENT_URI,
+                        values,
+                        projection,
+                        projArgs
+                );
+            }
+        }
+
 
         // Restart activity
         Intent intent = getIntent();
@@ -296,13 +304,34 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
     }
 
     private void deleteRoutine() {
+        long id = ContentUris.parseId(mCurrentUri);
+
         // Delete routine
         getContentResolver().delete(mCurrentUri, null, null);
         // Delete all items with the parent routines number
         String selection = RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE + "=?";
-        String[] selectionArgs = new String[] { String.valueOf(ContentUris.parseId(mCurrentUri)) };
+        String[] selectionArgs = new String[] { String.valueOf(id) };
         getContentResolver().delete(RoutineContract.ItemEntry.CONTENT_URI, selection, selectionArgs);
+
+        selection = RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME + "=?";
+        selectionArgs = new String[] { String.valueOf(-1 * id) };
+        getContentResolver().delete(RoutineContract.ItemEntry.CONTENT_URI, selection, selectionArgs);
+
+        CompositionUtils.updateDatabase(this.getBaseContext());
+
         NavUtils.navigateUpFromSameTask(ProfileActivity.this);
+    }
+
+    private void addDeletedRoutinesPreferences(long id) {
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit();
+        editor.putLong(PROFILE_DELETED_ITEMS_PREFERENCE, id);
+        editor.commit();
+    }
+
+    private void resetDeletedRoutinesPreferences() {
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit();
+        editor.putLong(PROFILE_DELETED_ITEMS_PREFERENCE, 0);
+        editor.commit();
     }
 
     // Loader
@@ -422,7 +451,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                         startActivity(intent);
                     }
                 });
-                // TODO Rewrite this with ArrayLists
+
                 calculateAvgTime(cursor);
                 break;
         }
@@ -441,14 +470,8 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
 
     private void calculateAvgTime(Cursor cursor) {
         long avg = 0;
-        if (cursor != null) {
-            cursor.moveToFirst();
-            while (!cursor.isAfterLast()) {
-                int itemAvg = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
-                avg += itemAvg;
-                cursor.moveToNext();
-            }
-            cursor.moveToFirst();
+        for (int i = 0; i < mItemsList.size(); i++) {
+            avg += mItemsList.get(i).getmAverageTime();
         }
         if (avg != 0) mAvgTime = avg;
     }

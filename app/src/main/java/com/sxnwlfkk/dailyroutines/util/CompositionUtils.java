@@ -1,14 +1,20 @@
 package com.sxnwlfkk.dailyroutines.util;
 
-import android.content.ClipData;
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.preference.PreferenceManager;
 
+import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
 import com.sxnwlfkk.dailyroutines.classes.CompositionDialogRoutine;
 import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 
 import java.util.ArrayList;
+
+import static com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity.PROFILE_DELETED_ITEMS_PREFERENCE;
 
 /**
  * Created by sxnwlfkk on 2017.07.17..
@@ -144,7 +150,7 @@ public class CompositionUtils {
 
             // It it's a composite item
             if (avg < 0) {
-                Cursor subRoutine = getRoutineCursor(c, -1 * avg);
+                Cursor subRoutine = getRoutineItemsCursor(c, -1 * avg);
                 ArrayList<RoutineItem> subRoutineItems = composeRoutine(c, subRoutine, tier + 1);
                 subRoutine.close();
                 finalArray.addAll(subRoutineItems);
@@ -177,7 +183,7 @@ public class CompositionUtils {
         return finalArray;
     }
 
-    private static Cursor getRoutineCursor(Context c, long id) {
+    private static Cursor getRoutineItemsCursor(Context c, long id) {
         String[] projectionItems = new String[] {
                 RoutineContract.ItemEntry._ID,
                 RoutineContract.ItemEntry.COLUMN_ITEM_NAME,
@@ -199,6 +205,63 @@ public class CompositionUtils {
         return cursor;
     }
 
+    public static void updateRoutine(Context c, long id) {
+        Cursor routineItemsCursor = getRoutineItemsCursor(c, id);
+        routineItemsCursor.moveToFirst();
+
+        ArrayList<RoutineItem> finArray = composeRoutine(c, routineItemsCursor);
+        routineItemsCursor.close();
+
+        long routineLength = 0;
+        for (int i = 0; i < finArray.size(); i++) {
+            routineLength += finArray.get(i).getmTime();
+        }
+
+        ContentValues values = new ContentValues();
+        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH, routineLength);
+        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_ITEMS_NUMBER, finArray.size());
+        c.getContentResolver().update(
+                ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, id),
+                values, null, null);
+    }
+
+    public static void updateDatabase(Context c) {
+        String[] projection = {
+                RoutineContract.RoutineEntry._ID,
+        };
+
+        Cursor routinesCursor = c.getContentResolver().query(
+                RoutineContract.RoutineEntry.CONTENT_URI,
+                projection,
+                null,
+                null,
+                null);
+
+        routinesCursor.moveToFirst();
+
+        while (!routinesCursor.isAfterLast()) {
+            long id = routinesCursor.getLong(routinesCursor.getColumnIndexOrThrow(RoutineContract.RoutineEntry._ID));
+            updateRoutine(c, id);
+            routinesCursor.moveToNext();
+        }
+        routinesCursor.close();
+
+        AlarmNotificationReceiver.scheduleAlarms(c);
+    }
+
+    public static long getRoutineAvg(Context c, long id) {
+        Cursor cursor = getRoutineItemsCursor(c, id);
+        cursor.moveToFirst();
+
+        ArrayList<RoutineItem> items = composeRoutine(c, cursor);
+
+        long avg = 0;
+        for (int i = 0; i < items.size(); i++) {
+            avg += items.get(i).getmAverageTime();
+        }
+        cursor.close();
+        return avg;
+    }
 
 
 }

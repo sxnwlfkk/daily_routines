@@ -673,6 +673,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
 
             getContentResolver().insert(RoutineContract.ItemEntry.CONTENT_URI, itemValues);
         }
+
         // Schedule alarm if it's set
         if (mEndTimeSwitch.isChecked()) {
             AlarmNotificationReceiver.registerNextAlarm(this, mCurrentUri,
@@ -681,6 +682,9 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                     routineName,
                     mRrule);
         }
+
+        CompositionUtils.updateRoutine(this.getBaseContext(), newRoutineId);
+
         Toast.makeText(this, "Your routine is saved", Toast.LENGTH_LONG).show();
 
         return false;
@@ -757,6 +761,9 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                 getContentResolver().insert(RoutineContract.ItemEntry.CONTENT_URI, itemValues);
             }
         }
+
+        CompositionUtils.updateRoutine(this.getBaseContext(), updatedRoutineId);
+
         // Schedule alarm is it's set
         if (mEndTimeSwitch.isChecked()) {
             AlarmNotificationReceiver.registerNextAlarm(this, mCurrentUri,

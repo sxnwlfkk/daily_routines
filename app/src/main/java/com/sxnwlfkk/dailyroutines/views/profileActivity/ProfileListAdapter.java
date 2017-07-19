@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,41 +49,51 @@ public class ProfileListAdapter extends ArrayAdapter<RoutineItem> {
         String name = rItem.getmItemName();
         long length = rItem.getmTime();
         long avg = (long) rItem.getmAverageTime();
-        int itemNo = rItem.getmItemNumber();
+        int itemNo = position;
         int itemTier = rItem.getmTier();
 
         itemNoView.setText(itemNo + 1 + ".");
 
         LinearLayout ll = (LinearLayout) view.findViewById(R.id.edit_list_item_background);
-        int tier = itemTier % 9;
-        switch (tier) {
-            case 0:
-                ll.setBackgroundColor(getContext().getResources().getColor(R.color.white));
-                break;
-            case 1:
-                ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier1));
-                break;
-            case 2:
-                ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier2));
-                break;
-            case 3:
-                ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier3));
-                break;
-            case 4:
-                ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier4));
-                break;
-            case 5:
-                ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier5));
-                break;
-            case 6:
-                ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier6));
-                break;
-            case 7:
-                ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier7));
-                break;
-            case 8:
-                ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier8));
-                break;
+        if (itemTier == 0) {
+            TypedValue a = new TypedValue();
+            getContext().getTheme().resolveAttribute(android.R.attr.windowBackground, a, true);
+            if (a.type >= TypedValue.TYPE_FIRST_COLOR_INT && a.type <= TypedValue.TYPE_LAST_COLOR_INT) {
+                // windowBackground is a color
+                int color = a.data;
+                ll.setBackgroundColor(color);
+            } else {
+                // windowBackground is not a color, probably a drawable
+//                Drawable d = this.getResources().getDrawable(a.resourceId);
+            }
+        } else {
+            int tier = itemTier % 8;
+            switch (tier) {
+                case 0:
+                    ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier1));
+                    break;
+                case 1:
+                    ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier2));
+                    break;
+                case 2:
+                    ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier3));
+                    break;
+                case 3:
+                    ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier4));
+                    break;
+                case 4:
+                    ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier5));
+                    break;
+                case 5:
+                    ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier6));
+                    break;
+                case 6:
+                    ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier7));
+                    break;
+                case 7:
+                    ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier8));
+                    break;
+            }
         }
 
 
