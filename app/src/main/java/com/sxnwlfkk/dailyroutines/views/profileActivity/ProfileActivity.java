@@ -191,9 +191,12 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
     // Back Button
     @Override
     public void onBackPressed() {
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-        finish();
+        Intent parent = NavUtils.getParentActivityIntent(this);
+        NavUtils.navigateUpTo(this, parent);
+
+//        Intent intent = new Intent(this, MainActivity.class);
+//        startActivity(intent);
+//        finish();
     }
 
     // Options
@@ -234,9 +237,12 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                 cloneCurrentRoutine();
                 break;
             case R.id.home:
-                Intent homeIntent = new Intent(this, MainActivity.class);
-                startActivity(homeIntent);
-                finish();
+                NavUtils.navigateUpFromSameTask(this);
+
+//                Intent homeIntent = new Intent(this, MainActivity.class);
+//                startActivity(homeIntent);
+//                finish();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }

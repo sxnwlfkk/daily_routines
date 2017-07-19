@@ -87,9 +87,11 @@
 
     <ListView
         android:id="@+id/profile_list_view"
+        android:drawSelectorOnTop="true"
         android:layout_marginTop="8dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:descendantFocusability="blocksDescendants"
         android:layout_weight="1"/>
 
     <Button
@@ -99,6 +101,7 @@
         android:id="@+id/profile_start_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clickable="true"
         android:padding="25dp"
         android:text="Start routine" />
 

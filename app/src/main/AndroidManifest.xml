@@ -40,7 +40,7 @@
             android:windowSoftInputMode="stateHidden" />
         <activity
             android:name=".views.profileActivity.ProfileActivity"
-            android:launchMode="singleTask"
+            android:launchMode="standard"
             android:parentActivityName=".views.mainActivity.MainActivity"
             android:theme="@style/AppTheme" />
 
