@@ -72,7 +72,6 @@ public class RoutineProvider extends ContentProvider {
                 // Returns all items that have the routine_id specified in the URI
                 // I think there is no need for this, simply select the routine_id
                 // in the selection
-                // TODO: test this
 //                selection = RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE + "=?";
 //                selectionArgs = new String[] { String.valueOf(ContentUris.parseId(uri)) };
                 cursor = db.query(RoutineContract.ItemEntry.TABLE_NAME, projection,

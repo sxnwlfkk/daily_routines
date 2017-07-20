@@ -18,8 +18,13 @@ public class RoutineItem {
 
     private long mRemainingTime;
 
+    private int mTier;
+
+    private long mParent;
 
     private long mId;
+
+    private int mItemNumber;
 
     private long startTime;
 
@@ -96,6 +101,18 @@ public class RoutineItem {
         return startTime;
     }
 
+    public int getmTier() {
+        return mTier;
+    }
+
+    public long getmParent() {
+        return mParent;
+    }
+
+    public int getmItemNumber() {
+        return mItemNumber;
+    }
+
     /* SETTERS */
     public void setmCurrentTime(long currentTime) {
         mCurrentTime = currentTime;
@@ -134,4 +151,17 @@ public class RoutineItem {
     public void setmRemainingTime(long mRemainingTime) {
         this.mRemainingTime = mRemainingTime;
     }
+
+    public void setmTier(int mTier) {
+        this.mTier = mTier;
+    }
+
+    public void setmParent(long mParent) {
+        this.mParent = mParent;
+    }
+
+    public void setmItemNumber(int mItemNumber) {
+        this.mItemNumber = mItemNumber;
+    }
+
 }

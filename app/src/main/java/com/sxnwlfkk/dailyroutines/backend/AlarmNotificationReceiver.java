@@ -17,7 +17,7 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.sxnwlfkk.dailyroutines.R;
-import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
+import com.sxnwlfkk.dailyroutines.util.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.views.mainActivity.MainActivity;
 import com.sxnwlfkk.dailyroutines.views.preference.SettingsActivity;

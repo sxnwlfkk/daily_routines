@@ -10,32 +10,38 @@ import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.preference.PreferenceManager;
 import android.support.v4.app.NavUtils;
-import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
-import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
+import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
+import com.sxnwlfkk.dailyroutines.util.CompositionUtils;
+import com.sxnwlfkk.dailyroutines.util.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.data.RoutineCloner;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.views.clock.ClockActivity;
 import com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity;
 import com.sxnwlfkk.dailyroutines.views.mainActivity.MainActivity;
+
+import java.util.ArrayList;
 
 public class ProfileActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -44,6 +50,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
 
     private static final int PROFILE_ROUTINE_LOADER = 21;
     private static final int PROFILE_ITEMS_LOADER = 22;
+    public static final String UPDATED_NEEDS_REFRESH = "updated_needs_refresh";
 
     // Uri of the item
     private Uri mCurrentUri;
@@ -53,11 +60,14 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
     private TextView mRoutineLength;
     private TextView mRoutineItemNum;
     private TextView mAvgRoutineLength;
+    private ListView mListView;
 
-    private ProfileCursorAdapter mCursorAdapter;
+    private ProfileListAdapter mProfileListAdapter;
+    private ArrayList<RoutineItem> mItemsList;
     private long mAvgTime;
     private long mLength;
     private long mRoutineId;
+    private boolean itemsListLoaded;
 
     // Button click listener
     private View.OnClickListener mStartButtonClickListener = new View.OnClickListener() {
@@ -91,9 +101,12 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
         mRoutineItemNum = (TextView) findViewById(R.id.profile_item_number);
         mAvgRoutineLength = (TextView) findViewById(R.id.profile_routine_avg_length);
 
-        ListView listView = (ListView) findViewById(R.id.profile_list_view);
-        mCursorAdapter = new ProfileCursorAdapter(this, null);
-        listView.setAdapter(mCursorAdapter);
+        mListView = (ListView) findViewById(R.id.profile_list_view);
+        mItemsList = new ArrayList<>();
+        mProfileListAdapter = new ProfileListAdapter(getApplicationContext(), mItemsList);
+        mListView.setAdapter(mProfileListAdapter);
+
+        itemsListLoaded = false;
 
         getLoaderManager().initLoader(PROFILE_ROUTINE_LOADER, null, this);
         getLoaderManager().initLoader(PROFILE_ITEMS_LOADER, null, this);
@@ -184,9 +197,12 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
     // Back Button
     @Override
     public void onBackPressed() {
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
-        finish();
+        Intent parent = NavUtils.getParentActivityIntent(this);
+        NavUtils.navigateUpTo(this, parent);
+
+//        Intent intent = new Intent(this, MainActivity.class);
+//        startActivity(intent);
+//        finish();
     }
 
     // Options
@@ -227,9 +243,12 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                 cloneCurrentRoutine();
                 break;
             case R.id.home:
-                Intent homeIntent = new Intent(this, MainActivity.class);
-                startActivity(homeIntent);
-                finish();
+                NavUtils.navigateUpFromSameTask(this);
+
+//                Intent homeIntent = new Intent(this, MainActivity.class);
+//                startActivity(homeIntent);
+//                finish();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -263,18 +282,23 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
     }
 
     private void resetStatistics() {
-        ContentValues values = new ContentValues();
-        values.put(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME, 0);
+        for (int i = 0; i < mItemsList.size(); i ++) {
+            if (mItemsList.get(i).getmAverageTime() >= 0) {
+                ContentValues values = new ContentValues();
+                values.put(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME, 0);
 
-        String projection = RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE + "=?";
-        String[] projArgs = new String[] { String.valueOf(ContentUris.parseId(mCurrentUri)) };
+                String projection = RoutineContract.ItemEntry._ID + "=?";
+                String[] projArgs = new String[] { String.valueOf(mItemsList.get(i).getmId()) };
 
-        getContentResolver().update(
-                RoutineContract.ItemEntry.CONTENT_URI,
-                values,
-                projection,
-                projArgs
-        );
+                getContentResolver().update(
+                        RoutineContract.ItemEntry.CONTENT_URI,
+                        values,
+                        projection,
+                        projArgs
+                );
+            }
+        }
+
 
         // Restart activity
         Intent intent = getIntent();
@@ -283,12 +307,21 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
     }
 
     private void deleteRoutine() {
+        long id = ContentUris.parseId(mCurrentUri);
+
         // Delete routine
         getContentResolver().delete(mCurrentUri, null, null);
         // Delete all items with the parent routines number
         String selection = RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE + "=?";
-        String[] selectionArgs = new String[] { String.valueOf(ContentUris.parseId(mCurrentUri)) };
+        String[] selectionArgs = new String[] { String.valueOf(id) };
         getContentResolver().delete(RoutineContract.ItemEntry.CONTENT_URI, selection, selectionArgs);
+
+        selection = RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME + "=?";
+        selectionArgs = new String[] { String.valueOf(-1 * id) };
+        getContentResolver().delete(RoutineContract.ItemEntry.CONTENT_URI, selection, selectionArgs);
+
+        CompositionUtils.updateDatabase(this.getBaseContext());
+
         NavUtils.navigateUpFromSameTask(ProfileActivity.this);
     }
 
@@ -330,8 +363,12 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                     RoutineContract.ItemEntry._ID,
                     RoutineContract.ItemEntry.COLUMN_ITEM_NAME,
                     RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH,
-                    RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME,
                     RoutineContract.ItemEntry.COLUMN_ITEM_NO,
+                    RoutineContract.ItemEntry.COLUMN_REMAINING_TIME,
+                    RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME,
+                    RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME,
+                    RoutineContract.ItemEntry.COLUMN_START_TIME,
+                    RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE,
             };
 
             String selection = RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE + "=?";
@@ -390,8 +427,26 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
 
                 break;
             case PROFILE_ITEMS_LOADER:
-                calculateAvgTime(cursor);
-                mCursorAdapter.swapCursor(cursor);
+                if (!itemsListLoaded) {
+                    mItemsList = CompositionUtils.composeRoutine(this.getBaseContext(), cursor);
+                    mProfileListAdapter = new ProfileListAdapter(this.getBaseContext(), mItemsList);
+                    mListView.setAdapter(mProfileListAdapter);
+                    mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            long parentId = mItemsList.get((int) id).getmParent();
+                            Intent intent = new Intent(ProfileActivity.this, ProfileActivity.class);
+
+                            Uri currentUri = ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, parentId);
+                            intent.setData(currentUri);
+
+                            startActivity(intent);
+                        }
+                    });
+
+                    calculateAvgTime(cursor);
+                    itemsListLoaded = true;
+                }
                 break;
         }
 
@@ -409,14 +464,8 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
 
     private void calculateAvgTime(Cursor cursor) {
         long avg = 0;
-        if (cursor != null) {
-            cursor.moveToFirst();
-            while (!cursor.isAfterLast()) {
-                int itemAvg = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
-                avg += itemAvg;
-                cursor.moveToNext();
-            }
-            cursor.moveToFirst();
+        for (int i = 0; i < mItemsList.size(); i++) {
+            avg += mItemsList.get(i).getmAverageTime();
         }
         if (avg != 0) mAvgTime = avg;
     }
@@ -431,7 +480,8 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
                 mRoutineLength.setText("");
                 break;
             case PROFILE_ITEMS_LOADER:
-                mCursorAdapter.swapCursor(null);
+                mItemsList = new ArrayList<>();
+                mProfileListAdapter = new ProfileListAdapter(getApplicationContext(), mItemsList);
                 break;
             default:
                 break;

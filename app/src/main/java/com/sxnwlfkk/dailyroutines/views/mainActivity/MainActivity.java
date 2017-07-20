@@ -6,7 +6,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.LoaderManager;
 import android.content.ContentUris;
-import android.content.Context;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -38,8 +37,8 @@ import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.data.RoutineDbHelper;
+import com.sxnwlfkk.dailyroutines.util.CompositionUtils;
 import com.sxnwlfkk.dailyroutines.views.clock.ClockActivity;
-import com.sxnwlfkk.dailyroutines.views.clock.ClockService;
 import com.sxnwlfkk.dailyroutines.views.editActivity.EditActivity;
 import com.sxnwlfkk.dailyroutines.views.guide.GuideActivity;
 import com.sxnwlfkk.dailyroutines.views.preference.SettingsActivity;
@@ -50,8 +49,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.channels.FileChannel;
 
-import static com.sxnwlfkk.dailyroutines.classes.RoutineUtils.readCurrentRoutine;
-import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_PREFERENCE_LENGTH_WHEN_STARTED;
+import static com.sxnwlfkk.dailyroutines.util.RoutineUtils.readCurrentRoutine;
 
 public class MainActivity extends Activity implements LoaderManager.LoaderCallbacks<Cursor> {
 
@@ -138,7 +136,22 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         Log.e(LOG_TAG, "alarmsWereSetUp = " + Boolean.toString(alarmsWereSetUp));
         if (!alarmsWereSetUp) AlarmNotificationReceiver.scheduleAlarms(this);
 
+        if (getUpdatedPreference()) {
+            CompositionUtils.updateDatabase(this.getBaseContext());
+            setNoUpdatePreference();
+        }
+
         getLoaderManager().initLoader(ROUTINE_LOADER, null, this);
+    }
+
+    private void setNoUpdatePreference() {
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+        editor.putBoolean(ProfileActivity.UPDATED_NEEDS_REFRESH, false);
+        editor.apply();
+    }
+
+    private boolean getUpdatedPreference() {
+        return PreferenceManager.getDefaultSharedPreferences(this).getBoolean(ProfileActivity.UPDATED_NEEDS_REFRESH, true);
     }
 
     @Override

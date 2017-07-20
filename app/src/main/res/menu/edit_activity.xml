@@ -15,4 +15,8 @@
     <item
         android:id="@+id/edit_menu_optimize_button"
         android:title="@string/edit_menu_optimize_string" />
+
+    <item
+        android:id="@+id/edit_menu_compose_button"
+        android:title="@string/edit_menu_compose_string" />
 </menu>
