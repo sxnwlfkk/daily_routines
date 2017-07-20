@@ -4,9 +4,11 @@
     <string name="github_url">https://github.com/sxnwlfkk/daily_routines</string>
     <string name="website_url">https://sxnwlfkk.github.io/daily_routines/</string>
 
-    <string name="guide_txt">
-        <![CDATA[
+    <string name="guide_txt"><![CDATA[
+
         <p>Welcome to the Daily Routines Guide. If you have questions about the application, you came to the right place. I\'m happy you have downloaded this program, which is a labor of love, free and open source. I hope you\'ll find some utility for it in your life.</p>
+        <h2>New Feature: Composition</h2>
+        <p>With the compose feature, you can <b>add an other routine in the editor menu</b>. You can change it\'s position in the big routine, but you can\'t edit it here — you\'ll have to go to the imported routine\'s profile. Also, you can import a routine, which is composed of several other routines, and some original items. Except you can\'t import a routine, which has a reference to the currently edited routine (because of infinite recursion loop reasons). For more information, please visit the website.</p>
         <h2 id="basic-usage">Basic Usage</h2>
 <p>The goal of Daily Routines is to let you easily manage your time when building routines. It\'s for those, who have trouble focusing on the task at hand. Those, who are having a hard time getting ready in the mornings. Those, who want to make their lives more fulfilling, with them still holding the reins.</p>
 <p>Daily Routines have two basic modes of operations. First, there is the <strong>regular routine</strong>, which is just that, a routine, you can customise and optimise to your heart\'s content. However, you can use the <strong>deadline routine</strong>, where you set an end time, when you by all means want to be in your clothes, keyes in your hand and ready to go. Daily Routines will take care of achieving that, even if you sleep in a little, or brush your teeth a bit too long.</p>
@@ -35,6 +37,6 @@
 <p>Keep in mind, backup will overwrite the last backup file with the same name, so it you want versioning, at the moment your best option is to copy it someplace safe and rename it. Later, if you want to restore it, just copy it back to the root of the directory and rename it to <code>daily_routines_backup.drdb</code>.</p>
 <h2 id="feedback-requests-and-bugs">Feedback, Requests and Bugs</h2>
 <p>If you have feedback, feature requests or bugs to report, head to the project\'s Github page, or send an email to <i>sxnwlfkk@gmail.com</i>.</p>
-]]>
-    </string>
+
+    ]]></string>
 </resources>
