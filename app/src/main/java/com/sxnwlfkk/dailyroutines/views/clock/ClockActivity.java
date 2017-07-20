@@ -338,40 +338,31 @@ public class ClockActivity extends Activity {
     private void setItemTierBackground() {
         int tier = mItemTier % 8;
         if (mItemTier == 0) {
-            TypedValue a = new TypedValue();
-            getTheme().resolveAttribute(android.R.attr.windowBackground, a, true);
-            if (a.type >= TypedValue.TYPE_FIRST_COLOR_INT && a.type <= TypedValue.TYPE_LAST_COLOR_INT) {
-                // windowBackground is a color
-                int color = a.data;
-                mItemNameText.setBackgroundColor(color);
-            } else {
-                // windowBackground is not a color, probably a drawable
-                Drawable d = this.getResources().getDrawable(a.resourceId);
-            }
+            mItemNameText.setBackgroundColor(this.getResources().getColor(R.color.bpTransparent));
         } else {
             switch (tier) {
-                case 0:
+                case 1:
                     mItemNameText.setBackgroundColor(this.getResources().getColor(R.color.material_tier1));
                     break;
-                case 1:
+                case 2:
                     mItemNameText.setBackgroundColor(this.getResources().getColor(R.color.material_tier2));
                     break;
-                case 2:
+                case 3:
                     mItemNameText.setBackgroundColor(this.getResources().getColor(R.color.material_tier3));
                     break;
-                case 3:
+                case 4:
                     mItemNameText.setBackgroundColor(this.getResources().getColor(R.color.material_tier4));
                     break;
-                case 4:
+                case 5:
                     mItemNameText.setBackgroundColor(this.getResources().getColor(R.color.material_tier5));
                     break;
-                case 5:
+                case 6:
                     mItemNameText.setBackgroundColor(this.getResources().getColor(R.color.material_tier6));
                     break;
-                case 6:
+                case 7:
                     mItemNameText.setBackgroundColor(this.getResources().getColor(R.color.material_tier7));
                     break;
-                case 7:
+                case 0:
                     mItemNameText.setBackgroundColor(this.getResources().getColor(R.color.material_tier8));
                     break;
             }

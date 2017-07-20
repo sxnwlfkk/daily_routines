@@ -56,41 +56,32 @@ public class ProfileListAdapter extends ArrayAdapter<RoutineItem> {
 
         LinearLayout ll = (LinearLayout) view.findViewById(R.id.edit_list_item_background);
         if (itemTier == 0) {
-            TypedValue a = new TypedValue();
-            getContext().getTheme().resolveAttribute(android.R.attr.windowBackground, a, true);
-            if (a.type >= TypedValue.TYPE_FIRST_COLOR_INT && a.type <= TypedValue.TYPE_LAST_COLOR_INT) {
-                // windowBackground is a color
-                int color = a.data;
-                ll.setBackgroundColor(color);
-            } else {
-                // windowBackground is not a color, probably a drawable
-//                Drawable d = this.getResources().getDrawable(a.resourceId);
-            }
+            ll.setBackgroundColor(getContext().getResources().getColor(R.color.bpTransparent));
         } else {
             int tier = itemTier % 8;
             switch (tier) {
-                case 0:
+                case 1:
                     ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier1));
                     break;
-                case 1:
+                case 2:
                     ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier2));
                     break;
-                case 2:
+                case 3:
                     ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier3));
                     break;
-                case 3:
+                case 4:
                     ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier4));
                     break;
-                case 4:
+                case 5:
                     ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier5));
                     break;
-                case 5:
+                case 6:
                     ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier6));
                     break;
-                case 6:
+                case 7:
                     ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier7));
                     break;
-                case 7:
+                case 0:
                     ll.setBackgroundColor(getContext().getResources().getColor(R.color.material_tier8));
                     break;
             }
