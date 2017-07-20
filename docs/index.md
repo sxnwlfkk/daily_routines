@@ -7,6 +7,10 @@ layout: modified
 
 Thank you for visiting the Daily Routines website. Here you can find useful information about the Daily Routines Android app, which is a labor of love, free and open source.
 
+New Feature: Composition
+------------------------
+
+If you are new here, read on, but if you know your way around Daily Routines, head over to the [Composition article]({{ site.baseurl }}{% link _posts/2017-07-20-Composition.md %}), to learn about this fancy new feature.
 
 Who is it for and what does it do?
 ----------------------------------

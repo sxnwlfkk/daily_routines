@@ -11,23 +11,26 @@ import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.text.format.DateFormat;
 import android.text.format.Time;
+import android.text.method.KeyListener;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -41,8 +44,10 @@ import android.widget.Toast;
 import com.codetroopers.betterpickers.recurrencepicker.RecurrencePickerDialogFragment;
 import com.sxnwlfkk.dailyroutines.R;
 import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
+import com.sxnwlfkk.dailyroutines.classes.CompositionDialogRoutine;
 import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
-import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
+import com.sxnwlfkk.dailyroutines.util.CompositionUtils;
+import com.sxnwlfkk.dailyroutines.util.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.util.RoutineRecurrencePickerFragment;
 import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;
@@ -76,6 +81,8 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
     private boolean mShowMoreClicked;
     private boolean itemsListLoaded;
     private String mRrule;
+    private ArrayList<Long> dependencies;
+    ArrayList<CompositionDialogRoutine> composableRoutines;
 
     // Views
     private ListView mListView;
@@ -111,6 +118,13 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                 mCurrentItemIndex = -1;
                 mRoutineHasChanged = true;
                 mItemNumber.setVisibility(View.GONE);
+
+                // Resetting editability
+                mNewItemName.setEnabled(true);
+                mNewItemLengthMinutes.setEnabled(true);
+                mNewItemLengthSeconds.setEnabled(true);
+                LinearLayout editorView = (LinearLayout) findViewById(R.id.edit_item_editor_layout);
+                editorView.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.bpTransparent));
             }
         }
         private void addNewItemToList() {
@@ -127,12 +141,8 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                 itemLength = 60 * Integer.parseInt(lengthValMin) + Integer.parseInt(lengthValSec);
             }
 
-            if (mCurrentItemIndex == -1) {
-                mItemsList.add(new RoutineItem(itemName, RoutineUtils.secToMsec(itemLength)));
-            } else {
-                mItemsList.get(mCurrentItemIndex).setmItemName(itemName);
-                mItemsList.get(mCurrentItemIndex).setmTime(RoutineUtils.secToMsec(itemLength));
-            }
+            addItemToList(itemName, RoutineUtils.secToMsec(itemLength));
+
         }
         private boolean checkInputFields() {
             String itemName = mNewItemName.getText().toString().trim();
@@ -160,6 +170,16 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
             return true;
         }
     };
+
+    private void addItemToList(String name, long length) {
+        if (mCurrentItemIndex == -1) {
+            mItemsList.add(new RoutineItem(name, length));
+        } else {
+            mItemsList.get(mCurrentItemIndex).setmItemName(name);
+            mItemsList.get(mCurrentItemIndex).setmTime(length);
+        }
+
+    }
     private View.OnClickListener itemDeleteButtonClickListener = new View.OnClickListener() {
 
         @Override
@@ -176,6 +196,14 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
             }
             mNewItemName.setText("");
             mNewItemLengthMinutes.setText("");
+            mNewItemLengthSeconds.setText("");
+
+            // Resetting editability
+            mNewItemName.setEnabled(true);
+            mNewItemLengthMinutes.setEnabled(true);
+            mNewItemLengthSeconds.setEnabled(true);
+            LinearLayout editorView = (LinearLayout) findViewById(R.id.edit_item_editor_layout);
+            editorView.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.bpTransparent));
         }
     };
 
@@ -230,6 +258,8 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         mListView = (ListView) findViewById(R.id.edit_list);
         mAdapter = new EditListAdapter(this, mItemsList);
         mListView.setAdapter(mAdapter);
+        composableRoutines = null;
+        dependencies = new ArrayList<>();
 
         // Boolean setup
         itemsListLoaded = false;
@@ -399,12 +429,66 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                 if (dialog != null) {
                     dialog.dismiss();
                 }
-
             }
         });
         // Create and show the AlertDialog
         AlertDialog alertDialog = builder.create();
         alertDialog.show();
+    }
+
+    private void showComposeDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.edit_menu_compose_dialog_title);
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.select_dialog_item);
+        if (mCurrentUri != null) {
+            composableRoutines = CompositionUtils.loadRoutinesForDialog(this, ContentUris.parseId(mCurrentUri));
+        } else {
+            composableRoutines = CompositionUtils.loadRoutinesForDialog(this, (long) 0);
+        }
+
+
+        ArrayList<String> composableRoutinesStrings = new ArrayList<>();
+
+        if (composableRoutines.size() == 0) {
+            composableRoutinesStrings.add(getResources().getString(R.string.no_composable_routines_text));
+        } else {
+            for (int i = 0; i < composableRoutines.size(); i++) {
+                CompositionDialogRoutine cdr = composableRoutines.get(i);
+                String itemStr = cdr.getName()
+                        + " ("
+                        + RoutineUtils.formatLengthString(RoutineUtils.msecToSec(cdr.getLength()) )
+                        + ")";
+
+                composableRoutinesStrings.add(itemStr);
+            }
+
+        }
+
+        arrayAdapter.addAll(composableRoutinesStrings);
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+
+        builder.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // nothing
+                addCompositeRoutine(composableRoutines.get(which));
+                mRoutineHasChanged = true;
+            }
+        });
+
+        builder.show();
+    }
+
+    private void addCompositeRoutine(CompositionDialogRoutine cdr) {
+        mItemsList.add(new RoutineItem(cdr.getName(), cdr.getLength(), -1 * cdr.getId()));
+        updateListView();
+        dependencies.add(cdr.getId());
     }
 
     // Recurrence set listener
@@ -476,6 +560,10 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                     showOptimizeDialog(optimizeButtonClickListener);
                 }
                 break;
+            case R.id.edit_menu_compose_button:
+                showComposeDialog();
+                break;
+
         }
 
         return super.onOptionsItemSelected(item);
@@ -505,6 +593,19 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                 mNewItemName.setText(name);
                 mNewItemLengthMinutes.setText(lengthMin);
                 mNewItemLengthSeconds.setText(lengthSec);
+
+                LinearLayout editorView = (LinearLayout) findViewById(R.id.edit_item_editor_layout);
+                if (mItemsList.get(mCurrentItemIndex).getmAverageTime() < 0) {
+                    editorView.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.material_indigo_lighten5));
+                    mNewItemName.setEnabled(false);
+                    mNewItemLengthMinutes.setEnabled(false);
+                    mNewItemLengthSeconds.setEnabled(false);
+                } else {
+                    editorView.setBackgroundColor(getApplicationContext().getResources().getColor(R.color.bpTransparent));
+                    mNewItemName.setEnabled(true);
+                    mNewItemLengthMinutes.setEnabled(true);
+                    mNewItemLengthSeconds.setEnabled(true);
+                }
 
                 mItemNumber.setVisibility(View.VISIBLE);
                 setItemNumberText(mCurrentItemIndex);
@@ -550,6 +651,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME, mRoutineEndTime);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END, (mEndTimeSwitch.isChecked()) ? 1 : 0);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_WEEKDAYS_CONFIG, mRrule);
+        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_EXTRA_TEXT, CompositionUtils.writeDependenciesString(dependencies));
         // Insert new routine
         mCurrentUri = getContentResolver().insert(RoutineContract.RoutineEntry.CONTENT_URI, values);
         // Get info for items
@@ -557,14 +659,23 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         // Insert items
         for (int i = 0; i < mItemsList.size(); i++) {
             ContentValues itemValues = new ContentValues();
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NAME, mItemsList.get(i).getmItemName());
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NO, i);
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH, mItemsList.get(i).getmTime());
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME, mItemsList.get(i).getmTime());
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE, newRoutineId);
+            if (mItemsList.get(i).getmAverageTime() < 0) {
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME,
+                        mItemsList.get(i).getmAverageTime());
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NO, i);
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE, newRoutineId);
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NAME, mItemsList.get(i).getmItemName());
+            } else {
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NAME, mItemsList.get(i).getmItemName());
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NO, i);
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH, mItemsList.get(i).getmTime());
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME, mItemsList.get(i).getmTime());
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE, newRoutineId);
+            }
 
             getContentResolver().insert(RoutineContract.ItemEntry.CONTENT_URI, itemValues);
         }
+
         // Schedule alarm if it's set
         if (mEndTimeSwitch.isChecked()) {
             AlarmNotificationReceiver.registerNextAlarm(this, mCurrentUri,
@@ -573,7 +684,12 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
                     routineName,
                     mRrule);
         }
+
+        CompositionUtils.updateRoutine(this.getBaseContext(), newRoutineId);
+
         Toast.makeText(this, "Your routine is saved", Toast.LENGTH_LONG).show();
+
+        setUpdatedPreference();
 
         return false;
     }
@@ -612,6 +728,7 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_END_TIME, mRoutineEndTime);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_REQUIRE_END, (mEndTimeSwitch.isChecked()) ? 1 : 0);
         values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_WEEKDAYS_CONFIG, mRrule);
+        values.put(RoutineContract.RoutineEntry.COLUMN_ROUTINE_EXTRA_TEXT, CompositionUtils.writeDependenciesString(dependencies));
 
         getContentResolver().update(mCurrentUri, values, null, null);
         long updatedRoutineId = ContentUris.parseId(mCurrentUri);
@@ -629,17 +746,28 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         for (int i = 0; i < mItemsList.size(); i++) {
             Uri updateUri = ContentUris.withAppendedId(RoutineContract.ItemEntry.CONTENT_URI, mItemsList.get(i).getmId());
             ContentValues itemValues = new ContentValues();
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NAME, mItemsList.get(i).getmItemName());
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NO, i);
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH, mItemsList.get(i).getmTime());
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE, updatedRoutineId);
-            itemValues.put(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME, mItemsList.get(i).getmTime());
+            if (mItemsList.get(i).getmAverageTime() < 0) {
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME,
+                        mItemsList.get(i).getmAverageTime());
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NO, i);
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE, updatedRoutineId);
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NAME, mItemsList.get(i).getmItemName());
+            } else {
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NAME, mItemsList.get(i).getmItemName());
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_NO, i);
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH, mItemsList.get(i).getmTime());
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE, updatedRoutineId);
+                itemValues.put(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME, mItemsList.get(i).getmTime());
+            }
 
             int rowsAffected = getContentResolver().update(updateUri, itemValues, null, null);
             if (rowsAffected == 0) {
                 getContentResolver().insert(RoutineContract.ItemEntry.CONTENT_URI, itemValues);
             }
         }
+
+        CompositionUtils.updateRoutine(this.getBaseContext(), updatedRoutineId);
+
         // Schedule alarm is it's set
         if (mEndTimeSwitch.isChecked()) {
             AlarmNotificationReceiver.registerNextAlarm(this, mCurrentUri,
@@ -650,7 +778,15 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         }
         Toast.makeText(this, "Your routine is updated", Toast.LENGTH_LONG).show();
 
+        setUpdatedPreference();
+
         return false;
+    }
+
+    private void setUpdatedPreference() {
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+        editor.putBoolean(ProfileActivity.UPDATED_NEEDS_REFRESH, true);
+        editor.apply();
     }
 
     private void setItemNumberText(int i) {
@@ -739,13 +875,39 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
             case EDIT_ITEMS_LOADER:
                 if (!itemsListLoaded) {
                     for (int i = 0; i < cursor.getCount(); i++) {
-                        long id = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry._ID));
-                        String itemName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_NAME));
-                        int itemTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH));
-                        int itemAvg = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
+                        RoutineItem newRoutine = null;
+                        long avg = cursor.getLong(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
+                        if (avg < 0) {
+                            newRoutine = new RoutineItem(null, 0, avg);
+                            String[] projection = {
+                                    RoutineContract.RoutineEntry._ID,
+                                    RoutineContract.RoutineEntry.COLUMN_ROUTINE_NAME,
+                                    RoutineContract.RoutineEntry.COLUMN_ROUTINE_LENGTH,
+                            };
 
-                        RoutineItem newRoutine = new RoutineItem(itemName, itemTime, itemAvg);
-                        newRoutine.setmId(id);
+                            Cursor itemCursor = getContentResolver().query(
+                                    ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, -1 * avg),
+                                    projection,
+                                    null,
+                                    null,
+                                    null);
+
+                            itemCursor.moveToFirst();
+                            String name = itemCursor.getString(itemCursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_NAME));
+                            long length = itemCursor.getLong(itemCursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH));
+                            long id = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry._ID));
+
+                            newRoutine = new RoutineItem(name, length, avg);
+                            newRoutine.setmId(id);
+                        } else {
+                            long id = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry._ID));
+                            String itemName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_NAME));
+                            int itemTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH));
+                            int itemAvg = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
+                            newRoutine = new RoutineItem(itemName, itemTime, itemAvg);
+                            newRoutine.setmId(id);
+                        }
+
                         mItemsList.add(newRoutine);
                         if (!cursor.moveToNext()) break;
                     }

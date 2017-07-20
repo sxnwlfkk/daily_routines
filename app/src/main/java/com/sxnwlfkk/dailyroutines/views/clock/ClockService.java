@@ -29,7 +29,8 @@ import com.sxnwlfkk.dailyroutines.backend.ScreenOnOffReceiver;
 import com.sxnwlfkk.dailyroutines.backend.VibrationNotificationReceiver;
 import com.sxnwlfkk.dailyroutines.classes.RoutineClock;
 import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
-import com.sxnwlfkk.dailyroutines.classes.RoutineUtils;
+import com.sxnwlfkk.dailyroutines.util.CompositionUtils;
+import com.sxnwlfkk.dailyroutines.util.RoutineUtils;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 import com.sxnwlfkk.dailyroutines.views.preference.SettingsActivity;
 import com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity;
@@ -80,6 +81,7 @@ public class ClockService extends Service {
     public static final String SERVICE_ROUTINE_LENGTH = "routine_length";
     public static final String SERVICE_ELAPSED_TIME = "elapsed_time";
     public static final String SERVICE_CLOCK_FORCE_REFRESH = "force_refresh";
+    public static final String SERVICE_ITEM_TIER = "item_tier_message";
 
     // Namestring of preference in the service
     public static final String SERVICE_PREFERENCE_LENGTH_WHEN_STARTED = "length_when_started";
@@ -279,11 +281,13 @@ private static final long STEP_CORRECTION_CONST = 0;
              Log.d(LOG_TAG, "Diff time in millis: " + rDiffTime);
          }
          mRoutineClock.setmDiffTime(rDiffTime);
+         cursor.close();
      }
 
      private void getItemsData(long id) {
          String[] projectionItems = new String[] {
                  RoutineContract.ItemEntry._ID,
+                 RoutineContract.ItemEntry.COLUMN_PARENT_ROUTINE,
                  RoutineContract.ItemEntry.COLUMN_ITEM_NAME,
                  RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH,
                  RoutineContract.ItemEntry.COLUMN_ITEM_NO,
@@ -299,28 +303,14 @@ private static final long STEP_CORRECTION_CONST = 0;
                  projectionItems, selection, selectionArgs,
                  RoutineContract.ItemEntry.COLUMN_ITEM_NO + " ASC");
 
+
+
          cursor.moveToFirst();
 
-         ArrayList<RoutineItem> itemsList = new ArrayList<>();
-         for (int i = 0; i < cursor.getCount(); i++) {
-             long itemId = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry._ID));
-             String itemName = cursor.getString(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_NAME));
-             int itemTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_LENGTH));
-             int itemAvgTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ITEM_AVG_TIME));
-             int itemRemTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_REMAINING_TIME));
-             int itemElapsedTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_ELAPSED_TIME));
-             int itemStartTime = cursor.getInt(cursor.getColumnIndexOrThrow(RoutineContract.ItemEntry.COLUMN_START_TIME));
-
-             RoutineItem newItem = new RoutineItem(itemName, itemTime, itemAvgTime);
-             newItem.setmId(itemId);
-             Log.d(LOG_TAG, "Read this value for elapsed item time from db:" + itemElapsedTime);
-             newItem.setmCurrentTime(itemRemTime);
-             newItem.setmElapsedTime(itemElapsedTime);
-             newItem.setStartTime(itemStartTime);
-             itemsList.add(newItem);
-             if (!cursor.moveToNext()) break;
-         }
+         ArrayList<RoutineItem> itemsList = CompositionUtils.composeRoutine(this.getBaseContext(), cursor);
          mRoutineClock.setmItemsList(itemsList);
+         mRoutineClock.setmRoutineItemsNum(itemsList.size());
+         cursor.close();
      }
 
     // Read from DB
@@ -549,6 +539,7 @@ private static final long STEP_CORRECTION_CONST = 0;
 
         message.putExtra(SERVICE_ROUTINE_NAME_FIELD, mRoutineClock.getmName());
         message.putExtra(SERVICE_ITEM_NAME_FIELD, mCurrentItem.getmItemName());
+        message.putExtra(SERVICE_ITEM_TIER, mCurrentItem.getmTier());
         message.putExtra(SERVICE_SUM_ITEMS_FIELD, mRoutineClock.getmRoutineItemsNum());
         message.putExtra(SERVICE_CURR_TIME_FIELD, RoutineUtils.msecToSec(mCurrentItem.getmCurrentTime()));
         message.putExtra(SERVICE_ROUTINE_LENGTH, mRoutineLengthWhenStarted);

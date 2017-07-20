@@ -121,6 +121,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/edit_item_editor_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
@@ -133,8 +134,6 @@
             android:id="@+id/textView3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentTop="true"
             android:layout_weight="0"
             android:text="New routine item"
             android:textAlignment="textStart"
@@ -145,7 +144,7 @@
             android:layout_height="2dp"
             android:background="@color/material_teal_lighten3"
             android:paddingBottom="24dp"
-            android:orientation="horizontal"></LinearLayout>
+            android:orientation="horizontal" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -168,8 +167,6 @@
                 android:id="@+id/edit_textbox_item_name"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/textView3"
-                android:layout_centerHorizontal="true"
                 android:layout_weight="5"
                 android:ems="10"
                 android:hint="Item name"
@@ -214,8 +211,6 @@
                 android:id="@+id/edit_button_delete_item"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_alignParentStart="true"
-                android:layout_below="@+id/edit_textbox_item_length"
                 android:layout_weight="1"
                 android:text="Delete item" />
 
@@ -226,9 +221,6 @@
                 android:id="@+id/edit_button_up"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_alignBaseline="@+id/edit_button_delete_item"
-                android:layout_alignBottom="@+id/edit_button_delete_item"
-                android:layout_toEndOf="@+id/edit_button_delete_item"
                 android:layout_weight="1"
                 android:text="Up" />
 
@@ -239,9 +231,6 @@
                 android:id="@+id/edit_button_down"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_alignBaseline="@+id/edit_button_up"
-                android:layout_alignBottom="@+id/edit_button_up"
-                android:layout_toEndOf="@+id/edit_button_up"
                 android:layout_weight="1"
                 android:text="Down" />
 
@@ -252,8 +241,6 @@
                 android:id="@+id/edit_button_item_save"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_below="@+id/edit_textbox_item_length"
-                android:layout_toEndOf="@+id/edit_button_down"
                 android:layout_weight="1"
                 android:text="Save item" />
 
@@ -263,8 +250,10 @@
 
     <ListView
         android:id="@+id/edit_list"
+        android:layout_marginTop="8dp"
         android:layout_width="match_parent"
         android:layout_height="@android:dimen/app_icon_size"
+        android:drawSelectorOnTop="true"
         android:layout_weight="1"
         android:dividerHeight="3dp"
         android:footerDividersEnabled="true"

@@ -212,5 +212,10 @@
         "For example, position the FAB to one side of stream of a cards so the FAB won’t interfere "
         "when a user tries to pick up one of cards.\n\n"
     </string>
+    <string name="edit_menu_compose_string">Compose</string>
+    <string name="edit_menu_compose_dialog_title">Add an existing routine:</string>
+    <string name="no_composable_routines_text">There are no composable routines. For help, see the Guide.</string>
+    <string name="edit_menu_compose_dialog_positive">Compose</string>
+    <string name="edit_list_view_composite_avg_field">Composite</string>
 
 </resources>
