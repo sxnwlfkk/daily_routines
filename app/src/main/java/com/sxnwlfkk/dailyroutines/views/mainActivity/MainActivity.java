@@ -136,9 +136,22 @@ public class MainActivity extends Activity implements LoaderManager.LoaderCallba
         Log.e(LOG_TAG, "alarmsWereSetUp = " + Boolean.toString(alarmsWereSetUp));
         if (!alarmsWereSetUp) AlarmNotificationReceiver.scheduleAlarms(this);
 
-        CompositionUtils.updateDatabase(this.getBaseContext());
+        if (getUpdatedPreference()) {
+            CompositionUtils.updateDatabase(this.getBaseContext());
+            setNoUpdatePreference();
+        }
 
         getLoaderManager().initLoader(ROUTINE_LOADER, null, this);
+    }
+
+    private void setNoUpdatePreference() {
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+        editor.putBoolean(ProfileActivity.UPDATED_NEEDS_REFRESH, false);
+        editor.apply();
+    }
+
+    private boolean getUpdatedPreference() {
+        return PreferenceManager.getDefaultSharedPreferences(this).getBoolean(ProfileActivity.UPDATED_NEEDS_REFRESH, true);
     }
 
     @Override

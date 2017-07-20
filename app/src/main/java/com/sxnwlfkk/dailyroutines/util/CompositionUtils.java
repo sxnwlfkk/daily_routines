@@ -3,9 +3,7 @@ package com.sxnwlfkk.dailyroutines.util;
 import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.preference.PreferenceManager;
 
 import com.sxnwlfkk.dailyroutines.backend.AlarmNotificationReceiver;
 import com.sxnwlfkk.dailyroutines.classes.CompositionDialogRoutine;
@@ -13,8 +11,6 @@ import com.sxnwlfkk.dailyroutines.classes.RoutineItem;
 import com.sxnwlfkk.dailyroutines.data.RoutineContract;
 
 import java.util.ArrayList;
-
-import static com.sxnwlfkk.dailyroutines.views.profileActivity.ProfileActivity.PROFILE_DELETED_ITEMS_PREFERENCE;
 
 /**
  * Created by sxnwlfkk on 2017.07.17..

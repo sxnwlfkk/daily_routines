@@ -11,10 +11,12 @@ import android.content.CursorLoader;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.graphics.drawable.ColorDrawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AppCompatActivity;
@@ -687,6 +689,8 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
 
         Toast.makeText(this, "Your routine is saved", Toast.LENGTH_LONG).show();
 
+        setUpdatedPreference();
+
         return false;
     }
 
@@ -774,7 +778,15 @@ public class EditActivity extends AppCompatActivity implements LoaderManager.Loa
         }
         Toast.makeText(this, "Your routine is updated", Toast.LENGTH_LONG).show();
 
+        setUpdatedPreference();
+
         return false;
+    }
+
+    private void setUpdatedPreference() {
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+        editor.putBoolean(ProfileActivity.UPDATED_NEEDS_REFRESH, true);
+        editor.apply();
     }
 
     private void setItemNumberText(int i) {

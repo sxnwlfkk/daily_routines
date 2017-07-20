@@ -50,7 +50,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
 
     private static final int PROFILE_ROUTINE_LOADER = 21;
     private static final int PROFILE_ITEMS_LOADER = 22;
-    public static final String PROFILE_DELETED_ITEMS_PREFERENCE = "deleted_items";
+    public static final String UPDATED_NEEDS_REFRESH = "updated_needs_refresh";
 
     // Uri of the item
     private Uri mCurrentUri;
@@ -67,6 +67,7 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
     private long mAvgTime;
     private long mLength;
     private long mRoutineId;
+    private boolean itemsListLoaded;
 
     // Button click listener
     private View.OnClickListener mStartButtonClickListener = new View.OnClickListener() {
@@ -104,6 +105,8 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
         mItemsList = new ArrayList<>();
         mProfileListAdapter = new ProfileListAdapter(getApplicationContext(), mItemsList);
         mListView.setAdapter(mProfileListAdapter);
+
+        itemsListLoaded = false;
 
         getLoaderManager().initLoader(PROFILE_ROUTINE_LOADER, null, this);
         getLoaderManager().initLoader(PROFILE_ITEMS_LOADER, null, this);
@@ -322,18 +325,6 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
         NavUtils.navigateUpFromSameTask(ProfileActivity.this);
     }
 
-    private void addDeletedRoutinesPreferences(long id) {
-        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit();
-        editor.putLong(PROFILE_DELETED_ITEMS_PREFERENCE, id);
-        editor.commit();
-    }
-
-    private void resetDeletedRoutinesPreferences() {
-        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(getBaseContext()).edit();
-        editor.putLong(PROFILE_DELETED_ITEMS_PREFERENCE, 0);
-        editor.commit();
-    }
-
     // Loader
     @Override
     public Loader<Cursor> onCreateLoader(int loaderId, Bundle args) {
@@ -436,23 +427,26 @@ public class ProfileActivity extends Activity implements LoaderManager.LoaderCal
 
                 break;
             case PROFILE_ITEMS_LOADER:
-                mItemsList = CompositionUtils.composeRoutine(this.getBaseContext(), cursor);
-                mProfileListAdapter = new ProfileListAdapter(this.getBaseContext(), mItemsList);
-                mListView.setAdapter(mProfileListAdapter);
-                mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                    @Override
-                    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                        long parentId = mItemsList.get((int) id).getmParent();
-                        Intent intent = new Intent(ProfileActivity.this, ProfileActivity.class);
+                if (!itemsListLoaded) {
+                    mItemsList = CompositionUtils.composeRoutine(this.getBaseContext(), cursor);
+                    mProfileListAdapter = new ProfileListAdapter(this.getBaseContext(), mItemsList);
+                    mListView.setAdapter(mProfileListAdapter);
+                    mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                        @Override
+                        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                            long parentId = mItemsList.get((int) id).getmParent();
+                            Intent intent = new Intent(ProfileActivity.this, ProfileActivity.class);
 
-                        Uri currentUri = ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, parentId);
-                        intent.setData(currentUri);
+                            Uri currentUri = ContentUris.withAppendedId(RoutineContract.RoutineEntry.CONTENT_URI, parentId);
+                            intent.setData(currentUri);
 
-                        startActivity(intent);
-                    }
-                });
+                            startActivity(intent);
+                        }
+                    });
 
-                calculateAvgTime(cursor);
+                    calculateAvgTime(cursor);
+                    itemsListLoaded = true;
+                }
                 break;
         }
 
