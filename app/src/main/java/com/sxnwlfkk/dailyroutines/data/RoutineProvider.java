@@ -158,10 +158,6 @@ public class RoutineProvider extends ContentProvider {
             getContext().getContentResolver().notifyChange(uri, null);
         }
 
-        if (rowsAffected != 0) {
-            getContext().getContentResolver().notifyChange(uri, null);
-        }
-
         return rowsAffected;
     }
 
