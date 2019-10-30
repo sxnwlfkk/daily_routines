@@ -860,22 +860,15 @@ public class ClockService extends Service {
 		assert notificationManager != null;
 		notificationManager.createNotificationChannel(channel);
 
-		Intent intent = new Intent(this, MainActivity.class);
-		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
-		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
+		mBuilder.setChannelId(CHANNEL_ID)
+				.setOnlyAlertOnce(true);
 
-		Builder notificationBuilder = new Builder(this, CHANNEL_ID)
-				                              .setSmallIcon(R.drawable.done_background_color)
-				                              .setOnlyAlertOnce(true)
-				                              .setContentIntent(pendingIntent);
-
-		Notification notification = notificationBuilder.setOngoing(true)
+		Notification notification = mBuilder.setOngoing(true)
 				                            .setContentTitle(this.getString(R.string.notification_message))
 				                            .setPriority(NotificationManager.IMPORTANCE_MIN)
 				                            .setCategory(Notification.CATEGORY_SERVICE)
 				                            .build();
-		mBuilder.setChannelId(CHANNEL_ID);
-		startForeground((int) mRoutineClock.getmId(), mBuilder.build());
+		startForeground((int) mRoutineClock.getmId(), notification);
 	}
 
 	// On Bind not used
