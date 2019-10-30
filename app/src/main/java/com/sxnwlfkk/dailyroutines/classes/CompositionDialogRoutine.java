@@ -6,40 +6,40 @@ package com.sxnwlfkk.dailyroutines.classes;
 
 public class CompositionDialogRoutine {
 
-    private long id;
-    private String name;
-    private String settings;
-    private long length;
+	private long id;
+	private String name;
+	private String settings;
+	private long length;
 
-    public long getId() {
-        return id;
-    }
+	public long getId() {
+		return id;
+	}
 
-    public void setId(long id) {
-        this.id = id;
-    }
+	public void setId(long id) {
+		this.id = id;
+	}
 
-    public String getName() {
-        return name;
-    }
+	public String getName() {
+		return name;
+	}
 
-    public void setName(String name) {
-        this.name = name;
-    }
+	public void setName(String name) {
+		this.name = name;
+	}
 
-    public String getSettings() {
-        return settings;
-    }
+	public String getSettings() {
+		return settings;
+	}
 
-    public void setSettings(String settings) {
-        this.settings = settings;
-    }
+	public void setSettings(String settings) {
+		this.settings = settings;
+	}
 
-    public long getLength() {
-        return length;
-    }
+	public long getLength() {
+		return length;
+	}
 
-    public void setLength(long length) {
-        this.length = length;
-    }
+	public void setLength(long length) {
+		this.length = length;
+	}
 }

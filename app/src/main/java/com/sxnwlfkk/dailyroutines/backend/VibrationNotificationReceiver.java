@@ -20,77 +20,73 @@ import static android.content.Context.VIBRATOR_SERVICE;
 
 public class VibrationNotificationReceiver extends BroadcastReceiver {
 
-    // CONSTANTS
+	// CONSTANTS
 
-    public String LOG_TAG = VibrationNotificationReceiver.class.getSimpleName();
+	public static final int VIBRATION_NO_PATTERN = 0;
+	public static final int VIBRATION_END_ALARM = 1;
+	public static final int VIBRATION_HALFTIME_ALARM = 2;
+	public static final int VIBRATION_THIRD_ALARM = 3;
+	public static final int VIBRATION_CARRY_ZERO = 4;
+	public static final int VIBRATION_MAIN_ZERO = 5;
+	public static final String VIBRATION_PATTERN = "vibration";
+	// Vibration patterns
+	public static final long[] END_PATTERN = {0, 50, 50, 50, 50, 50};
+	public static final long[] LONG_PATTERN = {0, 50, 50, 50};
+	public static final long[] SHORT_PATTERN = {0, 50};
+	public static final long[] NO_PATTERN = {0};
+	public String LOG_TAG = VibrationNotificationReceiver.class.getSimpleName();
+	ArrayList<long[]> patterns = new ArrayList();
 
-    public static final int VIBRATION_NO_PATTERN = 0;
-    public static final int VIBRATION_END_ALARM = 1;
-    public static final int VIBRATION_HALFTIME_ALARM = 2;
-    public static final int VIBRATION_THIRD_ALARM = 3;
-    public static final int VIBRATION_CARRY_ZERO = 4;
-    public static final int VIBRATION_MAIN_ZERO = 5;
+	public VibrationNotificationReceiver() {
+		super();
 
-    public static final String VIBRATION_PATTERN = "vibration";
+		patterns.add(NO_PATTERN);
+		patterns.add(END_PATTERN);
+		patterns.add(LONG_PATTERN);
+		patterns.add(SHORT_PATTERN);
+	}
 
-    // Vibration patterns
-    public static final long[] END_PATTERN = {0, 50, 50, 50, 50, 50};
-    public static final long[] LONG_PATTERN = {0, 50, 50, 50};
-    public static final long[] SHORT_PATTERN = {0, 50};
-    public static final long[] NO_PATTERN = {0};
+	@Override
+	public void onReceive(Context context, Intent intent) {
+		// Getting settings
+		SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
+		boolean vibrateSet = prefs.getBoolean(SettingsActivity.VIBRATE_PREF_NAME, true);
 
-    ArrayList<long[]> patterns = new ArrayList();
+		Log.e(LOG_TAG, "Received a vibration.");
 
-    public VibrationNotificationReceiver() {
-        super();
+		if (vibrateSet) {
+			// Getting the pattern, that should be played
+			int patternType = intent.getIntExtra(VIBRATION_PATTERN, 0);
+			int patternNum = 0;
 
-        patterns.add(NO_PATTERN);
-        patterns.add(END_PATTERN);
-        patterns.add(LONG_PATTERN);
-        patterns.add(SHORT_PATTERN);
-    }
+			switch (patternType) {
+				case VIBRATION_END_ALARM:
+					Log.e(LOG_TAG, "Received end vibration.");
+					patternNum = 1;
+					break;
+				case VIBRATION_HALFTIME_ALARM:
+					Log.e(LOG_TAG, "Received halftime vibration.");
+					patternNum = 3;
+					break;
+				case VIBRATION_THIRD_ALARM:
+					Log.e(LOG_TAG, "Received third vibration.");
+					patternNum = 3;
+					break;
+				case VIBRATION_MAIN_ZERO:
+					Log.e(LOG_TAG, "Received main end vibration.");
+					patternNum = 2;
+					break;
+				case VIBRATION_CARRY_ZERO:
+					Log.e(LOG_TAG, "Received carry end vibration.");
+					patternNum = 2;
+					break;
+			}
 
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        // Getting settings
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
-        boolean vibrateSet = prefs.getBoolean(SettingsActivity.VIBRATE_PREF_NAME, true);
+			long[] pattern = patterns.get(patternNum);
 
-        Log.e(LOG_TAG, "Received a vibration.");
+			Vibrator vibr = (Vibrator) context.getSystemService(VIBRATOR_SERVICE);
+			vibr.vibrate(pattern, -1);
+		}
 
-        if (vibrateSet) {
-            // Getting the pattern, that should be played
-            int patternType = intent.getIntExtra(VIBRATION_PATTERN, 0);
-            int patternNum = 0;
-
-            switch (patternType) {
-                case VIBRATION_END_ALARM:
-                    Log.e(LOG_TAG, "Received end vibration.");
-                    patternNum = 1;
-                    break;
-                case VIBRATION_HALFTIME_ALARM:
-                    Log.e(LOG_TAG, "Received halftime vibration.");
-                    patternNum = 3;
-                    break;
-                case VIBRATION_THIRD_ALARM:
-                    Log.e(LOG_TAG, "Received third vibration.");
-                    patternNum = 3;
-                    break;
-                case VIBRATION_MAIN_ZERO:
-                    Log.e(LOG_TAG, "Received main end vibration.");
-                    patternNum = 2;
-                    break;
-                case VIBRATION_CARRY_ZERO:
-                    Log.e(LOG_TAG, "Received carry end vibration.");
-                    patternNum = 2;
-                    break;
-            }
-
-            long[] pattern = patterns.get(patternNum);
-
-            Vibrator vibr = (Vibrator) context.getSystemService(VIBRATOR_SERVICE);
-            vibr.vibrate(pattern, -1);
-        }
-
-    }
+	}
 }

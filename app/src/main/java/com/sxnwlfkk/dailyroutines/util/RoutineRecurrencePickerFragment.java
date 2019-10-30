@@ -17,19 +17,19 @@ import com.sxnwlfkk.dailyroutines.R;
 
 public class RoutineRecurrencePickerFragment extends RecurrencePickerDialogFragment {
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View mView = super.onCreateView(inflater, container, savedInstanceState);
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		View mView = super.onCreateView(inflater, container, savedInstanceState);
 
-        Spinner mFreqSpinner = (Spinner) mView.findViewById(R.id.freqSpinner);
-        mFreqSpinner.setVisibility(View.GONE);
-        LinearLayout mIntervalBox = (LinearLayout) mView.findViewById(R.id.intervalGroup);
-        mIntervalBox.setVisibility(View.GONE);
-        Spinner mEndSpinner = (Spinner) mView.findViewById(R.id.endSpinner);
-        mEndSpinner.setVisibility(View.GONE);
-        EditText mEndCount = (EditText) mView.findViewById(R.id.endCount);
-        mEndCount.setVisibility(View.GONE);
+		Spinner mFreqSpinner = (Spinner) mView.findViewById(R.id.freqSpinner);
+		mFreqSpinner.setVisibility(View.GONE);
+		LinearLayout mIntervalBox = (LinearLayout) mView.findViewById(R.id.intervalGroup);
+		mIntervalBox.setVisibility(View.GONE);
+		Spinner mEndSpinner = (Spinner) mView.findViewById(R.id.endSpinner);
+		mEndSpinner.setVisibility(View.GONE);
+		EditText mEndCount = (EditText) mView.findViewById(R.id.endCount);
+		mEndCount.setVisibility(View.GONE);
 
-        return mView;
-    }
+		return mView;
+	}
 }

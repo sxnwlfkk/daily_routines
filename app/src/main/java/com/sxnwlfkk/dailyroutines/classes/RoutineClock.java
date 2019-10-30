@@ -3,8 +3,6 @@ package com.sxnwlfkk.dailyroutines.classes;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Created by cs on 2017.04.14..
@@ -12,328 +10,326 @@ import java.util.Date;
 
 public class RoutineClock {
 
-    public static final String LOG_TAG = RoutineClock.class.getSimpleName();
+	public static final String LOG_TAG = RoutineClock.class.getSimpleName();
 
-    // VARS
-    private ArrayList<RoutineItem> mItemsList;
-    private String mName;
-    private int mCurrentItemIndex;
-    private long mCarryTime;
-    private int mRoutineItemsNum;
-    private long mLength;
-    private long mEndTime;
+	// VARS
+	private ArrayList<RoutineItem> mItemsList;
+	private String mName;
+	private int mCurrentItemIndex;
+	private long mCarryTime;
+	private int mRoutineItemsNum;
+	private long mLength;
+	private long mEndTime;
 
-    // The time when the device got interrupted
-    private long mInterruptTime;
+	// The time when the device got interrupted
+	private long mInterruptTime;
 
-    private boolean mEndTimeRequired;
-    private long mId;
-    private int mTimesUsed;
-    private long mDiffTime;
+	private boolean mEndTimeRequired;
+	private long mId;
+	private int mTimesUsed;
+	private long mDiffTime;
 
-    private long mElapsedTime;
-    private long mLengthWhenStarted;
+	private long mElapsedTime;
+	private long mLengthWhenStarted;
 
-    public void RoutineClock() {
-        mElapsedTime = -1;
-    }
-
-
-    // Distribute carry time
-    // Offset is the number, which the counter should be modified from the current item
-    // If the routine is started late, we should use 0 offset, for the algorithm to distribute
-    // the carry time among all the items. When a routine is underway, and the user goes to red
-    // we should use 1 as offset, to distribute among the remaining items.
-    private void distributeCarryTime(int offset) {
-
-        long remainingTime = 0;
-        for (int i = mCurrentItemIndex+offset; i < mItemsList.size(); i++) {
-            remainingTime += mItemsList.get(i).getmCurrentTime();
-        }
-        for (int i = mCurrentItemIndex+offset; i < mItemsList.size(); i++) {
-            RoutineItem item = mItemsList.get(i);
-            double ratio = (double) item.getmCurrentTime() / remainingTime;
-            double sub = ratio * mCarryTime;
-            long oldItemTime = item.getmCurrentTime();
-            long newItemTime = (long) (oldItemTime + sub);
-            item.setmCurrentTime(newItemTime);
-            mItemsList.set(i, item);
-            Log.e(LOG_TAG, i + "-th new item time is: " + newItemTime);
-        }
-        mCarryTime = 0;
-    }
-
-    // Distribute carry on start
-    public void distributeCarryOnStart(long carry) {
-        mCarryTime = carry;
-        if (carry < 0) {
-            distributeCarryTime(0);
-        }
-    }
-
-    // Next item
-    public RoutineItem nextItem(RoutineItem currentItem) {
-        //Sanity check
-        if (mCurrentItemIndex + 1 >= mRoutineItemsNum) return null;
-
-        setStartTime();
-
-        // Time check
-        if (currentItem.getmCurrentTime() == 0 && mCarryTime < 0) {
-            distributeCarryTime(1);
-        } else if (currentItem.getmCurrentTime() > 0) {
-            mCarryTime += currentItem.getmCurrentTime();
-            currentItem.setmCurrentTime(0);
-        }
-
-        mItemsList.set(mCurrentItemIndex, currentItem);
-        mCurrentItemIndex++;
-        setStartTime();
-        return mItemsList.get(mCurrentItemIndex);
-    }
-
-    // Previous item
-    public RoutineItem prevItem(RoutineItem currentItem) {
-        // Sanity check
-        if (mCurrentItemIndex - 1 < 0) return null;
-
-        // Save current item state, and return previous
-        mItemsList.set(mCurrentItemIndex, currentItem);
-        mCurrentItemIndex--;
-
-        // Try to take back as much carry as was left in item time
-        long lastTime = mItemsList.get(mCurrentItemIndex).getStartTime();
-        if (lastTime < mCarryTime) {
-            mItemsList.get(mCurrentItemIndex).setmCurrentTime(lastTime);
-            mCarryTime -= lastTime;
-        } else if (0 < mCarryTime && mCarryTime <= lastTime) {
-            mItemsList.get(mCurrentItemIndex).setmCurrentTime(mCarryTime);
-            mCarryTime = 0;
-        }
-
-        setStartTime();
-        return mItemsList.get(mCurrentItemIndex);
-    }
-
-    // Set the routines start time
-    public void setStartTime() {
-        mItemsList.get(mCurrentItemIndex).setStartTime(mItemsList.get(mCurrentItemIndex).getmCurrentTime());
-    }
-
-    // Reset routine
-    public void resetRoutine() {
-        mCarryTime = 0;
-        mCurrentItemIndex = -1;
-        mInterruptTime = 0;
-
-        // Clear items
-        for (int i = 0; i < mItemsList.size(); i++) {
-            RoutineItem item = mItemsList.get(i);
-            item.resetItem();
-            mItemsList.set(i, item);
-        }
-
-    }
-
-    // Finish routine
-    public void finishRoutine() {
-        mCarryTime = 0;
-        mCurrentItemIndex = -1;
-        mTimesUsed++;
-        mInterruptTime = 0;
-
-        for (int i = 0; i < mItemsList.size(); i++) {
-            RoutineItem item = mItemsList.get(i);
-            item.averageItemTime();
-            item.resetItem();
-            mItemsList.set(i, item);
-        }
-    }
-
-    // Sort out diff time
-    public void sortDiffTime() {
-        if (mDiffTime != 0) {
-            Log.e(LOG_TAG, "Diff time is: " + mDiffTime + " current item time is: " + getCurrentItem().getmCurrentTime());
-            long currTime = mItemsList.get(mCurrentItemIndex).getmCurrentTime();
-            long itemsElapsedTime = mItemsList.get(mCurrentItemIndex).getmElapsedTime();
-            if (mLength < mDiffTime) {
-                Log.d(LOG_TAG, "Item's elapsed time before diff assign (diff longer than length): " + itemsElapsedTime);
-                mItemsList.get(mCurrentItemIndex).setmElapsedTime(itemsElapsedTime + mLength);
-                Log.d(LOG_TAG, "Item's elapsed time after diff assign (diff longer than length): " + mItemsList.get(mCurrentItemIndex).getmElapsedTime());
-                mLength = 0;
-                return;
-            }
-            Log.d(LOG_TAG, "Item's elapsed time before diff assign: " + itemsElapsedTime);
-            mItemsList.get(mCurrentItemIndex).setmElapsedTime(itemsElapsedTime + mDiffTime);
-            Log.d(LOG_TAG, "Item's elapsed time after diff assign: " + mItemsList.get(mCurrentItemIndex).getmElapsedTime());
-            if (mDiffTime > currTime) {
-                mItemsList.get(mCurrentItemIndex).setmCurrentTime(0);
-                mCarryTime -= (mDiffTime - currTime);
-            } else {
-                mItemsList.get(mCurrentItemIndex).setmCurrentTime(currTime - mDiffTime);
-            }
-            calculateRemainingRoutineTime();
-            Log.d(LOG_TAG, "The updated time is: " + getCurrentItem().getmCurrentTime());
-        }
-    }
-
-    // Calculate the remaining time
-    public void calculateRemainingRoutineTime() {
-        long newLength = mCarryTime;
-        for (int i = mCurrentItemIndex; i < mRoutineItemsNum; i++) {
-            newLength += mItemsList.get(i).getmCurrentTime();
-        }
-        mLength = newLength + mCarryTime;
-        calculateElapsedTime();
-    }
-
-    // Calculate elapsed time
-    public void calculateElapsedTime() {
-        long elapsedTime = 0;
-        for (int i = 0; i < mRoutineItemsNum; i++) {
-            Log.d(LOG_TAG, i + ". item's elapsed time: " + mItemsList.get(i).getmElapsedTime());
-            elapsedTime += mItemsList.get(i).getmElapsedTime();
-        }
-        mElapsedTime = elapsedTime;
-    }
+	public void RoutineClock() {
+		mElapsedTime = -1;
+	}
 
 
+	// Distribute carry time
+	// Offset is the number, which the counter should be modified from the current item
+	// If the routine is started late, we should use 0 offset, for the algorithm to distribute
+	// the carry time among all the items. When a routine is underway, and the user goes to red
+	// we should use 1 as offset, to distribute among the remaining items.
+	private void distributeCarryTime(int offset) {
 
-    // Getters and Setters
+		long remainingTime = 0;
+		for (int i = mCurrentItemIndex + offset; i < mItemsList.size(); i++) {
+			remainingTime += mItemsList.get(i).getmCurrentTime();
+		}
+		for (int i = mCurrentItemIndex + offset; i < mItemsList.size(); i++) {
+			RoutineItem item = mItemsList.get(i);
+			double ratio = (double) item.getmCurrentTime() / remainingTime;
+			double sub = ratio * mCarryTime;
+			long oldItemTime = item.getmCurrentTime();
+			long newItemTime = (long) (oldItemTime + sub);
+			item.setmCurrentTime(newItemTime);
+			mItemsList.set(i, item);
+			Log.e(LOG_TAG, i + "-th new item time is: " + newItemTime);
+		}
+		mCarryTime = 0;
+	}
 
-    public RoutineItem getCurrentItem() {
-        if (mCurrentItemIndex == -1) mCurrentItemIndex = 0;
-        return mItemsList.get(mCurrentItemIndex);
-    }
+	// Distribute carry on start
+	public void distributeCarryOnStart(long carry) {
+		mCarryTime = carry;
+		if (carry < 0) {
+			distributeCarryTime(0);
+		}
+	}
 
-    public void setCurrentItem(RoutineItem item) {
-        mItemsList.set(mCurrentItemIndex, item);
+	// Next item
+	public RoutineItem nextItem(RoutineItem currentItem) {
+		//Sanity check
+		if (mCurrentItemIndex + 1 >= mRoutineItemsNum) return null;
 
-    }
+		setStartTime();
 
-    public int getmRoutineItemsNum() {
-        return mRoutineItemsNum;
-    }
+		// Time check
+		if (currentItem.getmCurrentTime() == 0 && mCarryTime < 0) {
+			distributeCarryTime(1);
+		} else if (currentItem.getmCurrentTime() > 0) {
+			mCarryTime += currentItem.getmCurrentTime();
+			currentItem.setmCurrentTime(0);
+		}
 
-    public void setmRoutineItemsNum(int mRoutineItemsNum) {
-        this.mRoutineItemsNum = mRoutineItemsNum;
-    }
+		mItemsList.set(mCurrentItemIndex, currentItem);
+		mCurrentItemIndex++;
+		setStartTime();
+		return mItemsList.get(mCurrentItemIndex);
+	}
 
-    public ArrayList<RoutineItem> getmItemsList() {
-        return mItemsList;
-    }
+	// Previous item
+	public RoutineItem prevItem(RoutineItem currentItem) {
+		// Sanity check
+		if (mCurrentItemIndex - 1 < 0) return null;
 
-    public void setmItemsList(ArrayList<RoutineItem> itemsList) {
-        int routineLen = 0;
-        int remTime = 0;
-        for (int i = 0; i < itemsList.size(); i++) {
-            remTime += itemsList.get(i).getmCurrentTime();
-        }
+		// Save current item state, and return previous
+		mItemsList.set(mCurrentItemIndex, currentItem);
+		mCurrentItemIndex--;
 
-        mLength = remTime;
-        mItemsList = itemsList;
-    }
+		// Try to take back as much carry as was left in item time
+		long lastTime = mItemsList.get(mCurrentItemIndex).getStartTime();
+		if (lastTime < mCarryTime) {
+			mItemsList.get(mCurrentItemIndex).setmCurrentTime(lastTime);
+			mCarryTime -= lastTime;
+		} else if (0 < mCarryTime && mCarryTime <= lastTime) {
+			mItemsList.get(mCurrentItemIndex).setmCurrentTime(mCarryTime);
+			mCarryTime = 0;
+		}
 
-    public String getmName() {
-        return mName;
-    }
+		setStartTime();
+		return mItemsList.get(mCurrentItemIndex);
+	}
 
-    public void setmName(String mName) {
-        this.mName = mName;
-    }
+	// Set the routines start time
+	public void setStartTime() {
+		mItemsList.get(mCurrentItemIndex).setStartTime(mItemsList.get(mCurrentItemIndex).getmCurrentTime());
+	}
 
-    public int getmCurrentItemIndex() {
-        return mCurrentItemIndex;
-    }
+	// Reset routine
+	public void resetRoutine() {
+		mCarryTime = 0;
+		mCurrentItemIndex = -1;
+		mInterruptTime = 0;
 
-    public void setmCurrentItemIndex(int currentItemIndex) {
-        if (currentItemIndex == -1) {
-            Log.e("RoutineClock", "setmCurrentItemIndex");
-            mCurrentItemIndex = 0;
-        }
-        else {
-            mCurrentItemIndex = currentItemIndex;
-        }
-    }
+		// Clear items
+		for (int i = 0; i < mItemsList.size(); i++) {
+			RoutineItem item = mItemsList.get(i);
+			item.resetItem();
+			mItemsList.set(i, item);
+		}
 
-    public long getmCarryTime() {
-        return mCarryTime;
-    }
+	}
 
-    public void setmCarryTime(long mCarryTime) {
-        this.mCarryTime = mCarryTime;
-    }
+	// Finish routine
+	public void finishRoutine() {
+		mCarryTime = 0;
+		mCurrentItemIndex = -1;
+		mTimesUsed++;
+		mInterruptTime = 0;
 
-    public long getmLength() {
-        return mLength;
-    }
+		for (int i = 0; i < mItemsList.size(); i++) {
+			RoutineItem item = mItemsList.get(i);
+			item.averageItemTime();
+			item.resetItem();
+			mItemsList.set(i, item);
+		}
+	}
 
-    public void setmLength(long mLength) {
-        this.mLength = mLength;
-    }
+	// Sort out diff time
+	public void sortDiffTime() {
+		if (mDiffTime != 0) {
+			Log.e(LOG_TAG, "Diff time is: " + mDiffTime + " current item time is: " + getCurrentItem().getmCurrentTime());
+			long currTime = mItemsList.get(mCurrentItemIndex).getmCurrentTime();
+			long itemsElapsedTime = mItemsList.get(mCurrentItemIndex).getmElapsedTime();
+			if (mLength < mDiffTime) {
+				Log.d(LOG_TAG, "Item's elapsed time before diff assign (diff longer than length): " + itemsElapsedTime);
+				mItemsList.get(mCurrentItemIndex).setmElapsedTime(itemsElapsedTime + mLength);
+				Log.d(LOG_TAG, "Item's elapsed time after diff assign (diff longer than length): " + mItemsList.get(mCurrentItemIndex).getmElapsedTime());
+				mLength = 0;
+				return;
+			}
+			Log.d(LOG_TAG, "Item's elapsed time before diff assign: " + itemsElapsedTime);
+			mItemsList.get(mCurrentItemIndex).setmElapsedTime(itemsElapsedTime + mDiffTime);
+			Log.d(LOG_TAG, "Item's elapsed time after diff assign: " + mItemsList.get(mCurrentItemIndex).getmElapsedTime());
+			if (mDiffTime > currTime) {
+				mItemsList.get(mCurrentItemIndex).setmCurrentTime(0);
+				mCarryTime -= (mDiffTime - currTime);
+			} else {
+				mItemsList.get(mCurrentItemIndex).setmCurrentTime(currTime - mDiffTime);
+			}
+			calculateRemainingRoutineTime();
+			Log.d(LOG_TAG, "The updated time is: " + getCurrentItem().getmCurrentTime());
+		}
+	}
 
-    public long getmId() {
-        return mId;
-    }
+	// Calculate the remaining time
+	public void calculateRemainingRoutineTime() {
+		long newLength = mCarryTime;
+		for (int i = mCurrentItemIndex; i < mRoutineItemsNum; i++) {
+			newLength += mItemsList.get(i).getmCurrentTime();
+		}
+		mLength = newLength + mCarryTime;
+		calculateElapsedTime();
+	}
 
-    public void setmId(long mId) {
-        this.mId = mId;
-    }
+	// Calculate elapsed time
+	public void calculateElapsedTime() {
+		long elapsedTime = 0;
+		for (int i = 0; i < mRoutineItemsNum; i++) {
+			Log.d(LOG_TAG, i + ". item's elapsed time: " + mItemsList.get(i).getmElapsedTime());
+			elapsedTime += mItemsList.get(i).getmElapsedTime();
+		}
+		mElapsedTime = elapsedTime;
+	}
 
-    public long getmEndTime() {
-        return mEndTime;
-    }
 
-    public void setmEndTime(long mEndTime) {
-        this.mEndTime = mEndTime;
-    }
+	// Getters and Setters
 
-    public int getmTimesUsed() {
-        return mTimesUsed;
-    }
+	public RoutineItem getCurrentItem() {
+		if (mCurrentItemIndex == -1) mCurrentItemIndex = 0;
+		return mItemsList.get(mCurrentItemIndex);
+	}
 
-    public void setmTimesUsed(int mTimesUsed) {
-        this.mTimesUsed = mTimesUsed;
-    }
+	public void setCurrentItem(RoutineItem item) {
+		mItemsList.set(mCurrentItemIndex, item);
 
-    public long getmDiffTime() {
-        return mDiffTime;
-    }
+	}
 
-    public void setmDiffTime(long mDiffTime) {
-        this.mDiffTime = mDiffTime;
-    }
+	public int getmRoutineItemsNum() {
+		return mRoutineItemsNum;
+	}
 
-    public boolean ismEndTimeRequired() {
-        return mEndTimeRequired;
-    }
+	public void setmRoutineItemsNum(int mRoutineItemsNum) {
+		this.mRoutineItemsNum = mRoutineItemsNum;
+	}
 
-    public void setmEndTimeRequired(boolean mEndTimeRequired) {
-        this.mEndTimeRequired = mEndTimeRequired;
-    }
+	public ArrayList<RoutineItem> getmItemsList() {
+		return mItemsList;
+	}
 
-    public long getmInterruptTime() {
-        return mInterruptTime;
-    }
+	public void setmItemsList(ArrayList<RoutineItem> itemsList) {
+		int routineLen = 0;
+		int remTime = 0;
+		for (int i = 0; i < itemsList.size(); i++) {
+			remTime += itemsList.get(i).getmCurrentTime();
+		}
 
-    public void setmInterruptTime(long mInterruptTime) {
-        this.mInterruptTime = mInterruptTime;
-    }
+		mLength = remTime;
+		mItemsList = itemsList;
+	}
 
-    public long getmElapsedTime() {
-        calculateElapsedTime();
-        return mElapsedTime;
-    }
+	public String getmName() {
+		return mName;
+	}
 
-    public void incrementElapsedTime() {
-        this.mElapsedTime++;
-    }
+	public void setmName(String mName) {
+		this.mName = mName;
+	}
 
-    public long getmLengthWhenStarted() {
-        return mLengthWhenStarted;
-    }
+	public int getmCurrentItemIndex() {
+		return mCurrentItemIndex;
+	}
 
-    public void setmLengthWhenStarted(long mLengthWhenStarted) {
-        this.mLengthWhenStarted = mLengthWhenStarted;
-    }
+	public void setmCurrentItemIndex(int currentItemIndex) {
+		if (currentItemIndex == -1) {
+			Log.e("RoutineClock", "setmCurrentItemIndex");
+			mCurrentItemIndex = 0;
+		} else {
+			mCurrentItemIndex = currentItemIndex;
+		}
+	}
+
+	public long getmCarryTime() {
+		return mCarryTime;
+	}
+
+	public void setmCarryTime(long mCarryTime) {
+		this.mCarryTime = mCarryTime;
+	}
+
+	public long getmLength() {
+		return mLength;
+	}
+
+	public void setmLength(long mLength) {
+		this.mLength = mLength;
+	}
+
+	public long getmId() {
+		return mId;
+	}
+
+	public void setmId(long mId) {
+		this.mId = mId;
+	}
+
+	public long getmEndTime() {
+		return mEndTime;
+	}
+
+	public void setmEndTime(long mEndTime) {
+		this.mEndTime = mEndTime;
+	}
+
+	public int getmTimesUsed() {
+		return mTimesUsed;
+	}
+
+	public void setmTimesUsed(int mTimesUsed) {
+		this.mTimesUsed = mTimesUsed;
+	}
+
+	public long getmDiffTime() {
+		return mDiffTime;
+	}
+
+	public void setmDiffTime(long mDiffTime) {
+		this.mDiffTime = mDiffTime;
+	}
+
+	public boolean ismEndTimeRequired() {
+		return mEndTimeRequired;
+	}
+
+	public void setmEndTimeRequired(boolean mEndTimeRequired) {
+		this.mEndTimeRequired = mEndTimeRequired;
+	}
+
+	public long getmInterruptTime() {
+		return mInterruptTime;
+	}
+
+	public void setmInterruptTime(long mInterruptTime) {
+		this.mInterruptTime = mInterruptTime;
+	}
+
+	public long getmElapsedTime() {
+		calculateElapsedTime();
+		return mElapsedTime;
+	}
+
+	public void incrementElapsedTime() {
+		this.mElapsedTime++;
+	}
+
+	public long getmLengthWhenStarted() {
+		return mLengthWhenStarted;
+	}
+
+	public void setmLengthWhenStarted(long mLengthWhenStarted) {
+		this.mLengthWhenStarted = mLengthWhenStarted;
+	}
 }

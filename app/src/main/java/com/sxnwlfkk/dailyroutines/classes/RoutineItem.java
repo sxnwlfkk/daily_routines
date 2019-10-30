@@ -6,162 +6,167 @@ package com.sxnwlfkk.dailyroutines.classes;
 
 public class RoutineItem {
 
-    private String mItemName;
+	private String mItemName;
 
-    private long mTime;
+	private long mTime;
 
-    private long mCurrentTime;
+	private long mCurrentTime;
 
-    private double mAverageTime;
+	private double mAverageTime;
 
-    private long mElapsedTime;
+	private long mElapsedTime;
 
-    private long mRemainingTime;
+	private long mRemainingTime;
 
-    private int mTier;
+	private int mTier;
 
-    private long mParent;
+	private long mParent;
 
-    private long mId;
+	private long mId;
 
-    private int mItemNumber;
+	private int mItemNumber;
 
-    private long startTime;
+	private long startTime;
 
-    /**
-     * New object with no prior average data.
-     * @param item_name
-     * @param time
-     */
-    public RoutineItem(String item_name, long time) {
-        mItemName = item_name;
-        mTime = this.mCurrentTime = time;
-        mAverageTime = 0;
-        mElapsedTime = 0;
-    }
-    /**
-     * Constructor when editing an existing RoutineItem object. Should provide prior averages data,
-     * if there are any.
-     * @param item_name
-     * @param time
-     * @param average
-     */
-    public RoutineItem(String item_name, long time, double average) {
-        mItemName = item_name;
-        mTime = this.mCurrentTime = time;
-        mAverageTime = average;
-        mElapsedTime = 0;
-    }
+	/**
+	 * New object with no prior average data.
+	 *
+	 * @param item_name
+	 * @param time
+	 */
+	public RoutineItem(String item_name, long time) {
+		mItemName = item_name;
+		mTime = this.mCurrentTime = time;
+		mAverageTime = 0;
+		mElapsedTime = 0;
+	}
 
-    /**
-     * Reverts the item to original state and averages the runtime with the previous runs.
-     */
-    public void resetItem () {
-        mCurrentTime = mTime;
-        mElapsedTime = 0;
-        startTime = 0;
-    }
+	/**
+	 * Constructor when editing an existing RoutineItem object. Should provide prior averages data,
+	 * if there are any.
+	 *
+	 * @param item_name
+	 * @param time
+	 * @param average
+	 */
+	public RoutineItem(String item_name, long time, double average) {
+		mItemName = item_name;
+		mTime = this.mCurrentTime = time;
+		mAverageTime = average;
+		mElapsedTime = 0;
+	}
 
-    public void averageItemTime() {
-        if (mAverageTime == 0) {
-            mAverageTime = mElapsedTime;
-        } else {
-            mAverageTime = (mAverageTime + (double) mElapsedTime) / 2.0;
-        }
-        startTime = 0;
-        mElapsedTime = 0;
-    }
+	/**
+	 * Reverts the item to original state and averages the runtime with the previous runs.
+	 */
+	public void resetItem() {
+		mCurrentTime = mTime;
+		mElapsedTime = 0;
+		startTime = 0;
+	}
 
-    /* GETTERS */
-    public long getmCurrentTime() {
-        return mCurrentTime;
-    }
+	public void averageItemTime() {
+		if (mAverageTime == 0) {
+			mAverageTime = mElapsedTime;
+		} else {
+			mAverageTime = (mAverageTime + (double) mElapsedTime) / 2.0;
+		}
+		startTime = 0;
+		mElapsedTime = 0;
+	}
 
-    public String getmItemName() {
-        return mItemName;
-    }
+	/* GETTERS */
+	public long getmCurrentTime() {
+		return mCurrentTime;
+	}
 
-    public long getmTime() {
-        return mTime;
-    }
+	/* SETTERS */
+	public void setmCurrentTime(long currentTime) {
+		mCurrentTime = currentTime;
+	}
 
-    public double getmAverageTime() {
-        return mAverageTime;
-    }
+	public String getmItemName() {
+		return mItemName;
+	}
 
-    public long getmId() {
-        return mId;
-    }
+	public void setmItemName(String mItemName) {
+		this.mItemName = mItemName;
+	}
 
-    public long getmElapsedTime() {
-        return mElapsedTime;
-    }
+	public long getmTime() {
+		return mTime;
+	}
 
-    public long getStartTime() {
-        return startTime;
-    }
+	public void setmTime(long mTime) {
+		this.mTime = mTime;
+	}
 
-    public int getmTier() {
-        return mTier;
-    }
+	public double getmAverageTime() {
+		return mAverageTime;
+	}
 
-    public long getmParent() {
-        return mParent;
-    }
+	public void setmAverageTime(double mAverageTime) {
+		this.mAverageTime = mAverageTime;
+	}
 
-    public int getmItemNumber() {
-        return mItemNumber;
-    }
+	public long getmId() {
+		return mId;
+	}
 
-    /* SETTERS */
-    public void setmCurrentTime(long currentTime) {
-        mCurrentTime = currentTime;
-    }
+	public void setmId(long mId) {
+		this.mId = mId;
+	}
 
-    public void setmTime(long mTime) {
-        this.mTime = mTime;
-    }
+	public long getmElapsedTime() {
+		return mElapsedTime;
+	}
 
-    public void setmItemName(String mItemName) {
-        this.mItemName = mItemName;
-    }
+	public void setmElapsedTime(long mElapsedTime) {
+		this.mElapsedTime = mElapsedTime;
+	}
 
-    public void setmAverageTime(double mAverageTime) {
-        this.mAverageTime = mAverageTime;
-    }
+	public long getStartTime() {
+		return startTime;
+	}
 
-    public void setmId(long mId) {
-        this.mId = mId;
-    }
+	public void setStartTime(long startTime) {
+		this.startTime = startTime;
+	}
 
-    public void setmElapsedTime(long mElapsedTime) {
-        this.mElapsedTime = mElapsedTime;
-    }
+	public int getmTier() {
+		return mTier;
+	}
 
-    public void incrementElapsedTime(long i) { mElapsedTime += i; }
+	public void setmTier(int mTier) {
+		this.mTier = mTier;
+	}
 
-    public void setStartTime(long startTime) {
-        this.startTime = startTime;
-    }
+	public long getmParent() {
+		return mParent;
+	}
 
-    public long getmRemainingTime() {
-        return mRemainingTime;
-    }
+	public void setmParent(long mParent) {
+		this.mParent = mParent;
+	}
 
-    public void setmRemainingTime(long mRemainingTime) {
-        this.mRemainingTime = mRemainingTime;
-    }
+	public int getmItemNumber() {
+		return mItemNumber;
+	}
 
-    public void setmTier(int mTier) {
-        this.mTier = mTier;
-    }
+	public void setmItemNumber(int mItemNumber) {
+		this.mItemNumber = mItemNumber;
+	}
 
-    public void setmParent(long mParent) {
-        this.mParent = mParent;
-    }
+	public void incrementElapsedTime(long i) {
+		mElapsedTime += i;
+	}
 
-    public void setmItemNumber(int mItemNumber) {
-        this.mItemNumber = mItemNumber;
-    }
+	public long getmRemainingTime() {
+		return mRemainingTime;
+	}
+
+	public void setmRemainingTime(long mRemainingTime) {
+		this.mRemainingTime = mRemainingTime;
+	}
 
 }

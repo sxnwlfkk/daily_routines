@@ -16,26 +16,26 @@ import static com.sxnwlfkk.dailyroutines.views.clock.ClockService.SERVICE_COMMAN
 
 public class ScreenOnOffReceiver extends BroadcastReceiver {
 
-    @Override
-    public void onReceive(Context context, Intent intent) {
-        boolean screenOff = false;
+	@Override
+	public void onReceive(Context context, Intent intent) {
+		boolean screenOff = false;
 
-        if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
+		if (intent.getAction().equals(Intent.ACTION_SCREEN_OFF)) {
 
-            screenOff = true;
+			screenOff = true;
 
-        } else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {
+		} else if (intent.getAction().equals(Intent.ACTION_SCREEN_ON)) {
 
-            screenOff = false;
+			screenOff = false;
 
-        }
+		}
 
-        Intent newIntent = new Intent(context, ClockService.class);
-        if (screenOff) {
-            newIntent.putExtra(SERVICE_COMMAND_FIELD, CLOCK_SERVICE_SCREEN_OFF);
-        } else {
-            newIntent.putExtra(SERVICE_COMMAND_FIELD, CLOCK_SERVICE_SCREEN_ON);
-        }
-        context.startService(newIntent);
-    }
+		Intent newIntent = new Intent(context, ClockService.class);
+		if (screenOff) {
+			newIntent.putExtra(SERVICE_COMMAND_FIELD, CLOCK_SERVICE_SCREEN_OFF);
+		} else {
+			newIntent.putExtra(SERVICE_COMMAND_FIELD, CLOCK_SERVICE_SCREEN_ON);
+		}
+		context.startService(newIntent);
+	}
 }
